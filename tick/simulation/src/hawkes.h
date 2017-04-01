@@ -5,11 +5,14 @@
 #ifndef TICK_SIMULATION_SRC_HAWKES_H_
 #define TICK_SIMULATION_SRC_HAWKES_H_
 
+#include "defs.h"
+
+#include <cfloat>
 #include <memory>
 
-#include "hawkes_baselines/baseline.h"
-#include "hawkes_baselines/constant_baseline.h"
-#include "hawkes_baselines/timefunction_baseline.h"
+#include "time_func.h"
+#include "varray.h"
+#include "pp.h"
 
 #include "hawkes_kernels/hawkes_kernel.h"
 #include "hawkes_kernels/hawkes_kernel_0.h"

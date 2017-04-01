@@ -50,14 +50,28 @@ if (${GTEST_FOUND})
     enable_testing()
     message(STATUS "Testing in C++ enabled")
 
-    find_package (Threads REQUIRED)
+    find_package(Threads REQUIRED)
+    find_package(PythonInterp REQUIRED)
+    find_package(PythonLibs REQUIRED)
 
     include_directories(${GTEST_INCLUDE_DIRS})
 
+    set(TICK_TEST_LIBS
+        ${PYTHON_LIBRARIES}
+        ${GTEST_BOTH_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT})
+
     if(APPLE)
+        set(TICK_INSTALL_RPATH "${CMAKE_CURRENT_SOURCE_DIR}/base/build;${CMAKE_CURRENT_SOURCE_DIR}/base/array/build;${CMAKE_CURRENT_SOURCE_DIR}/optim/model/build;${CMAKE_CURRENT_SOURCE_DIR}/random/build;${CMAKE_CURRENT_SOURCE_DIR}/simulation/build")
+
+        set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+        set(CMAKE_INSTALL_RPATH "${TICK_INSTALL_RPATH}")
+
         find_library(ACCELERATE_LIBRARY Accelerate)
         mark_as_advanced(ACCELERATE_LIBRARY)
-        set(EXTRA_TEST_LIBS ${EXTRA_TEST_LIBS} ${ACCELERATE_LIBRARY})
+        set(TICK_TEST_LIBS ${TICK_TEST_LIBS} ${ACCELERATE_LIBRARY})
+    else(APPLE)
+        set(TICK_TEST_LIBS ${TICK_TEST_LIBS} -lrt -ldl -lutil)
     endif(APPLE)
 
     add_subdirectory(base/tests/src)

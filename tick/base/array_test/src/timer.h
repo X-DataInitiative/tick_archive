@@ -9,7 +9,9 @@
 #ifndef TICK_BASE_ARRAY_TEST_SRC_TIMER_H_
 #define TICK_BASE_ARRAY_TEST_SRC_TIMER_H_
 
-#include <time.h>
+#include "defs.h"
+
+#include <ctime>
 
 #include <iostream>
 #include <iomanip>

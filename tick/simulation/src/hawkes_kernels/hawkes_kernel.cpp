@@ -1,4 +1,3 @@
-
 #include "hawkes_kernel.h"
 
 // Constructor

@@ -1,12 +1,16 @@
 #ifndef TICK_RANDOM_SRC_RAND_H_
 #define TICK_RANDOM_SRC_RAND_H_
 
+#include "defs.h"
+
+#include <cmath>
+#include <ctime>
+
 #include <mutex>
-#include <math.h>
-#include <time.h>
 #include <iostream>
 #include <random>
-#include <array.h>
+
+#include "array.h"
 
 /**
  * @class Rand

@@ -4,8 +4,10 @@
 
 #ifndef TICK_OPTIM_PROX_SRC_PROX_H_
 #define TICK_OPTIM_PROX_SRC_PROX_H_
-#include <memory>
+
 #include "base.h"
+
+#include <memory>
 #include <string>
 
 class Prox {

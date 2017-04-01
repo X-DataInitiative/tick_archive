@@ -18,6 +18,8 @@
  *                         backtrace and error loc
 */
 
+#include "defs.h"
+
 #include <execinfo.h>
 #include <unistd.h>
 
@@ -27,8 +29,6 @@
 #include <exception>
 #include <array>
 #include <type_traits>
-
-#include "defs.h"
 
 #ifdef DEBUG_VERBOSE
   #define TICK_DEBUG_VERBOSE_MODE 1

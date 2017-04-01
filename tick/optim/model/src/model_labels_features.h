@@ -5,8 +5,9 @@
 #ifndef TICK_OPTIM_MODEL_SRC_MODEL_LABELS_FEATURES_H_
 #define TICK_OPTIM_MODEL_SRC_MODEL_LABELS_FEATURES_H_
 
-#include <iostream>
 #include "model.h"
+
+#include <iostream>
 
 class ModelLabelsFeatures : public virtual Model {
  protected:

@@ -7,5 +7,13 @@ add_executable(tick_test_hawkes
         hawkes_simulation.cpp
         )
 
-target_link_libraries(tick_test_hawkes ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
-        ${EXTRA_TEST_LIBS} base random simulation)
+target_link_libraries(tick_test_hawkes
+    ${TICKLIB_ARRAY}
+    ${TICKLIB_BASE}
+    ${TICKLIB_CRANDOM}
+    ${TICKLIB_SIMULATION}
+
+    ${TICK_TEST_LIBS}
+    )
+
+

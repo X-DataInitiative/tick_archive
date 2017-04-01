@@ -5,8 +5,9 @@
 #ifndef TICK_SIMULATION_SRC_HAWKES_KERNELS_HAWKES_KERNEL_POWER_LAW_H_
 #define TICK_SIMULATION_SRC_HAWKES_KERNELS_HAWKES_KERNEL_POWER_LAW_H_
 
-#include <math.h>
 #include "hawkes_kernel.h"
+
+#include <cmath>
 
 //
 //

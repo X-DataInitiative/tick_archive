@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+set -e -x
+
+shell_session_update() { :; }
+
 brew update
 brew install swig pyenv
 brew upgrade pyenv

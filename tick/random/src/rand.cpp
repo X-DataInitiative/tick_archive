@@ -15,10 +15,11 @@
 
 
 #define _USE_MATH_DEFINES
-#include <iostream>
-#include <random>
 
 #include "rand.h"
+
+#include <iostream>
+#include <random>
 
 Rand::Rand(int seed)
     : seed(seed) {
