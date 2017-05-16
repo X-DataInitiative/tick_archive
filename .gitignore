@@ -48,3 +48,6 @@ XCode/
 # Build directory for C++ tests
 cpp_test_build/
 tick/cmake-build-debug
+
+# benchmarks generated data
+benchmarks/hawkes_data/
