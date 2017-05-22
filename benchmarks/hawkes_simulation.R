@@ -27,11 +27,11 @@ get_parameters <- function(n_nodes) {
 }
 
 n_nodes_sample <- c(1, 2, 4)
-end_times <- c(100000, 1000000, 10000000)
+end_times <- c(100000, 200000, 500000, 1000000, 2000000, 5000000, 10000000)
 
 for (n_nodes in n_nodes_sample) {
     for (end_time in end_times) {
-        parameters <- get_parameters(2)
+        parameters <- get_parameters(n_nodes)
         beta <- parameters[[1]]
         lambda0 <- parameters[[2]]
         alpha <- parameters[[3]]
@@ -40,9 +40,12 @@ for (n_nodes in n_nodes_sample) {
         benchmark <- system.time(
             history <- simulateHawkes(lambda0, alpha, beta, end_time))
 
-        print(sprintf("Simulating %i events costs %f secs",
-                      Reduce("+", lapply(history, length)),
-                      benchmark[["elapsed"]]))
+        n_events =  Reduce("+", lapply(history, length))
+        simulation_time <- benchmark[["elapsed"]]
+        # print(sprintf("Simulating %i events costs %f secs",
+        #               n_events, simulation_time))
+        cat(sprintf('simulation,hawkes R,%i,%i,%.5f\n',
+                    n_nodes, n_events, simulation_time))
     }
 }
 
