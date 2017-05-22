@@ -3,14 +3,46 @@
 
 library(hawkes)
 
-end_time = 10000000
-lambda0 <- c(0.12, 0.07)
-alpha <- matrix(c(0.6, 0, 1.2, 0.42), byrow = TRUE, nrow = 2)
-beta <- c(2., 2.)
+get_parameters <- function(n_nodes) {
+    if (n_nodes == 1) {
+        decays <- 1.5
+        baseline <- 0.4
+        adjacency <- 0.6
+    }
+    else if (n_nodes == 2) {
+        decays <- c(2., 2.)
+        baseline <- c(0.25, 0.3)
+        adjacency <- matrix(c(.3, 0.,.6, .2) * 2., byrow = TRUE, nrow = n_nodes)
+    }
+    else if (n_nodes == 4) {
+        decays <- c(0.5, 0.5, 0.5, 0.5)
+        baseline <- c(0.17, 0., 0.12, 0.09)
+        adjacency <- matrix(c(.3, 0., 0.2, 0.1,
+                             .3, .2, 0.1, 0.,
+                             0.1, 0.2, 0., 0.3,
+                             0.2, 0., 0.1, 0.2) * 0.5,
+                             byrow = TRUE, nrow = n_nodes)
+    }
+    return(list(decays, baseline, adjacency))
+}
 
-benchmark <- system.time(
-    history <- simulateHawkes(lambda0, alpha, beta, end_time))
+n_nodes_sample <- c(1, 2, 4)
+end_times <- c(100000, 1000000, 10000000)
 
-print(sprintf("Simulating %i events costs %f secs",
-              length(history[[1]]) + length(history[[2]]),
-              benchmark[["elapsed"]]))
+for (n_nodes in n_nodes_sample) {
+    for (end_time in end_times) {
+        parameters <- get_parameters(2)
+        beta <- parameters[[1]]
+        lambda0 <- parameters[[2]]
+        alpha <- parameters[[3]]
+
+
+        benchmark <- system.time(
+            history <- simulateHawkes(lambda0, alpha, beta, end_time))
+
+        print(sprintf("Simulating %i events costs %f secs",
+                      Reduce("+", lapply(history, length)),
+                      benchmark[["elapsed"]]))
+    }
+}
+
