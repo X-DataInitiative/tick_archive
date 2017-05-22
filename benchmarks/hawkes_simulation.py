@@ -28,19 +28,20 @@ def get_parameters(n_nodes):
     return decays, baseline, adjacency
 
 
-if __name__ == "main":
-
+# if __name__ == "main":
+if True:
     n_nodes_sample = [1, 2, 4]
-    end_times = [100000, 1000000, 10000000]
+    end_times = [100000, 200000, 500000, 1000000, 2000000, 5000000, 10000000]
 
     for n_nodes in n_nodes_sample:
         decays, baseline, adjacency = get_parameters(n_nodes)
 
-        print("\nn nodes", n_nodes)
-        print('baseline\n', baseline)
-        print('decays\n', decays)
-        print('adjacency\n', adjacency)
-        print('adjacency * decays\n', adjacency * decays)
+        if False:
+            print("\nn nodes", n_nodes)
+            print('baseline\n', baseline)
+            print('decays\n', decays)
+            print('adjacency\n', adjacency)
+            print('adjacency * decays\n', adjacency * decays)
 
         for end_time in end_times:
             hawkes_exp_kernels = SimuHawkesExpKernels(
@@ -51,5 +52,10 @@ if __name__ == "main":
             hawkes_exp_kernels.simulate()
             simulation_time = time.clock() - start_time
 
-            print("Simulating {} events costs {} secs"
-                  .format(hawkes_exp_kernels.n_total_jumps, simulation_time))
+            if False:
+                print("Simulating {} events costs {} secs"
+                      .format(hawkes_exp_kernels.n_total_jumps, simulation_time))
+            else:
+                print("simulation,tick,{},{},{:.6f}"
+                      .format(n_nodes, hawkes_exp_kernels.n_total_jumps,
+                              simulation_time))

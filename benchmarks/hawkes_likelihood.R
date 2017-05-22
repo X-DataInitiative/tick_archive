@@ -20,8 +20,9 @@ n_nodes_sample <- c(1, 2, 4)
 end_times <- c(10000, 20000, 50000, 100000, 200000, 500000, 1000000)
 
 
-for (end_time in end_times) {
-    for (n_nodes in n_nodes_sample) {
+
+for (n_nodes in n_nodes_sample) {
+    for (end_time in end_times) {
 
         SIMULATION_FILE = sprintf("hawkes_data/hawkes_simulation_n_nodes_%i_end_time_%i.txt",
                                   n_nodes, end_time)
@@ -71,9 +72,9 @@ for (end_time in end_times) {
         #print(sprintf('Average time for one likelihood computation %.6f',
         #              average_time))
         n_events <- Reduce("+", lapply(history, length))
-        cat(sprintf('likelihood\thawkes R\t%i\t%i\t%.5f\n',
+        cat(sprintf('likelihood,hawkes R,%i,%i,%.5f\n',
                     n_nodes, n_events, average_time))
-        cat(sprintf('first likelihood\thawkes R\t%i\t%i\t%.5f\n',
+        cat(sprintf('first likelihood,hawkes R,%i,%i,%.5f\n',
                     n_nodes, n_events, average_time))
 
         # test first coeff

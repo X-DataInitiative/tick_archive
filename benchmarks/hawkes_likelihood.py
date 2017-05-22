@@ -79,17 +79,19 @@ for n_nodes in n_nodes_sample:
             loss = model.loss(test_coeff)
         average_compute_likelihood_time = (time.clock() - start_time) / len(test_coeffs)
 
-        # print('Time needed for first likelihood {:.6f}'
-        #       .format(first_likelihood_time))
-        #
-        # print('Average time to compute likelihood {:.6f}'
-        #       .format(average_compute_likelihood_time))
-        #
-        # print("Negative loglikelihood value on first test coeff {:.6f}"
-        #       .format(model.loss(test_coeffs[0]) * n_total_jumps))
+        if False:
+            print('Time needed for first likelihood {:.6f}'
+                  .format(first_likelihood_time))
 
-        print("likelihood\ttick\t{}\t{}\t{:.6f}"
-              .format(n_nodes, n_events, average_compute_likelihood_time))
+            print('Average time to compute likelihood {:.6f}'
+                  .format(average_compute_likelihood_time))
 
-        print("first likelihood\ttick\t{}\t{}\t{:.6f}"
-              .format(n_nodes, n_events, first_likelihood_time))
+            print("Negative loglikelihood value on first test coeff {:.6f}"
+                  .format(model.loss(test_coeffs[0]) * n_events))
+
+        else:
+            print("likelihood,tick,{},{},{:.6f}"
+                  .format(n_nodes, n_events, average_compute_likelihood_time))
+    
+            print("first likelihood,tick,{},{},{:.6f}"
+                  .format(n_nodes, n_events, first_likelihood_time))
