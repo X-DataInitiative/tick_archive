@@ -46,7 +46,8 @@ from setuptools.extension import Extension
 #                'DEBUG_SHAREDARRAY', 'DEBUG_VARRAY', 'DEBUG_VERBOSE']
 
 
-debug_flags = ['DEBUG_COSTLY_THROW']
+# debug_flags = ['DEBUG_COSTLY_THROW']
+debug_flags = []
 
 # If true, add compilation flags to use fast (but maybe inaccurate) math
 # See https://gcc.gnu.org/wiki/FloatingPointMath
