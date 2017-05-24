@@ -1,37 +1,11 @@
-import numpy as np
 import time
+from benchmarks.create_hawkes_data import get_parameters
 
 from tick.simulation import SimuHawkesExpKernels
 
-
-def get_parameters(n_nodes):
-    if n_nodes == 1:
-        decays = np.array([[1.5]])
-        baseline = np.array([0.4])
-        adjacency = np.array([[0.6]])
-
-    elif n_nodes == 2:
-        decays = np.array([[2., 2.], [2., 2.]])
-        baseline = np.array([0.25, 0.3])
-        adjacency = np.array([[.3, 0.], [.6, .2]])
-
-    elif n_nodes == 4:
-        decays = 0.5
-        baseline = np.array([0.17, 0., 0.12, 0.09])
-        adjacency = np.array([[.3, 0., 0.2, 0.1],
-                              [.3, .2, 0.1, 0.],
-                              [0.1, 0.2, 0., 0.3],
-                              [0.2, 0., 0.1, 0.2]])
-    else:
-        raise (ValueError("Unhandled number of nodes"))
-
-    return decays, baseline, adjacency
-
-
-# if __name__ == "main":
-if True:
-    n_nodes_sample = [1, 2, 4]
-    end_times = [100000, 200000, 500000, 1000000, 2000000, 5000000, 10000000]
+if __name__ == "__main__":
+    n_nodes_sample = [1, 2, 4, 16]
+    end_times = [100000]#, 200000, 500000, 1000000, 2000000, 5000000, 10000000]
 
     for n_nodes in n_nodes_sample:
         decays, baseline, adjacency = get_parameters(n_nodes)
