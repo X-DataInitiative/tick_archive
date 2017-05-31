@@ -107,7 +107,8 @@ end_times = [100, 10000, 20000, 50000, 100000, 200000, 500000, 1000000]
 n_test_coeffs = 100
 
 if __name__ == "__main__":
-    shutil.rmtree("hawkes_data")
+    if os.path.exists("hawkes_data"):
+        shutil.rmtree("hawkes_data")
     os.mkdir("hawkes_data")
     for n_nodes in [1, 2, 4, 16]:
         create_parameters(n_nodes)
