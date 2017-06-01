@@ -22,7 +22,8 @@ for n_thread in n_threads:
             n_events = sum(map(len, timestamps))
 
             start_time = time.clock()
-            learner = HawkesExpKern(decays=decays, max_iter=1000, tol=1e-7)
+            learner = HawkesExpKern(decays=decays, max_iter=1000, tol=1e-7,
+                                    n_threads=n_thread)
             learner.fit(timestamps, start=np.ones(
                 n_nodes * (1 + n_nodes)) * 1e-2)
 

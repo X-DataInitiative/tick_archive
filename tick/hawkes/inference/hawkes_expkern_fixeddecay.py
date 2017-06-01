@@ -140,13 +140,14 @@ class HawkesExpKern(LearnerHawkesParametric):
     def __init__(self, decays, gofit="least-squares", penalty="l2", C=1e3,
                  solver="agd", step=None, tol=1e-5, max_iter=100,
                  verbose=False, print_every=10, record_every=10,
-                 elastic_net_ratio=0.95, random_state=None):
+                 elastic_net_ratio=0.95, random_state=None, n_threads=1):
 
         self._actual_kwargs = \
             HawkesExpKern.__init__.actual_kwargs
 
         self._set_gofit(gofit)
         self.decays = decays
+        self.n_threads = n_threads
 
         LearnerHawkesParametric.__init__(
             self, penalty=penalty, C=C, solver=solver, step=step, tol=tol,
@@ -160,7 +161,7 @@ class HawkesExpKern(LearnerHawkesParametric):
 
     def _construct_model_obj(self):
         if self.gofit == "least-squares":
-            model = ModelHawkesExpKernLeastSq(self.decays)
+            model = ModelHawkesExpKernLeastSq(self.decays, n_threads=self.n_threads)
         elif self.gofit == "likelihood":
             # decays must be constant
             if isinstance(self.decays, np.ndarray):
