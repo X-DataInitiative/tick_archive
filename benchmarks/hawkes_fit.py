@@ -21,13 +21,13 @@ for n_thread in n_threads:
 
             n_events = sum(map(len, timestamps))
 
-            start_time = time.clock()
+            start_time = time.time()
             learner = HawkesExpKern(decays=decays, max_iter=1000, tol=1e-7,
                                     n_threads=n_thread)
             learner.fit(timestamps, start=np.ones(
                 n_nodes * (1 + n_nodes)) * 1e-2)
 
-            fit_time = time.clock() - start_time
+            fit_time = time.time() - start_time
 
             # end_time 100 is used for debug
             if end_time != 100:

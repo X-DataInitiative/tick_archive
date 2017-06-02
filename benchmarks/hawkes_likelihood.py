@@ -6,7 +6,7 @@ from benchmarks.create_hawkes_data import get_test_coeffs, get_decay, \
 from tick.optim.model import ModelHawkesFixedExpKernLogLik
 
 n_nodes_sample = [1, 2, 4, 16]
-end_times = [10000, 20000]#, 50000, 100000, 200000, 500000, 1000000]
+end_times = [10000, 20000, 50000, 100000, 200000, 500000, 1000000]
 n_threads = [1, 4, 16]
 
 for n_thread in n_threads:
@@ -21,19 +21,19 @@ for n_thread in n_threads:
             n_events = sum(map(len, timestamps))
 
             n_tries_first_likelihood = 10
-            start_time = time.clock()
+            start_time = time.time()
             for _ in range(n_tries_first_likelihood):
                 model = ModelHawkesFixedExpKernLogLik(decays,
                                                       n_threads=n_thread)
                 model.fit(timestamps)
                 model.loss(test_coeffs[0])
-            first_likelihood_time = ((time.clock() - start_time) /
+            first_likelihood_time = ((time.time() - start_time) /
                                      n_tries_first_likelihood)
 
-            start_time = time.clock()
+            start_time = time.time()
             for test_coeff in test_coeffs:
                 loss = model.loss(test_coeff)
-            average_compute_likelihood_time = (time.clock() - start_time) / len(
+            average_compute_likelihood_time = (time.time() - start_time) / len(
                 test_coeffs)
 
             # end_time 100 is used for debug

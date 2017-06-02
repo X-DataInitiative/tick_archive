@@ -7,8 +7,8 @@ library(data.table)
 
 source("hawkes_data.R")
 
-n_nodes_sample <- c(1, 2)#, 4, 16)
-end_times <- c(10000, 20000)#, 50000, 100000, 200000, 500000, 1000000)
+n_nodes_sample <- c(1, 2, 4, 16)
+end_times <- c(10000, 20000, 50000, 100000, 200000, 500000, 1000000)
 
 
 for (n_nodes in n_nodes_sample) {
