@@ -3,9 +3,15 @@ SIMULATION_FILE = "hawkes_data/hawkes_simulation_n_nodes_%i_end_time_%i.txt"
 TEST_COEFFS_FILE = "hawkes_data/hawkes_test_coeffs_n_nodes_%i.txt"
 
 get_parameters <- function(n_nodes) {
+    beta <- get_beta(n_nodes)
+    betas <- rep(beta, n_nodes)
     coeffs_file = sprintf(COEFFS_FILE, n_nodes)
     coeffs = unname(as.matrix(read.table(coeffs_file)))
-    return(list(decays, baseline, adjacency))
+    baseline <- coeffs[1:n_nodes]
+    adjacency <- matrix(
+                coeffs[(n_nodes+1): (n_nodes * (1 + n_nodes))] * beta,
+                byrow = TRUE, nrow = n_nodes)
+    return(list(betas, baseline, adjacency))
 }
 
 get_beta <- function(n_nodes) {
