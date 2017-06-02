@@ -26,15 +26,16 @@ if __name__ == "__main__":
                 end_time=end_time, seed=1039, verbose=False)
 
             start_time = time.time()
+            n_events = 0
             for _ in range(n_simulations):
                 hawkes_exp_kernels.reset()
                 hawkes_exp_kernels.simulate()
+                n_events += hawkes_exp_kernels.n_total_jumps
             simulation_time = time.time() - start_time
 
             if False:
                 print("Simulating {} events costs {} secs"
-                      .format(hawkes_exp_kernels.n_total_jumps, simulation_time))
+                      .format(n_events, simulation_time))
             else:
                 print("simulation,tick 1,{},{},{:.6f}"
-                      .format(n_nodes, hawkes_exp_kernels.n_total_jumps,
-                              simulation_time))
+                      .format(n_nodes, n_events, simulation_time))
