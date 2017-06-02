@@ -8,7 +8,7 @@ from benchmarks.create_hawkes_data import get_test_coeffs, get_decay, \
 from tick.inference import HawkesExpKern
 
 n_nodes_sample = [1, 2, 4, 16]
-end_times = [10000, 20000]  # , 50000, 100000, 200000, 500000, 1000000]
+end_times = [10000, 20000, 50000, 100000, 200000, 500000, 1000000]
 n_threads = [1, 4, 16]
 
 for n_thread in n_threads:
