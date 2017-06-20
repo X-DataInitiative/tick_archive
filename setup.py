@@ -278,7 +278,8 @@ def create_extension(extension_name, module_dir,
     library_dirs.extend(blas_info.get("library_dirs", []))
     define_macros.extend(blas_info.get("define_macros", []))
 
-    if any(key == 'HAVE_CBLAS' for key, _ in blas_info['define_macros']):
+    if 'define_macros' in blas_info and \
+            any(key == 'HAVE_CBLAS' for key, _ in blas_info['define_macros']):
         define_macros.append(('TICK_CBLAS_AVAILABLE', None))
 
     if include_modules is None:
@@ -741,6 +742,7 @@ class RunPyLint(TickCommand):
     def run():
         raise NotImplementedError('Running pylint from setup.py'
                                   'not supported yet')
+
 
 class RunPyTests(TickCommand):
     description = 'run tick Python tests'

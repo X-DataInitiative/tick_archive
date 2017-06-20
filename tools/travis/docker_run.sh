@@ -8,16 +8,7 @@ cd src
 
 eval "$(pyenv init -)"
 
-case "${PYTOK}" in
-    py34)
-        export TICK_PYVER="3.4.5"
-        ;;
-    py35)
-        export TICK_PYVER="3.5.2"
-        ;;
-esac
-
-pyenv global $TICK_PYVER
+pyenv global ${PYVER}
 
 python setup.py cpplint build_ext --inplace cpptest pytest
 

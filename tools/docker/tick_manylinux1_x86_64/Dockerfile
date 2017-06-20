@@ -24,12 +24,13 @@ RUN git clone https://github.com/google/googletest.git && \
 	rm -rf googletest
 
 # Installing necessary python versions
-RUN pyenv install 3.4.5 && pyenv install 3.5.2
+RUN pyenv install 3.4.6 && pyenv install 3.5.3 && pyenv install 3.6.1
 
-COPY requirements.txt requirements.txt 
+COPY requirements.txt requirements.txt
 
-RUN eval "$(pyenv init -)" && \ 
-	pyenv local 3.4.5 && pip install -r requirements.txt -U pip && \
-	pyenv local 3.5.2 && pip install -r requirements.txt -U pip
+RUN eval "$(pyenv init -)" && \
+	pyenv local 3.4.6 && pip install -r requirements.txt -U pip && \
+	pyenv local 3.5.3 && pip install -r requirements.txt -U pip && \
+	pyenv local 3.6.1 && pip install -r requirements.txt -U pip
 
 LABEL maintainer "soren.poulsen@polytechnique.edu"
