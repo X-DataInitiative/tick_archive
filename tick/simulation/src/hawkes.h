@@ -14,6 +14,10 @@
 #include "varray.h"
 #include "pp.h"
 
+#include "hawkes_baselines/baseline.h"
+#include "hawkes_baselines/constant_baseline.h"
+#include "hawkes_baselines/timefunction_baseline.h"
+
 #include "hawkes_kernels/hawkes_kernel.h"
 #include "hawkes_kernels/hawkes_kernel_0.h"
 #include "hawkes_kernels/hawkes_kernel_exp.h"

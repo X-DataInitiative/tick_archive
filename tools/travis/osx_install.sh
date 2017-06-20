@@ -5,7 +5,7 @@ set -e -x
 shell_session_update() { :; }
 
 brew update
-brew install swig pyenv
+brew install swig
 brew upgrade pyenv
 
 if [ ! -d googletest ] || [ ! -f googletest/CMakeLists.txt ]
