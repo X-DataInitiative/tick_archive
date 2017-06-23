@@ -41,7 +41,7 @@ class SGD : public StoSolver {
 
     void solve_sparse();
 
-    inline double get_step_t();
+    inline double get_step_t(const ulong t);
 };
 
 #endif  // TICK_OPTIM_SOLVER_SRC_SGD_H_
