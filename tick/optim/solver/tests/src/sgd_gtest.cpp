@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <tick/optim/model/src/linreg.h>
-#include <tick/optim/solver/src/sgd.h>
+#include <tick/optim/solver/src/sgd_minibatch.h>
 #include <prox_l2sq.h>
 
 TEST(SGD, Dims) {
@@ -14,7 +14,7 @@ TEST(SGD, Dims) {
   const ulong seed = 12;
   const ulong epoch_size = n_samples;
 
-  SGD solver{
+  SGDMinibatch solver{
       epoch_size, 0.01, RandType::perm, initial_step_size, seed
   };
 

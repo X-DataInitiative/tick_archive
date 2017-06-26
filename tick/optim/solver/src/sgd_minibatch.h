@@ -1,9 +1,6 @@
 //
-// Created by Martin Bompaire on 22/10/15.
-//
-
-#ifndef TICK_OPTIM_SOLVER_SRC_SGD_H_
-#define TICK_OPTIM_SOLVER_SRC_SGD_H_
+#ifndef TICK_OPTIM_SOLVER_SRC_SGD_MINIBATCH_H_
+#define TICK_OPTIM_SOLVER_SRC_SGD_MINIBATCH_H_
 
 #include "model.h"
 #include "../../prox/src/prox.h"
@@ -13,13 +10,13 @@
 #include "../../prox/src/prox.h"
 #include "sto_solver.h"
 
-class SGD : public StoSolver {
+class SGDMinibatch : public StoSolver {
  private:
     double step_t;
     double step;
 
  public:
-    SGD(ulong epoch_size = 0,
+  SGDMinibatch(ulong epoch_size = 0,
         double tol = 0.,
         RandType rand_type = RandType::unif,
         double step = 0.,
@@ -41,7 +38,7 @@ class SGD : public StoSolver {
 
     void solve_sparse();
 
-    inline double get_step_t();
+    inline double get_step_t(const ulong t);
 };
 
-#endif  // TICK_OPTIM_SOLVER_SRC_SGD_H_
+#endif  // TICK_OPTIM_SOLVER_SRC_SGD_MINIBATCH_H_

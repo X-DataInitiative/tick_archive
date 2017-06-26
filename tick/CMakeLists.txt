@@ -34,6 +34,7 @@ include_directories(
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/cereal/include)
+include_directories(${CMAKE_SOURCE_DIR}/..)
 
 add_subdirectory(base/src)
 add_subdirectory(base/array/src)
@@ -52,6 +53,8 @@ set(EXTRA_LIBS ${EXTRA_LIBS} array base random array_test simulation model prox
 find_package(GTest)
 
 if (${GTEST_FOUND})
+
+
     enable_testing()
     message(STATUS "Testing in C++ enabled")
 
