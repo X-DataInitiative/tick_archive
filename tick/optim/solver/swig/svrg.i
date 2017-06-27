@@ -16,12 +16,18 @@ public:
         Random  = 3
     };
 
+    enum class DelayedUpdatesMethod {
+      Exact = 1,
+      Proba = 2,
+    };
+
     SVRG(unsigned long epoch_size,
          double tol,
          RandType rand_type,
          double step,
          int seed,
-         VarianceReductionMethod variance_reduction = VarianceReductionMethod::Last);
+         VarianceReductionMethod variance_reduction = VarianceReductionMethod::Last,
+         DelayedUpdatesMethod delayed_updates = DelayedUpdatesMethod::Exact);
 
     void solve();
 
@@ -29,5 +35,9 @@ public:
 
     VarianceReductionMethod get_variance_reduction();
 
+    DelayedUpdatesMethod get_delayed_updates();
+
     void set_variance_reduction(VarianceReductionMethod variance_reduction);
+
+    void set_delayed_updates(DelayedUpdatesMethod delayed_updates);
 };
