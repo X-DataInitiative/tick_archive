@@ -246,6 +246,11 @@ def create_extension(extension_name, module_dir,
     library_dirs.extend(blas_info.get("library_dirs", []))
     define_macros.extend(blas_info.get("define_macros", []))
 
+    extra_compile_args.append("-fopenmp")
+    extra_compile_args.append("-Wno-unknown-pragmas")
+
+    extra_link_args.append("-lgomp")
+
     if any(key == 'HAVE_CBLAS' for key, _ in blas_info['define_macros']):
         define_macros.append(('TICK_CBLAS_AVAILABLE', None))
 
@@ -491,11 +496,13 @@ prox_core = create_extension(**prox_core_info)
 solver_core_info = {
     "cpp_files": ["sto_solver.cpp",
                   "sgd.cpp",
+                  "sgd_minibatch.cpp",
                   "svrg.cpp",
                   "sdca.cpp",
                   "adagrad.cpp"],
     "h_files": ["sto_solver.h",
                 "sgd.h",
+                "sgd_minibatch.h",
                 "svrg.h",
                 "sdca.h",
                 "adagrad.h",

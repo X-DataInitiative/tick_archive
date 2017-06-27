@@ -26,6 +26,9 @@ void SGD::solve() {
             model->grad_i(i, iterate, grad);
             step_t = get_step_t();
             iterate.mult_incr(grad, -step_t);
+
+//            TICK_WARNING() << step_t;
+
             prox->call(iterate, step_t, iterate);
         }
     }

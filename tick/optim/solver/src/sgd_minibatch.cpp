@@ -2,7 +2,7 @@
 // Created by Martin Bompaire on 22/10/15.
 //
 
-#include <tick/optim/solver/src/sgd_minibatch.h>
+#include "sgd_minibatch.h"
 
 #include <omp.h>
 
@@ -24,18 +24,16 @@ void SGDMinibatch::solve() {
     for (ulong i = 0; i < rand_indices.size(); ++i)
       rand_indices[i] = get_next_i();
 
-    ulong k = 0;
-
     std::vector<ArrayDouble> local_sum_grads{};
 
-    const ulong minibatch_size = 10;
+    const ulong minibatch_size = 4;
     const ulong num_batches = epoch_size / minibatch_size;
 
-    ulong total_t = t;
+    ulong local_t = t;
     #pragma omp parallel num_threads(4)
     {
-      const auto num_threads = omp_get_num_threads();
-      const auto thread_num = omp_get_thread_num();
+      const ulong num_threads = static_cast<ulong>(omp_get_num_threads());
+      const ulong thread_num = static_cast<ulong>(omp_get_thread_num());
 
       #pragma omp single
       local_sum_grads.resize(num_threads);
@@ -43,38 +41,51 @@ void SGDMinibatch::solve() {
       local_sum_grads[thread_num] = ArrayDouble(iterate.size());
 
       ArrayDouble local_grad = ArrayDouble(iterate.size());
-      ulong local_next_k;
-      const ulong batches_per_thread = num_batches / num_threads;
-      for (ulong batch_i = 0; batch_i < batches_per_thread; ++batch_i) {
 
-        local_sum_grads[thread_num].fill(1.0);
+      const ulong num_batches_per_thread = num_batches / num_threads;
+      for (ulong batch_i = 0; batch_i < num_batches_per_thread; ++batch_i) {
+
+        local_sum_grads[thread_num].init_to_zero();
 
         for (ulong j = 0; j < minibatch_size; ++j) {
+          const ulong k = (thread_num * num_batches_per_thread * minibatch_size) + batch_i * minibatch_size + j;
+          model->grad_i(rand_indices[k], iterate, local_grad);
 
-          #pragma omp atomic capture
-          local_next_k = k++;
-
-          const ulong rand_index = rand_indices[local_next_k];
-          model->grad_i(rand_index, iterate, local_grad);
-
-//          #pragma omp simd
-          for (ulong j = 0; j < iterate.size(); ++j) {
-            local_sum_grads[thread_num][j] *= local_grad[j];
+          #pragma omp simd
+          for (ulong f_i = 0; f_i < iterate.size(); ++f_i) {
+            local_sum_grads[thread_num][f_i] += local_grad[f_i];
           }
+        }
+
+        #pragma omp simd
+        for (ulong f_i = 0; f_i < iterate.size(); ++f_i) {
+          local_sum_grads[thread_num][f_i] *= (1.0 / minibatch_size);
         }
 
         #pragma omp barrier
 
-        #pragma omp single nowait
+        #pragma omp single
         {
-          for (ulong thread_i = 0; thread_i < num_threads; ++thread_i) {
-            const auto local_step_t = get_step_t(t + (batch_i + thread_i) * minibatch_size);
+          ArrayDouble sum_grad(iterate.size());
+          sum_grad.init_to_zero();
 
-            for (ulong j = 0; j < iterate.size(); ++j) {
-              iterate[j] += local_sum_grads[thread_i][j] * 0.06;
-              //prox->call(iterate, local_step_t, iterate);
+          for (ulong thread_i = 0; thread_i < num_threads; ++thread_i) {
+//            const auto local_step_t = get_step_t(t + (num_threads * batch_i * minibatch_size) + thread_i * (minibatch_size / 2));
+            const auto local_step_t = get_step_t(local_t);
+
+            #pragma omp simd
+            for (ulong f_i = 0; f_i < iterate.size(); ++f_i) {
+              sum_grad[f_i] += local_sum_grads[thread_i][f_i] * (-local_step_t);
             }
 
+            local_t += minibatch_size;
+          }
+
+          #pragma omp simd
+          for (ulong f_i = 0; f_i < iterate.size(); ++f_i) {
+
+            iterate[f_i] += (sum_grad[f_i] / num_threads);
+            //prox->call(iterate, local_step_t, iterate);
           }
         }
       }

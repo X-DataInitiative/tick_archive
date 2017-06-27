@@ -5,6 +5,7 @@ from .agd import AGD
 from .bfgs import BFGS
 from .scpg import SCPG
 from .sgd import SGD
+from .sgd_minibatch import SGDMinibatch
 from .svrg import SVRG
 from .sdca import SDCA
 from .gfb import GFB

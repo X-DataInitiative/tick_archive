@@ -14,6 +14,7 @@
 
 %include sto_solver.i
 %include sgd.i
+%include sgd_minibatch.i
 %include svrg.i
 %include sdca.i
 %include adagrad.i
