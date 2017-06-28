@@ -168,23 +168,44 @@ class HawkesConditionalLaw(Base):
     }
 
     def __init__(self, delta_lag=.1, min_lag=1e-4, max_lag=40, n_quad=50,
-                 max_support=40, min_support=1e-4, quad_method='gauss',
+                 max_support=40, min_support=1e-4, quad_method='gauss', quad_points=None,
                  marked_components=None, delayed_component=None,
-                 delay=0.00001, model=None, n_threads=1, claw_method='lin'):
+                 delay=0.00001, model=None, n_threads=1, claw_method='lin', claw_grid=None):
 
         Base.__init__(self)
 
         # Init the claw sampling parameters
-        self.delta_lag = delta_lag
-        self.max_lag = max_lag
-        self.min_lag = min_lag
-        self.claw_method = claw_method
+        if claw_grid is None:
+            self.delta_lag = delta_lag
+            self.max_lag = max_lag
+            self.min_lag = min_lag
+            self.claw_method = claw_method
+        else:
+            # check supplied grid
+            claw_grid = np.array(claw_grid)
+            if (claw_grid < 0).any():
+                raise ValueError("Negative values in 'claw_grid'. \
+                Only non-negative lags should be supplied in 'claw_grid.''")
+            self.delta_lag = None
+            self.min_lag = None
+            self.max_lag = claw_grid[-1]
+            self.claw_method = "user"
 
         # Init quadrature method
-        self.quad_method = quad_method
-        self.n_quad = n_quad
-        self.min_support = min_support
-        self.max_support = max_support
+        if quad_points is None:
+            self.quad_method = quad_method
+            self.n_quad = n_quad
+            self.min_support = min_support
+            self.max_support = max_support
+        else:
+            quad_points = np.array(quad_points)
+            if (quad_points < 0).any():
+                raise ValueError("Negative values supplied in 'quad_points'. \
+                Kernels can only be estimated on [0, \infty).")
+            self.quad_method = "user"
+            self.n_quad = quad_points.shape[0]
+            self.max_support = quad_points[-1]
+            self.min_support = None
 
         # Init marked components
         if marked_components is None:
@@ -193,7 +214,11 @@ class HawkesConditionalLaw(Base):
 
         # Init attributes
         self.n_realizations = 0
-        self._lags = None
+
+        if self.claw_method == "user":
+            self._lags = claw_grid
+        else:
+            self._lags = None
 
         self._compute_lags()
 
@@ -215,7 +240,10 @@ class HawkesConditionalLaw(Base):
 
         # quad_x : `np.ndarray`, shape=(n_quad, )
         # The abscissa of the quadrature points used for the Fredholm system
-        self._quad_x = None
+        if self.quad_method == "user":
+            self._quad_x = quad_points
+        else:
+            self._quad_x = None
 
         # quad_w : `np.ndarray`, shape=(n_quad, )
         # The weights the quadrature points used for the Fredholm system
@@ -632,6 +660,10 @@ class HawkesConditionalLaw(Base):
         if claw_method == "lin":
             self._lags = np.arange(0., self.max_lag, self.delta_lag)
 
+        if claw_method == "user":
+            # already set
+            pass
+
     def _compute_ints_claw(self):
         """Computes the claw and its integrals at the difference of
         quadrature points using a linear interpolation
@@ -767,6 +799,11 @@ class HawkesConditionalLaw(Base):
             self._quad_x = np.array(self._quad_x)
             self._quad_w = np.array(self._quad_w)
 
+        elif self.quad_method == 'user':
+            self._quad_w = self._quad_x[1:] - self._quad_x[:-1]
+            self._quad_w = np.append(self._quad_w, self._quad_w[-1])
+            self.n_quad = len(self._quad_x)
+
         # Computes the claw and its integrals at the difference of
         # quadrature points using a linear interpolation
         self._compute_ints_claw()
@@ -831,7 +868,7 @@ class HawkesConditionalLaw(Base):
                                                    j, l, j1, l1, fact,
                                                    n, n1)
 
-                        elif method == 'log' or method == 'lin':
+                        elif method == 'log' or method == 'lin' or method == 'user':
                             self._fill_M_for_log_lin(M, method, n_quad,
                                                      index_first, index, index1,
                                                      j, l, j1, l1, fact,
@@ -969,7 +1006,7 @@ class HawkesConditionalLaw(Base):
             if method in {'gauss', 'gauss-'}:
                 self._norm_ijl.append(np.sum(y * self._quad_w))
 
-            elif method in {'log', 'lin'}:
+            elif method in {'log', 'lin', 'user'}:
                 # interpolation (the one we used in the scheme) norm
                 self._norm_ijl.append(
                     np.sum((y[:-1] + y[1:]) / 2. * self._quad_w[:-1]))
