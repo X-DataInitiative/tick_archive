@@ -30,7 +30,7 @@ void SGDMinibatch::solve() {
     const ulong num_batches = epoch_size / minibatch_size;
 
     ulong local_t = t;
-    #pragma omp parallel num_threads(4)
+    #pragma omp parallel num_threads(1)
     {
       const ulong num_threads = static_cast<ulong>(omp_get_num_threads());
       const ulong thread_num = static_cast<ulong>(omp_get_thread_num());
@@ -44,11 +44,11 @@ void SGDMinibatch::solve() {
 
       const ulong num_batches_per_thread = num_batches / num_threads;
       for (ulong batch_i = 0; batch_i < num_batches_per_thread; ++batch_i) {
-
         local_sum_grads[thread_num].init_to_zero();
 
         for (ulong j = 0; j < minibatch_size; ++j) {
           const ulong k = (thread_num * num_batches_per_thread * minibatch_size) + batch_i * minibatch_size + j;
+
           model->grad_i(rand_indices[k], iterate, local_grad);
 
           #pragma omp simd
@@ -83,10 +83,10 @@ void SGDMinibatch::solve() {
 
           #pragma omp simd
           for (ulong f_i = 0; f_i < iterate.size(); ++f_i) {
-
             iterate[f_i] += (sum_grad[f_i] / num_threads);
-            //prox->call(iterate, local_step_t, iterate);
           }
+
+          prox->call(iterate, get_step_t(local_t), iterate);
         }
       }
     }
