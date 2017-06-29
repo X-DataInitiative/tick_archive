@@ -6,6 +6,7 @@
 #include <tick/optim/solver/src/sgd.h>
 #include <tick/optim/solver/src/sgd_minibatch.h>
 #include <tick/optim/solver/src/sgd_alt.h>
+#include <tick/optim/solver/src/sgd_hogwild.h>
 #include <tick/optim/prox/src/prox_l2sq.h>
 
 const ulong num_iterations = 2000;
@@ -68,7 +69,7 @@ void run(S& solver, SGDTestBase& fixture, const long unsigned int iterations = n
   solver.set_model(fixture.modelPtr);
   solver.set_rand_max(n_samples);
 
-  solver.set_prox(std::make_shared<ProxL2Sq>(1.0 / n_samples, false));
+//  solver.set_prox(std::make_shared<ProxL2Sq>(1.0 / n_samples, false));
 
   ArrayDouble out(n_features);
   double diff = 1e10;
@@ -106,6 +107,14 @@ TEST_F(SGDTest, SGDAlt) {
 
 TEST_F(SGDTest, Minibatch) {
   SGDMinibatch solver{
+      epoch_size, 0.01, RandType::perm, initial_step_size, seed
+  };
+
+  run(solver, *this);
+}
+
+TEST_F(SGDTest, Hogwild) {
+  SGDHogwild solver{
       epoch_size, 0.01, RandType::perm, initial_step_size, seed
   };
 
