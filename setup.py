@@ -143,6 +143,9 @@ if os.name == 'posix':
 build_dir = "build/lib.{}-{}".format(distutils.util.get_platform(),
                                      sys.version[0:3])
 
+# OpenMP
+use_openmp = True
+
 
 class SwigExtension(Extension):
     """This only adds information about extension construction, useful for
@@ -315,6 +318,10 @@ def create_extension(extension_name, module_dir,
     if 'define_macros' in blas_info and \
             any(key == 'HAVE_CBLAS' for key, _ in blas_info['define_macros']):
         define_macros.append(('TICK_CBLAS_AVAILABLE', None))
+
+    if use_openmp:
+        extra_compile_args.append('-fopenmp')
+        libraries.append('gomp')
 
     if include_modules is None:
         include_modules = []
