@@ -4,26 +4,48 @@ project(tick)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -ffast-math")
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
-find_package(BLAS)
+option(USE_MKL "Force tick to use MKL" OFF)
+option(USE_OPENMP "Force tick to use OpenMP" OFF)
+option(USE_BLAS "Force tick to use BLAS" OFF)
 
-set(TICK_BLAS_LIBRARIES "")
+set(TICK_EXTRA_LIBRARIES "")
 
-if (${BLAS_FOUND})
-    message(STATUS "Using BLAS")
-    add_definitions(-DTICK_CBLAS_AVAILABLE)
+if (${USE_MKL})
+    message(STATUS "Using MKL")
 
-    set(TICK_BLAS_LIBRARIES ${BLAS_LIBRARIES})
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${BLAS_LINKER_FLAGS}")
+    set(MKLROOT $ENV{MKLROOT})
+    include_directories(${MKLROOT}/include)
 
-    message(STATUS "BLAS Libraries: " ${BLAS_LIBRARIES})
-    message(STATUS "BLAS Linker flags: " ${BLAS_LINKER_FLAGS})
+    set(TICK_EXTRA_LIBRARIES mkl_intel_lp64 mkl_gnu_thread mkl_core gomp pthread m dl)
+
+    add_definitions(-DTICK_USE_MKL)
+elseif(${USE_BLAS})
+    find_package(BLAS)
+
+    if (${BLAS_FOUND})
+	message(STATUS "Using BLAS")
+        add_definitions(-DTICK_CBLAS_AVAILABLE)
+
+        set(TICK_EXTRA_LIBRARIES ${BLAS_LIBRARIES})
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${BLAS_LINKER_FLAGS}")
+
+        message(STATUS "BLAS Libraries: " ${BLAS_LIBRARIES})
+        message(STATUS "BLAS Linker flags: " ${BLAS_LINKER_FLAGS})
+    endif()
+else()
 endif()
 
-find_package(OpenMP)
+if (${USE_OPENMP})
+    find_package(OpenMP)
 
-if (${OPENMP_FOUND})
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    if (${OPENMP_FOUND})
+	message(STATUS "Using OpenMP")
+
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+
+        add_definitions(-DTICK_USE_OPENMP)
+    endif()
 endif()
 
 include_directories(
@@ -85,7 +107,7 @@ if (${GTEST_FOUND})
         ${PYTHON_LIBRARIES}
         ${GTEST_BOTH_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
-        ${TICK_BLAS_LIBRARIES})
+        ${TICK_EXTRA_LIBRARIES})
 
     if(APPLE)
         set(TICK_INSTALL_RPATH "${CMAKE_CURRENT_SOURCE_DIR}/base/build;${CMAKE_CURRENT_SOURCE_DIR}/base/array/build;${CMAKE_CURRENT_SOURCE_DIR}/optim/model/build;${CMAKE_CURRENT_SOURCE_DIR}/random/build;${CMAKE_CURRENT_SOURCE_DIR}/simulation/build")
@@ -94,6 +116,7 @@ if (${GTEST_FOUND})
         set(CMAKE_INSTALL_RPATH "${TICK_INSTALL_RPATH}")
 
         find_library(ACCELERATE_LIBRARY Accelerate)
+
         mark_as_advanced(ACCELERATE_LIBRARY)
         set(TICK_TEST_LIBS ${TICK_TEST_LIBS} ${ACCELERATE_LIBRARY})
     else(APPLE)
@@ -119,3 +142,5 @@ else()
             echo "Could not run C++ checks - gtest framework not found"
             )
 endif()
+
+add_subdirectory(benchmark)

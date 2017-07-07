@@ -49,7 +49,7 @@ struct vector_operations_unoptimized {
 }  // namespace detail
 }  // namespace tick
 
-#if !defined(TICK_CBLAS_AVAILABLE)
+#if !defined(TICK_CBLAS_AVAILABLE) && !defined(TICK_USE_MKL)
 
 namespace tick {
 
@@ -69,9 +69,17 @@ using vector_operations = detail::vector_operations_unoptimized<T>;
 
 #else
 
+#if defined(TICK_USE_MKL)
+
+#pragma message("Using experimental MKL implementation")
+#include <mkl.h>
+#else
+
 extern "C" {
 #include <cblas.h>
+
 }
+#endif
 
 #endif  // defined(__APPLE__)
 
