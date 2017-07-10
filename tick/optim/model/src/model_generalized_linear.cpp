@@ -84,7 +84,7 @@ void ModelGeneralizedLinear::grad(const ArrayDouble &coeffs,
                                   out,
                                   coeffs);
 
-  double one_over_n_samples = 1.0 / n_samples;
+  const double one_over_n_samples = 1.0 / n_samples;
 
   out *= one_over_n_samples;
 }

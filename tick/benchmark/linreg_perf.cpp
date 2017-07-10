@@ -11,12 +11,12 @@ int main(int nargs, char** args) {
     num_threads = std::stoul(args[1]);
 
   const ulong num_iterations = 100;
-  const ulong num_events_per_node = 100;
-  const ulong num_nodes = 20;
+  const ulong num_events_per_node = 20;
+  const ulong num_nodes = 10;
   const ulong num_decays = 10;
   const ulong num_baselines = 1;
 
-  const ulong num_runs = 20;
+  const ulong num_runs = 5;
 
   std::mt19937 gen(1337);
   std::uniform_real_distribution<> unif{};

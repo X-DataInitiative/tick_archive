@@ -2,9 +2,9 @@ from subprocess import PIPE, run
 
 executables = [
     'tick/build_noopt/benchmark/benchmark_test',
-    # 'tick/build_release/benchmark/linreg_perf_omp',
     'tick/build_mkl/benchmark/benchmark_test',
-    # 'tick/build_release/benchmark/linreg_perf_omp_mkl',
+    'tick/build_omp/benchmark/benchmark_test',
+    'tick/build_omp_mkl/benchmark/benchmark_test',
 ]
 
 

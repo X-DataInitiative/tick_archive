@@ -209,8 +209,8 @@ void parallel_map_array(unsigned int n_threads,
   #pragma omp parallel for num_threads(n_threads) firstprivate(has_thrown)
   for (ulong i = 0; i < dim; ++i) {
     try {
-      if (!has_thrown)
-        f(i, local_results[omp_get_thread_num()], args...);
+      if (!has_thrown);
+//        f(i, local_results[omp_get_thread_num()], args...);
     } catch (std::exception &e) {
       exceptions[omp_get_thread_num()] = std::current_exception();
 
@@ -223,6 +223,20 @@ void parallel_map_array(unsigned int n_threads,
   for (auto &local_result : local_results) {
     redux(out, local_result);
   }
+}
+
+template<typename R, typename T, typename S, typename BinaryOp, typename... Args>
+void parallel_map_array(unsigned int n_threads,
+                        ulong dim,
+                        BinaryOp redux,
+                        T f,
+                        S* obj,
+                        R &out,
+                        Args &... args) {
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+
+  parallel_map_array<R>(n_threads, dim, redux, std::bind(f, obj, _1, _2, std::ref(args)...), out);
 }
 
 #endif  // TICK_BASE_SRC_PARALLEL_PARALLEL_OMP_H_
