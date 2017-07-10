@@ -9,8 +9,8 @@ int main(int nargs, char** args) {
     num_threads = std::stoul(args[1]);
 
   const ulong num_iterations = 100;
-  const ulong num_events_per_node = 20;
-  const ulong num_nodes = 10;
+  const ulong num_events_per_node = 30;
+  const ulong num_nodes = 20;
   const ulong num_decays = 10;
   const ulong num_baselines = 1;
 
@@ -27,9 +27,7 @@ int main(int nargs, char** args) {
 
     // Test will fail if process array is not sorted
     double end_time = 0.0;
-    for (ulong j = 0; j < decays.size(); ++j) {
-      decays[j] = j + 1.0;
-
+    for (ulong j = 0; j < num_nodes; ++j) {
       double t = 0.0;
 
       ArrayDouble timestamps_0(num_events_per_node);
@@ -44,9 +42,12 @@ int main(int nargs, char** args) {
       end_time = std::max(end_time, t);
     }
 
+    for (ulong j = 0; j < decays.size(); ++j) {
+      decays[j] = j + 1.0;
+    }
+
     ModelHawkesFixedSumExpKernLeastSq model(decays, num_baselines, end_time, num_threads);
     model.set_data(timestamps, end_time);
-
 
     ArrayDouble coeffs = ArrayDouble(num_nodes * num_baselines + num_nodes * num_nodes * decays.size());
 
