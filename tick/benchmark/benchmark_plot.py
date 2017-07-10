@@ -1,18 +1,13 @@
-from subprocess import PIPE, run
-from io import StringIO
+import datetime
+import os
+
 import matplotlib.pyplot as plt
-
 import pandas as pd
+import sys
 
-executables = [
-    'tick/build_noopt/benchmark/benchmark_test',
-    'tick/build_mkl/benchmark/benchmark_test',
-    'tick/build_omp/benchmark/benchmark_test',
-    'tick/build_omp_mkl/benchmark/benchmark_test',
-]
+from benchmark_util import executables, get_filename
 
-def get_fn(ex):
-    return ex.replace('/', '_') + ".dat"
+results_dir = sys.argv[1]
 
 cols = ["time", "iterations", "threads", "coeffs", "omp", "mkl", "exectuable"]
 
@@ -20,8 +15,11 @@ plt.style.use('fivethirtyeight')
 
 df = pd.DataFrame(columns=cols)
 
-for fn in [get_fn(ex) for ex in executables]:
-    local_df = pd.read_csv(fn, sep='\t', names=cols, index_col=False)
+for fn in [get_filename(ex) for ex in executables]:
+    full_path = os.path.join(results_dir, fn)
+    print("Reading from", full_path)
+
+    local_df = pd.read_csv(full_path, sep='\t', names=cols, index_col=False)
     df = df.append(local_df)
 
 df['iterations'] = df['iterations'].astype(int)
@@ -70,8 +68,7 @@ for (omp, mkl), g in groupby_omp_mkl:
     lines = [l1, l2]
 
 ax2.legend()
-# plt.figlegend(lines, legends, loc='upper right')
 
 plt.tight_layout()
-plt.savefig("out.png")
+plt.savefig("benchmark_hawkes_%s.png" % results_dir.replace('/', '_'))
 plt.show()

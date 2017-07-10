@@ -1,24 +1,18 @@
+import os
 from subprocess import PIPE, run
 
-executables = [
-    'tick/build_noopt/benchmark/benchmark_test',
-    'tick/build_mkl/benchmark/benchmark_test',
-    'tick/build_omp/benchmark/benchmark_test',
-    'tick/build_omp_mkl/benchmark/benchmark_test',
-]
+import datetime
+from benchmark_util import executables, get_filename
 
+output_dir = 'results/{:%Y_%m_%d_%H_%M_%S}'.format(datetime.datetime.now())
 
-def get_fn(ex):
-    return ex.replace('/', '_') + ".dat"
-
-
-for fn in [get_fn(ex) for ex in executables]:
-    with open(fn, 'w'): pass
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
 
 use_existing_data = False
 if not use_existing_data:
     for ex in executables:
-        with open(get_fn(ex), 'a') as f:
+        with open(os.path.join(output_dir, get_filename(ex)), 'w') as f:
             print("Writing to", f)
 
             for num_threads in (1, 2, 4, 8):  # 16, 24, 32, 40, 48, 56, 64):
@@ -32,3 +26,5 @@ if not use_existing_data:
 
             f.flush()
         print(ex, "Done")
+
+print("Output in %s" % output_dir)

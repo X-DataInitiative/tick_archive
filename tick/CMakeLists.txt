@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(tick)
 
+include_directories(${CMAKE_SOURCE_DIR}/..)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
 set(CMAKE_BUILD_TYPE Release)
 
