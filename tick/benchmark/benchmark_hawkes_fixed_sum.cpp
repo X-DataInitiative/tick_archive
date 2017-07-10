@@ -1,5 +1,3 @@
-
-
 #include <tick/optim/model/src/hawkes_fixed_sumexpkern_leastsq.h>
 
 #include <random>
