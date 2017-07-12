@@ -146,3 +146,6 @@ else()
             echo "Could not run C++ checks - gtest framework not found"
             )
 endif()
+
+add_subdirectory(benchmark)
+
