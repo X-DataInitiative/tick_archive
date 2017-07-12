@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(tick)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -ffast-math")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -ffast-math -pthread")
+set(CMAKE_BUILD_TYPE Release)
+
 include_directories(${CMAKE_SOURCE_DIR}/..)
 
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
@@ -144,5 +146,3 @@ else()
             echo "Could not run C++ checks - gtest framework not found"
             )
 endif()
-
-add_subdirectory(benchmark)

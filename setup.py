@@ -277,6 +277,7 @@ def create_extension(extension_name, module_dir,
                               '-I./tick/base/src/',
                               sparse_indices_flag,
                               '-std=c++11',
+                              '-ffast-math',
                               '-O3',
                               ]
 
