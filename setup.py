@@ -71,6 +71,11 @@ if sys.platform == 'darwin':
     vars = sysconfig.get_config_vars()
     vars['LDSHARED'] = vars['LDSHARED'].replace('-bundle', '-dynamiclib')
 
+# If true, add compilation flags to use fast (but maybe inaccurate) math
+# See https://gcc.gnu.org/wiki/FloatingPointMath
+use_fast_math = True
+
+
 # We need to understand what kind of ints are used by the sparse matrices of
 # scipy
 sparsearray = csr_matrix(
@@ -244,7 +249,11 @@ def create_extension(extension_name, module_dir,
                               '-I./tick/base/src/',
                               sparse_indices_flag,
                               '-std=c++11',
+                              '-O3',
                               ]
+
+    if use_fast_math:
+        min_extra_compile_args.append('-ffast-math')
 
     if extra_compile_args is None:
         extra_compile_args = min_extra_compile_args
