@@ -177,7 +177,7 @@ void ModelHawkesFixedSumExpKernLeastSq::compute_weights_i(const ulong i) {
       L[p] = get_baseline_interval_length(p);
   }
 
-  ulong n_decays = decays.size();
+  const ulong n_decays = decays.size();
 
   ArrayDouble &timestamps_i = *timestamps[i];
   ArrayDouble2d H(n_nodes, n_decays);
@@ -191,31 +191,32 @@ void ModelHawkesFixedSumExpKernLeastSq::compute_weights_i(const ulong i) {
   ArrayDouble2d &E_i = E[i];
   ArrayDouble &K_i = K[i];
 
-  ulong N_i = timestamps_i.size();
+  const ulong N_i = timestamps_i.size();
   for (ulong k = 0; k < N_i; ++k) {
-    double t_k_i = timestamps_i[k];
+    const double t_k_i = timestamps_i[k];
 
     const ulong p_interval = get_baseline_interval(t_k_i);
     K_i[p_interval] += 1;
 
     for (ulong j = 0; j < n_nodes; ++j) {
       ArrayDouble &timestamps_j = *timestamps[j];
-      ulong N_j = timestamps_j.size();
+      const ulong N_j = timestamps_j.size();
 
       if (k > 0) {
-        double t_k_minus_one_i = timestamps_i[k - 1];
+        const double t_k_minus_one_i = timestamps_i[k - 1];
 
         for (ulong u = 0; u < n_decays; ++u) {
-          double decay_u = decays[u];
+          const double decay_u = decays[u];
+
           H(j, u) *= cexp(-decay_u * (t_k_i - t_k_minus_one_i));
         }
       }
 
       while (l[j] < N_j && timestamps_j[l[j]] < t_k_i) {
-        double t_l_j = timestamps_j[l[j]];
+        const double t_l_j = timestamps_j[l[j]];
 
         for (ulong u = 0; u < n_decays; ++u) {
-          double decay_u = decays[u];
+          const double decay_u = decays[u];
           H(j, u) += decay_u * cexp(-decay_u * (t_k_i - t_l_j));
         }
 
@@ -223,16 +224,20 @@ void ModelHawkesFixedSumExpKernLeastSq::compute_weights_i(const ulong i) {
       }
 
       for (ulong u = 0; u < n_decays; ++u) {
-        double decay_u = decays[u];
         C_i(j, u) += H(j, u);
+      }
+
+      for (ulong u = 0; u < n_decays; ++u) {
+        const double decay_u = decays[u];
 
         for (ulong u1 = 0; u1 < n_decays; ++u1) {
-          double decay_u1 = decays[u1];
+          const double decay_u1 = decays[u1];
 
           // we fill E_i,j,u',u
-          double ratio = decay_u1 / (decay_u1 + decay_u);
-          double tmp = 1 - cexp(-(decay_u1 + decay_u) * (end_time - t_k_i));
-          E_i(j, u1 * n_decays + u) += ratio * tmp * H(j, u);
+          const double ratio = decay_u / (decay_u + decay_u1);
+          const double tmp = 1.0 - cexp(- (decay_u + decay_u1) * (end_time - t_k_i));
+
+          E_i(j, u * n_decays + u1) += ratio * tmp * H(j, u1);
         }
       }
     }
