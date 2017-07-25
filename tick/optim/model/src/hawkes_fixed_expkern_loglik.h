@@ -187,6 +187,22 @@ class ModelHawkesFixedExpKernLogLik : public ModelHawkesSingle {
    */
   void hessian_i(const ulong i, const ArrayDouble &coeffs, ArrayDouble &out);
 
+  /**
+   * @brief Return the start of alpha i coefficients in a coeffs vector
+   * @param i : selected dimension
+   */
+  ulong get_alpha_i_first_index(const ulong i) const {
+    return n_nodes + i * n_nodes;
+  }
+
+  /**
+   * @brief Return the end of alpha i coefficients in a coeffs vector
+   * @param i : selected dimension
+   */
+  ulong get_alpha_i_last_index(const ulong i) const {
+    return n_nodes + (i + 1) * n_nodes;
+  }
+
  public:
   ulong get_n_coeffs() const override;
 

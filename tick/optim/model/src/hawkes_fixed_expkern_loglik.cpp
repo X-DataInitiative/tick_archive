@@ -171,19 +171,17 @@ void ModelHawkesFixedExpKernLogLik::sampled_i_to_index(const ulong sampled_i,
 
 double ModelHawkesFixedExpKernLogLik::loss_dim_i(const ulong i,
                                                  const ArrayDouble &coeffs) {
-  const ArrayDouble mu = view(coeffs, 0, n_nodes);
-  const ArrayDouble alpha = view(coeffs, n_nodes, n_nodes + n_nodes * n_nodes);
+  const double mu_i = coeffs[i];
+  const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
   double loss = 0;
-  loss += end_time * mu[i];
+  loss += end_time * mu_i;
 
   for (ulong k = 0; k < (*n_jumps_per_node)[i]; ++k) {
     const ArrayDouble g_i_k = view_row(g[i], k);
 
-    double s = mu[i];
-    for (ulong j = 0; j < n_nodes; j++) {
-      s += alpha[j + i * n_nodes] * g_i_k[j];
-    }
+    double s = mu_i;
+    s += alpha_i.dot(g_i_k);
     if (s <= 0) {
       TICK_ERROR("The sum of the influence on someone cannot be negative. "
                      "Maybe did you forget to add a positive constraint to "
@@ -192,17 +190,15 @@ double ModelHawkesFixedExpKernLogLik::loss_dim_i(const ulong i,
     loss -= log(s);
   }
 
-  for (ulong j = 0; j < n_nodes; j++) {
-    loss += alpha[j + i * n_nodes] * sum_G[i][j];
-  }
+  loss += alpha_i.dot(sum_G[i]);
   return loss;
 }
 
 double ModelHawkesFixedExpKernLogLik::loss_i_k(const ulong i,
                                                const ulong k,
                                                const ArrayDouble &coeffs) {
-  const ArrayDouble mu = view(coeffs, 0, n_nodes);
-  const ArrayDouble alpha = view(coeffs, n_nodes, n_nodes + n_nodes * n_nodes);
+  const double mu_i = coeffs[i];
+  const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
   double loss = 0;
 
   const ArrayDouble g_i_k = view_row(g[i], k);
@@ -211,13 +207,11 @@ double ModelHawkesFixedExpKernLogLik::loss_i_k(const ulong i,
   // Both are correct, just a question of point of view
   const double t_i_k = k == (*n_jumps_per_node)[i] - 1 ? end_time : (*timestamps[i])[k];
   const double t_i_k_minus_one = k == 0 ? 0 : (*timestamps[i])[k - 1];
-  loss += (t_i_k - t_i_k_minus_one) * mu[i];
+  loss += (t_i_k - t_i_k_minus_one) * mu_i;
   //  loss += end_time * mu[i] / (*n_jumps_per_node)[i];
 
-  double s = mu[i];
-  for (ulong j = 0; j < n_nodes; j++) {
-    s += alpha[j + i * n_nodes] * g_i_k[j];
-  }
+  double s = mu_i;
+  s += alpha_i.dot(g_i_k);
 
   if (s <= 0) {
     TICK_ERROR("The sum of the influence on someone cannot be negative. Maybe did "
@@ -226,50 +220,44 @@ double ModelHawkesFixedExpKernLogLik::loss_i_k(const ulong i,
   }
   loss -= log(s);
 
-  for (ulong j = 0; j < n_nodes; j++) {
-    double G_i_k_j = G_i_k[j];
-    if (k == (*n_jumps_per_node)[i] - 1) G_i_k_j += G[i](k + 1, j);
-    loss += alpha[j + i * n_nodes] * G_i_k_j;
-  }
+  loss += alpha_i.dot(G_i_k);
+  if (k == (*n_jumps_per_node)[i] - 1)
+    loss += alpha_i.dot(view_row(G[i], k + 1));
+
   return loss;
 }
 
 void ModelHawkesFixedExpKernLogLik::grad_dim_i(const ulong i,
                                                const ArrayDouble &coeffs,
                                                ArrayDouble &out) {
-  const ArrayDouble mu = view(coeffs, 0, n_nodes);
-  const ArrayDouble alpha = view(coeffs, n_nodes, n_nodes + n_nodes * n_nodes);
-  ArrayDouble grad_mu = view(out, 0, n_nodes);
-  ArrayDouble grad_alpha = view(out, n_nodes, n_nodes + n_nodes * n_nodes);
+  const double mu_i = coeffs[i];
+  const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
-  grad_mu[i] += end_time;
+  double &grad_mu_i = out[i];
+  ArrayDouble grad_alpha_i = view(out, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
+
+  grad_mu_i += end_time;
 
   for (ulong k = 0; k < (*n_jumps_per_node)[i]; ++k) {
     const ArrayDouble g_i_k = view_row(g[i], k);
-    double s = mu[i];
+    double s = mu_i;
+    s += alpha_i.dot(g_i_k);
 
-    for (ulong j = 0; j < n_nodes; j++) {
-      s += alpha[j + i * n_nodes] * g_i_k[j];
-    }
-
-    grad_mu[i] -= 1. / s;
-    for (ulong j = 0; j < n_nodes; j++) {
-      grad_alpha[j + i * n_nodes] -= g_i_k[j] / s;
-    }
+    grad_mu_i -= 1. / s;
+    grad_alpha_i.mult_incr(g_i_k, -1. / s);
   }
 
-  for (ulong j = 0; j < n_nodes; j++) {
-    grad_alpha[j + i * n_nodes] += sum_G[i][j];
-  }
+  grad_alpha_i.mult_incr(sum_G[i], 1);
 }
 
 void ModelHawkesFixedExpKernLogLik::grad_i_k(const ulong i, const ulong k,
                                              const ArrayDouble &coeffs,
                                              ArrayDouble &out) {
-  const ArrayDouble mu = view(coeffs, 0, n_nodes);
-  const ArrayDouble alpha = view(coeffs, n_nodes, n_nodes + n_nodes * n_nodes);
-  ArrayDouble grad_mu = view(out, 0, n_nodes);
-  ArrayDouble grad_alpha = view(out, n_nodes, n_nodes + n_nodes * n_nodes);
+  const double mu_i = coeffs[i];
+  const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
+
+  double &grad_mu_i = out[i];
+  ArrayDouble grad_alpha_i = view(out, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
   const ArrayDouble g_i_k = view_row(g[i], k);
   const ArrayDouble G_i_k = view_row(G[i], k);
@@ -277,44 +265,38 @@ void ModelHawkesFixedExpKernLogLik::grad_i_k(const ulong i, const ulong k,
   // Both are correct, just a question of point of view
   const double t_i_k = k == (*n_jumps_per_node)[i] - 1 ? end_time : (*timestamps[i])[k];
   const double t_i_k_minus_one = k == 0 ? 0 : (*timestamps[i])[k - 1];
-  grad_mu[i] += t_i_k - t_i_k_minus_one;
+  grad_mu_i += t_i_k - t_i_k_minus_one;
   //  grad_mu[i] += end_time / (*n_jumps_per_node)[i];
 
-  double s = mu[i];
+  double s = mu_i;
+  s += alpha_i.dot(g_i_k);
 
-  for (ulong j = 0; j < n_nodes; j++) {
-    s += alpha[j + i * n_nodes] * g_i_k[j];
-  }
+  grad_mu_i -= 1. / s;
+  grad_alpha_i.mult_incr(g_i_k, -1. / s);
+  grad_alpha_i.mult_incr(G_i_k, 1.);
 
-  grad_mu[i] -= 1. / s;
-
-  for (ulong j = 0; j < n_nodes; j++) {
-    double G_i_k_j = G_i_k[j];
-    if (k == (*n_jumps_per_node)[i] - 1) G_i_k_j += G[i](k + 1, j);
-    grad_alpha[j + i * n_nodes] += G_i_k_j - g_i_k[j] / s;
-  }
+  if (k == (*n_jumps_per_node)[i] - 1)
+    grad_alpha_i.mult_incr(view_row(G[i], k + 1), 1.);
 }
 
 double ModelHawkesFixedExpKernLogLik::loss_and_grad_dim_i(const ulong i,
                                                           const ArrayDouble &coeffs,
                                                           ArrayDouble &out) {
-  const ArrayDouble mu = view(coeffs, 0, n_nodes);
-  const ArrayDouble alpha = view(coeffs, n_nodes, n_nodes + n_nodes * n_nodes);
+  const double mu_i = coeffs[i];
+  const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
-  ArrayDouble grad_mu = view(out, 0, n_nodes);
-  ArrayDouble grad_alpha = view(out, n_nodes, n_nodes + n_nodes * n_nodes);
+  double &grad_mu_i = out[i];
+  ArrayDouble grad_alpha_i = view(out, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
   double loss = 0;
 
-  grad_mu[i] += end_time;
-  loss += end_time * mu[i];
+  grad_mu_i += end_time;
+  loss += end_time * mu_i;
   for (ulong k = 0; k < (*n_jumps_per_node)[i]; k++) {
     const ArrayDouble g_i_k = view_row(g[i], k);
 
-    double s = mu[i];
-    for (ulong j = 0; j < n_nodes; j++) {
-      s += alpha[j + i * n_nodes] * g_i_k[j];
-    }
+    double s = mu_i;
+    s += alpha_i.dot(g_i_k);
 
     if (s <= 0) {
       TICK_ERROR("The sum of the influence on someone cannot be negative. Maybe did "
@@ -322,17 +304,13 @@ double ModelHawkesFixedExpKernLogLik::loss_and_grad_dim_i(const ulong i,
                      "proximal operator");
     }
     loss -= log(s);
-    grad_mu[i] -= 1. / s;
+    grad_mu_i -= 1. / s;
 
-    for (ulong j = 0; j < n_nodes; j++) {
-      grad_alpha[j + i * n_nodes] -= g_i_k[j] / s;
-    }
+    grad_alpha_i.mult_incr(g_i_k, -1. / s);
   }
 
-  for (ulong j = 0; j < n_nodes; j++) {
-    grad_alpha[j + i * n_nodes] += sum_G[i][j];
-    loss += alpha[j + i * n_nodes] * sum_G[i][j];
-  }
+  loss += alpha_i.dot(sum_G[i]);
+  grad_alpha_i.mult_incr(sum_G[i], 1);
 
   return loss;
 }
@@ -340,22 +318,23 @@ double ModelHawkesFixedExpKernLogLik::loss_and_grad_dim_i(const ulong i,
 double ModelHawkesFixedExpKernLogLik::hessian_norm_dim_i(const ulong i,
                                                          const ArrayDouble &coeffs,
                                                          const ArrayDouble &vector) {
-  const ArrayDouble mu = view(coeffs, 0, n_nodes);
-  const ArrayDouble alpha = view(coeffs, n_nodes, n_nodes + n_nodes * n_nodes);
-  ArrayDouble d_mu = view(vector, 0, n_nodes);
-  ArrayDouble d_alpha = view(vector, n_nodes, n_nodes + n_nodes * n_nodes);
+  const double mu_i = coeffs[i];
+  const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
+
+  double d_mu_i = vector[i];
+  ArrayDouble d_alpha_i = view(vector, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
   double hess_norm = 0;
 
   for (ulong k = 0; k < (*n_jumps_per_node)[i]; k++) {
     const ArrayDouble g_i_k = view_row(g[i], k);
 
-    double S = d_mu[i];
-    double s = mu[i];
-    for (ulong j = 0; j < n_nodes; j++) {
-      S += d_alpha[j + i * n_nodes] * g_i_k[j];
-      s += alpha[j + i * n_nodes] * g_i_k[j];
-    }
+    double S = d_mu_i;
+    S += d_alpha_i.dot(g_i_k);
+
+    double s = mu_i;
+    s += alpha_i.dot(g_i_k);
+
     double tmp = S / s;
     hess_norm += tmp * tmp;
   }
@@ -368,8 +347,7 @@ void ModelHawkesFixedExpKernLogLik::hessian_i(const ulong i,
   if (!weights_computed) TICK_ERROR("Please compute weights before calling hessian_i");
 
   const double mu_i = coeffs[i];
-  const ulong start_alpha_i = n_nodes + n_nodes * i;
-  const ArrayDouble alpha_i = view(coeffs, start_alpha_i, start_alpha_i + n_nodes);
+  const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
   const ulong start_mu_line = i * (n_nodes + 1);
   const ulong block_start = (i + 1) * n_nodes * (n_nodes + 1);
