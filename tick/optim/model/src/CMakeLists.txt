@@ -9,6 +9,7 @@ add_library(tick_model EXCLUDE_FROM_ALL
         poisreg.cpp poisreg.h
 		base/hawkes_model.cpp base/hawkes_model.h
         hawkes_fixed_expkern_loglik.h hawkes_fixed_expkern_loglik.cpp
+		hawkes_fixed_sumexpkern_loglik.h hawkes_fixed_sumexpkern_loglik.cpp
         hawkes_fixed_expkern_leastsq.h hawkes_fixed_expkern_leastsq.cpp
         hawkes_fixed_sumexpkern_leastsq.h hawkes_fixed_sumexpkern_leastsq.cpp
         coxreg_partial_lik.cpp coxreg_partial_lik.h
