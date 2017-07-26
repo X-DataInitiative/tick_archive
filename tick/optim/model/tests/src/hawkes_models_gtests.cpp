@@ -7,9 +7,11 @@
 #define DEBUG_COSTLY_THROW 1
 
 #include <gtest/gtest.h>
+#include <hawkes_fixed_sumexpkern_loglik.h>
 
 #include "array.h"
 #include "hawkes_fixed_expkern_loglik.h"
+#include "hawkes_fixed_sumexpkern_loglik.h"
 #include "hawkes_fixed_expkern_leastsq.h"
 #include "hawkes_fixed_sumexpkern_leastsq.h"
 
@@ -79,6 +81,24 @@ TEST_F(HawkesModelTest, check_sto_loglikelihood){
     SCOPED_TRACE(i);
     EXPECT_DOUBLE_EQ(grad[i], sto_grad[i]);
   }
+}
+
+TEST_F(HawkesModelTest, compute_loss_loglikelihood_sum_exp_kern){
+  ArrayDouble decays {1., 2.};
+
+  const double end_time = 5.65;
+  ModelHawkesFixedSumExpKernLogLik model(decays, 1);
+  model.set_data(timestamps, end_time);
+  model.compute_weights();
+
+  ArrayDouble coeffs = ArrayDouble {1., 3., 2., 3., 4., 1., 5., 3., 2., 4.};
+
+  EXPECT_DOUBLE_EQ(model.loss_i(0, coeffs), 709.43688360602232);
+  EXPECT_DOUBLE_EQ(model.loss_i(1, coeffs), 1717.7627409202796);
+
+  EXPECT_DOUBLE_EQ(model.loss(coeffs), 220.65451132057288);
+
+  EXPECT_DOUBLE_EQ(model.get_n_coeffs(), 10);
 }
 
 TEST_F(HawkesModelTest, compute_loss_least_squares){

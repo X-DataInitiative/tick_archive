@@ -4,7 +4,8 @@ import numpy as np
 from scipy.sparse import sputils, csr_matrix
 
 from tick.optim.model.build.model import (ModelHawkesFixedSumExpKernLeastSqList,
-                                          ModelHawkesFixedExpKernLeastSqList)
+                                          ModelHawkesFixedExpKernLeastSqList,
+                                          ModelHawkesFixedSumExpKernLogLik)
 from .model_first_order import ModelFirstOrder
 from tick.optim.model.base.model import N_CALLS_LOSS, PASS_OVER_DATA
 
@@ -90,6 +91,10 @@ class ModelHawkes(ModelFirstOrder):
 
         if isinstance(end_times, (int, float)):
             end_times = np.array([end_times], dtype=float)
+
+        if isinstance(self._model, ModelHawkesFixedSumExpKernLogLik):
+            events = events[0]
+            end_times = end_times[0]
 
         self._model.set_data(events, end_times)
 

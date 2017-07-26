@@ -19,6 +19,7 @@
 
 %shared_ptr(ModelHawkesSingle);
 %shared_ptr(ModelHawkesFixedExpKernLogLik);
+%shared_ptr(ModelHawkesFixedSumExpKernLogLik);
 %shared_ptr(ModelHawkesFixedExpKernLeastSq);
 %shared_ptr(ModelHawkesFixedSumExpKernLeastSq);
 

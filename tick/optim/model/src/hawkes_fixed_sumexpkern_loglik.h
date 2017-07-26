@@ -17,8 +17,8 @@
  */
 class ModelHawkesFixedSumExpKernLogLik : public ModelHawkesSingle {
  private:
-  //! @brief Value of decay for this model
-  double decay;
+  //! @brief Value of decays array for this model
+  ArrayDouble decays;
 
   //! @brief Some arrays used for intermediate computings. They are initialized in init()
   ArrayDouble2dList1D g;
@@ -28,14 +28,14 @@ class ModelHawkesFixedSumExpKernLogLik : public ModelHawkesSingle {
  public:
   //! @brief Default constructor
   //! @note This constructor is only used to create vectors of ModelHawkesFixedExpKernLeastSq
-  ModelHawkesFixedSumExpKernLogLik() : ModelHawkesSingle() {}
+  ModelHawkesFixedSumExpKernLogLik();
 
   /**
    * @brief Constructor
    * \param decay : decay for this model (remember that decay is fixed!)
    * \param n_threads : number of threads that will be used for parallel computations
    */
-  explicit ModelHawkesFixedSumExpKernLogLik(const double decay, const int max_n_threads = 1);
+  ModelHawkesFixedSumExpKernLogLik(const ArrayDouble &decays, const int max_n_threads = 1);
 
   /**
    * @brief Precomputations of intermediate values
@@ -188,7 +188,7 @@ class ModelHawkesFixedSumExpKernLogLik : public ModelHawkesSingle {
    * @param i : selected dimension
    */
   ulong get_alpha_i_first_index(const ulong i) const {
-    return n_nodes + i * n_nodes;
+    return n_nodes + i * n_nodes * get_n_decays();
   }
 
   /**
@@ -196,7 +196,7 @@ class ModelHawkesFixedSumExpKernLogLik : public ModelHawkesSingle {
    * @param i : selected dimension
    */
   ulong get_alpha_i_last_index(const ulong i) const {
-    return n_nodes + (i + 1) * n_nodes;
+    return n_nodes + (i + 1) * n_nodes * get_n_decays();
   }
 
  public:
@@ -207,18 +207,23 @@ class ModelHawkesFixedSumExpKernLogLik : public ModelHawkesSingle {
     return n_total_jumps;
   }
   //! @brief Returns decay that was set
-  double get_decay() const {
-    return decay;
+  SArrayDoublePtr get_decays() const {
+    ArrayDouble copied_decays = decays;
+    return copied_decays.as_sarray_ptr();
   }
 
   /**
-   * @brief Set new decay
-   * \param decay : new decay
+   * @brief Set new decays
+   * \param decay : new decays
    * \note Weights will need to be recomputed
    */
-  void set_decay(double decay) {
-    this->decay = decay;
+  void set_decays(ArrayDouble &decays) {
+    this->decays = decays;
     weights_computed = false;
+  }
+
+  ulong get_n_decays() const {
+    return decays.size();
   }
 
 //  friend ModelHawkesFixedSumExpKernLogLikList;

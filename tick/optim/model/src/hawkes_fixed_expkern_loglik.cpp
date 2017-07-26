@@ -12,6 +12,14 @@ void ModelHawkesFixedExpKernLogLik::compute_weights() {
   allocate_weights();
   parallel_run(get_n_threads(), n_nodes, &ModelHawkesFixedExpKernLogLik::compute_weights_dim_i, this);
   weights_computed = true;
+
+  for (ulong k = 0; k < n_nodes; ++k) {
+    std::cout << "\nsum_G " << k
+              << ", min sum_G(k)=" << sum_G[k].min()
+              << ", max sum_G(k)=" << sum_G[k].max()
+              << std::endl;
+    sum_G[k].print();
+  }
 }
 
 void ModelHawkesFixedExpKernLogLik::allocate_weights() {
@@ -62,6 +70,10 @@ void ModelHawkesFixedExpKernLogLik::compute_weights_dim_i(const ulong i) {
         ij++;
       }
       sum_G_i[j] += G_i[k * n_nodes + j];
+//      std::cout << "i=" << i << ", j=" << j
+//                //                  << ", adds : " << G_i[get_index(k, j, u)]
+//                << "sum_G_i[j]=" << sum_G_i[j]
+//                << std::endl;
     }
   }
 }

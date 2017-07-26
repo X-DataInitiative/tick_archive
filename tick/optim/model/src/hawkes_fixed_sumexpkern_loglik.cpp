@@ -3,15 +3,45 @@
 
 #include "hawkes_fixed_sumexpkern_loglik.h"
 
+ModelHawkesFixedSumExpKernLogLik::ModelHawkesFixedSumExpKernLogLik() :
+  ModelHawkesSingle(), decays(0) {}
+
 ModelHawkesFixedSumExpKernLogLik::ModelHawkesFixedSumExpKernLogLik(
-    const double decay, const int max_n_threads) :
-    ModelHawkesSingle(max_n_threads, 0),
-    decay(decay) {}
+  const ArrayDouble &decays, const int max_n_threads) :
+  ModelHawkesSingle(max_n_threads, 0),
+  decays(decays) {}
 
 void ModelHawkesFixedSumExpKernLogLik::compute_weights() {
   allocate_weights();
-  parallel_run(get_n_threads(), n_nodes, &ModelHawkesFixedSumExpKernLogLik::compute_weights_dim_i, this);
+  parallel_run(get_n_threads(),
+               n_nodes,
+               &ModelHawkesFixedSumExpKernLogLik::compute_weights_dim_i,
+               this);
   weights_computed = true;
+
+//  for (ulong k = 0; k < n_nodes; ++k) {
+//    std::cout << "g " << k
+//              << ", min g(k)=" << g[k].min()
+//              << ", max g(k)=" << g[k].max()
+//              << std::endl;
+//    g[k].print();
+//  }
+//
+  for (ulong k = 0; k < n_nodes; ++k) {
+    std::cout << "\nG " << k
+              << ", min G(k)=" << G[k].min()
+              << ", max G(k)=" << G[k].max()
+              << std::endl;
+    G[k].print();
+  }
+
+  for (ulong k = 0; k < n_nodes; ++k) {
+    std::cout << "\nsum_G " << k
+              << ", min sum_G(k)=" << sum_G[k].min()
+              << ", max sum_G(k)=" << sum_G[k].max()
+              << std::endl;
+    sum_G[k].print();
+  }
 }
 
 void ModelHawkesFixedSumExpKernLogLik::allocate_weights() {
@@ -23,11 +53,11 @@ void ModelHawkesFixedSumExpKernLogLik::allocate_weights() {
   sum_G = ArrayDoubleList1D(n_nodes);
 
   for (ulong i = 0; i < n_nodes; i++) {
-    g[i] = ArrayDouble2d((*n_jumps_per_node)[i], n_nodes);
+    g[i] = ArrayDouble2d((*n_jumps_per_node)[i], n_nodes * get_n_decays());
     g[i].init_to_zero();
-    G[i] = ArrayDouble2d((*n_jumps_per_node)[i] + 1, n_nodes);
+    G[i] = ArrayDouble2d((*n_jumps_per_node)[i] + 1, n_nodes * get_n_decays());
     G[i].init_to_zero();
-    sum_G[i] = ArrayDouble(n_nodes);
+    sum_G[i] = ArrayDouble(n_nodes * get_n_decays());
   }
 }
 
@@ -39,29 +69,47 @@ void ModelHawkesFixedSumExpKernLogLik::compute_weights_dim_i(const ulong i) {
 
   const ulong n_jumps_i = (*n_jumps_per_node)[i];
 
+  auto get_index = [=](ulong k, ulong j, ulong u) {
+    return n_nodes * get_n_decays() * k + get_n_decays() * j + u;
+  };
+
+//  for (ulong k = 0; k < n_jumps_i + 1; k++) {
+//    for (ulong j = 0; j < n_nodes; j++) {
+//      for (ulong u = 0; u < get_n_decays(); ++u) {
+//       std::cout << "get_index("<< k << ", " << j << ", "<< u << ")=" << get_index(k, j, u) << std::endl;
+//      }
+//    }
+//  }
   for (ulong j = 0; j < n_nodes; j++) {
     const ArrayDouble t_j = view(*timestamps[j]);
     ulong ij = 0;
     for (ulong k = 0; k < n_jumps_i + 1; k++) {
       const double t_i_k = k < n_jumps_i ? t_i[k] : end_time;
-      if (k > 0) {
-        const double ebt = std::exp(-decay * (t_i_k - t_i[k - 1]));
 
-        if (k < n_jumps_i) g_i[k * n_nodes + j] = g_i[(k - 1) * n_nodes + j] * ebt;
-        G_i[k * n_nodes + j] = g_i[(k - 1) * n_nodes + j] * (1 - ebt) / decay;
-      } else {
-        g_i[k * n_nodes + j] = 0;
-        G_i[k * n_nodes + j] = 0;
-        sum_G[i][j] = 0.;
-      }
+      for (ulong u = 0; u < get_n_decays(); ++u) {
+        if (k > 0) {
+          const double ebt = std::exp(-decays[u] * (t_i_k - t_i[k - 1]));
 
-      while ((ij < (*n_jumps_per_node)[j]) && (t_j[ij] < t_i_k)) {
-        const double ebt = std::exp(-decay * (t_i_k - t_j[ij]));
-        if (k < n_jumps_i) g_i[k * n_nodes + j] += decay * ebt;
-        G_i[k * n_nodes + j] += 1 - ebt;
-        ij++;
+          if (k < n_jumps_i) g_i[get_index(k, j, u)] = g_i[get_index(k - 1, j, u)] * ebt;
+          G_i[get_index(k, j, u)] = g_i[get_index(k - 1, j, u)] * (1 - ebt) / decays[u];
+        } else {
+          g_i[get_index(k, j, u)] = 0;
+          G_i[get_index(k, j, u)] = 0;
+          sum_G_i[j * get_n_decays() + u] = 0.;
+        }
+
+        while ((ij < (*n_jumps_per_node)[j]) && (t_j[ij] < t_i_k)) {
+          const double ebt = std::exp(-decays[u] * (t_i_k - t_j[ij]));
+          if (k < n_jumps_i) g_i[get_index(k, j, u)] += decays[u] * ebt;
+          G_i[get_index(k, j, u)] += 1 - ebt;
+          ij++;
+        }
+        sum_G_i[j * get_n_decays() + u] += G_i[get_index(k, j, u)];
+        std::cout << "i=" << i << ", j * get_n_decays() + u=" << j * get_n_decays() + u
+//                  << ", adds : " << G_i[get_index(k, j, u)]
+                  << "sum_G_i[j * get_n_decays() + u]=" << sum_G_i[j * get_n_decays() + u]
+                  << std::endl;
       }
-      sum_G_i[j] += G_i[k * n_nodes + j];
     }
   }
 }
@@ -70,15 +118,15 @@ double ModelHawkesFixedSumExpKernLogLik::loss(const ArrayDouble &coeffs) {
   if (!weights_computed) compute_weights();
 
   const double loss =
-      parallel_map_additive_reduce(get_n_threads(), n_nodes,
-                                   &ModelHawkesFixedSumExpKernLogLik::loss_dim_i,
-                                   this,
-                                   coeffs);
+    parallel_map_additive_reduce(get_n_threads(), n_nodes,
+                                 &ModelHawkesFixedSumExpKernLogLik::loss_dim_i,
+                                 this,
+                                 coeffs);
   return loss / n_total_jumps;
 }
 
 double ModelHawkesFixedSumExpKernLogLik::loss_i(const ulong sampled_i,
-                                             const ArrayDouble &coeffs) {
+                                                const ArrayDouble &coeffs) {
   if (!weights_computed) compute_weights();
   ulong i;
   ulong k;
@@ -88,18 +136,23 @@ double ModelHawkesFixedSumExpKernLogLik::loss_i(const ulong sampled_i,
 }
 
 void ModelHawkesFixedSumExpKernLogLik::grad(const ArrayDouble &coeffs,
-                                         ArrayDouble &out) {
+                                            ArrayDouble &out) {
   if (!weights_computed) compute_weights();
   out.fill(0);
 
   // This allows to run in a multithreaded environment the computation of each component
-  parallel_run(get_n_threads(), n_nodes, &ModelHawkesFixedSumExpKernLogLik::grad_dim_i, this, coeffs, out);
+  parallel_run(get_n_threads(),
+               n_nodes,
+               &ModelHawkesFixedSumExpKernLogLik::grad_dim_i,
+               this,
+               coeffs,
+               out);
   out /= n_total_jumps;
 }
 
 void ModelHawkesFixedSumExpKernLogLik::grad_i(const ulong sampled_i,
-                                           const ArrayDouble &coeffs,
-                                           ArrayDouble &out) {
+                                              const ArrayDouble &coeffs,
+                                              ArrayDouble &out) {
   if (!weights_computed) compute_weights();
 
   ulong i;
@@ -113,32 +166,31 @@ void ModelHawkesFixedSumExpKernLogLik::grad_i(const ulong sampled_i,
 }
 
 double ModelHawkesFixedSumExpKernLogLik::loss_and_grad(const ArrayDouble &coeffs,
-                                                    ArrayDouble &out) {
+                                                       ArrayDouble &out) {
   if (!weights_computed) compute_weights();
   out.fill(0);
 
   const double loss =
-      parallel_map_additive_reduce(get_n_threads(), n_nodes,
-                                   &ModelHawkesFixedSumExpKernLogLik::loss_and_grad_dim_i,
-                                   this,
-                                   coeffs, out);
+    parallel_map_additive_reduce(get_n_threads(), n_nodes,
+                                 &ModelHawkesFixedSumExpKernLogLik::loss_and_grad_dim_i,
+                                 this,
+                                 coeffs, out);
   out /= n_total_jumps;
   return loss / n_total_jumps;
 }
 
 double ModelHawkesFixedSumExpKernLogLik::hessian_norm(const ArrayDouble &coeffs,
-                                                   const ArrayDouble &vector) {
+                                                      const ArrayDouble &vector) {
   if (!weights_computed) compute_weights();
 
   const double norm_sum =
-      parallel_map_additive_reduce(get_n_threads(), n_nodes,
-                                   &ModelHawkesFixedSumExpKernLogLik::hessian_norm_dim_i,
-                                   this,
-                                   coeffs, vector);
+    parallel_map_additive_reduce(get_n_threads(), n_nodes,
+                                 &ModelHawkesFixedSumExpKernLogLik::hessian_norm_dim_i,
+                                 this,
+                                 coeffs, vector);
 
   return norm_sum / n_total_jumps;
 }
-
 
 void ModelHawkesFixedSumExpKernLogLik::hessian(const ArrayDouble &coeffs, ArrayDouble &out) {
   if (!weights_computed) compute_weights();
@@ -156,8 +208,8 @@ void ModelHawkesFixedSumExpKernLogLik::hessian(const ArrayDouble &coeffs, ArrayD
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ModelHawkesFixedSumExpKernLogLik::sampled_i_to_index(const ulong sampled_i,
-                                                       ulong *i,
-                                                       ulong *k) {
+                                                          ulong *i,
+                                                          ulong *k) {
   ulong cum_N_i = 0;
   for (ulong d = 0; d < n_nodes; d++) {
     cum_N_i += (*n_jumps_per_node)[d];
@@ -170,7 +222,7 @@ void ModelHawkesFixedSumExpKernLogLik::sampled_i_to_index(const ulong sampled_i,
 }
 
 double ModelHawkesFixedSumExpKernLogLik::loss_dim_i(const ulong i,
-                                                 const ArrayDouble &coeffs) {
+                                                    const ArrayDouble &coeffs) {
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
@@ -184,8 +236,8 @@ double ModelHawkesFixedSumExpKernLogLik::loss_dim_i(const ulong i,
     s += alpha_i.dot(g_i_k);
     if (s <= 0) {
       TICK_ERROR("The sum of the influence on someone cannot be negative. "
-                     "Maybe did you forget to add a positive constraint to "
-                     "your proximal operator");
+                   "Maybe did you forget to add a positive constraint to "
+                   "your proximal operator");
     }
     loss -= log(s);
   }
@@ -195,8 +247,8 @@ double ModelHawkesFixedSumExpKernLogLik::loss_dim_i(const ulong i,
 }
 
 double ModelHawkesFixedSumExpKernLogLik::loss_i_k(const ulong i,
-                                               const ulong k,
-                                               const ArrayDouble &coeffs) {
+                                                  const ulong k,
+                                                  const ArrayDouble &coeffs) {
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
   double loss = 0;
@@ -215,8 +267,8 @@ double ModelHawkesFixedSumExpKernLogLik::loss_i_k(const ulong i,
 
   if (s <= 0) {
     TICK_ERROR("The sum of the influence on someone cannot be negative. Maybe did "
-                   "you forget to add a positive constraint to your "
-                   "proximal operator");
+                 "you forget to add a positive constraint to your "
+                 "proximal operator");
   }
   loss -= log(s);
 
@@ -228,8 +280,8 @@ double ModelHawkesFixedSumExpKernLogLik::loss_i_k(const ulong i,
 }
 
 void ModelHawkesFixedSumExpKernLogLik::grad_dim_i(const ulong i,
-                                               const ArrayDouble &coeffs,
-                                               ArrayDouble &out) {
+                                                  const ArrayDouble &coeffs,
+                                                  ArrayDouble &out) {
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
@@ -251,8 +303,8 @@ void ModelHawkesFixedSumExpKernLogLik::grad_dim_i(const ulong i,
 }
 
 void ModelHawkesFixedSumExpKernLogLik::grad_i_k(const ulong i, const ulong k,
-                                             const ArrayDouble &coeffs,
-                                             ArrayDouble &out) {
+                                                const ArrayDouble &coeffs,
+                                                ArrayDouble &out) {
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
@@ -280,8 +332,8 @@ void ModelHawkesFixedSumExpKernLogLik::grad_i_k(const ulong i, const ulong k,
 }
 
 double ModelHawkesFixedSumExpKernLogLik::loss_and_grad_dim_i(const ulong i,
-                                                          const ArrayDouble &coeffs,
-                                                          ArrayDouble &out) {
+                                                             const ArrayDouble &coeffs,
+                                                             ArrayDouble &out) {
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
@@ -300,8 +352,8 @@ double ModelHawkesFixedSumExpKernLogLik::loss_and_grad_dim_i(const ulong i,
 
     if (s <= 0) {
       TICK_ERROR("The sum of the influence on someone cannot be negative. Maybe did "
-                     "you forget to add a positive constraint to your "
-                     "proximal operator");
+                   "you forget to add a positive constraint to your "
+                   "proximal operator");
     }
     loss -= log(s);
     grad_mu_i -= 1. / s;
@@ -316,8 +368,8 @@ double ModelHawkesFixedSumExpKernLogLik::loss_and_grad_dim_i(const ulong i,
 }
 
 double ModelHawkesFixedSumExpKernLogLik::hessian_norm_dim_i(const ulong i,
-                                                         const ArrayDouble &coeffs,
-                                                         const ArrayDouble &vector) {
+                                                            const ArrayDouble &coeffs,
+                                                            const ArrayDouble &vector) {
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
@@ -342,8 +394,8 @@ double ModelHawkesFixedSumExpKernLogLik::hessian_norm_dim_i(const ulong i,
 }
 
 void ModelHawkesFixedSumExpKernLogLik::hessian_i(const ulong i,
-                                              const ArrayDouble &coeffs,
-                                              ArrayDouble &out) {
+                                                 const ArrayDouble &coeffs,
+                                                 ArrayDouble &out) {
   if (!weights_computed) TICK_ERROR("Please compute weights before calling hessian_i");
 
   const double mu_i = coeffs[i];
@@ -379,5 +431,5 @@ void ModelHawkesFixedSumExpKernLogLik::hessian_i(const ulong i,
 }
 
 ulong ModelHawkesFixedSumExpKernLogLik::get_n_coeffs() const {
-  return n_nodes + n_nodes * n_nodes;
+  return n_nodes + n_nodes * n_nodes * get_n_decays();
 }
