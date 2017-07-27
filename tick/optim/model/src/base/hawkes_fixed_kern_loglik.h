@@ -9,6 +9,8 @@
 
 #include "base/hawkes_single.h"
 
+class ModelHawkesFixedKernLogLikList;
+
 /**
  * \class ModelHawkesFixedKernLogLik
  * \brief Class for computing loglikelihood function and gradient for Hawkes processes with
@@ -202,6 +204,7 @@ class ModelHawkesFixedKernLogLik : public ModelHawkesSingle {
     return n_total_jumps;
   }
 
+  friend ModelHawkesFixedKernLogLikList;
 };
 
 #endif  // TICK_OPTIM_MODEL_SRC_BASE_HAWKES_FIXED_KERN_LOGLIK_H

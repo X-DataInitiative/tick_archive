@@ -20,7 +20,8 @@ add_library(tick_model EXCLUDE_FROM_ALL
 		variants/hawkes_leastsq_list.h variants/hawkes_leastsq_list.cpp
         variants/hawkes_fixed_expkern_leastsq_list.h variants/hawkes_fixed_expkern_leastsq_list.cpp
 		variants/hawkes_fixed_expkern_loglik_list.h variants/hawkes_fixed_expkern_loglik_list.cpp
-        base/hawkes_single.cpp base/hawkes_single.h
+		variants/hawkes_fixed_kern_loglik_list.h variants/hawkes_fixed_kern_loglik_list.cpp
+		base/hawkes_single.cpp base/hawkes_single.h
         variants/hawkes_fixed_sumexpkern_leastsq_list.h variants/hawkes_fixed_sumexpkern_leastsq_list.cpp
         sccs.cpp sccs.h)
 
