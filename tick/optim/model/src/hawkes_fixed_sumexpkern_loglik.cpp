@@ -27,21 +27,21 @@ void ModelHawkesFixedSumExpKernLogLik::compute_weights() {
 //    g[k].print();
 //  }
 //
-  for (ulong k = 0; k < n_nodes; ++k) {
-    std::cout << "\nG " << k
-              << ", min G(k)=" << G[k].min()
-              << ", max G(k)=" << G[k].max()
-              << std::endl;
-    G[k].print();
-  }
-
-  for (ulong k = 0; k < n_nodes; ++k) {
-    std::cout << "\nsum_G " << k
-              << ", min sum_G(k)=" << sum_G[k].min()
-              << ", max sum_G(k)=" << sum_G[k].max()
-              << std::endl;
-    sum_G[k].print();
-  }
+//  for (ulong k = 0; k < n_nodes; ++k) {
+//    std::cout << "\nG " << k
+//              << ", min G(k)=" << G[k].min()
+//              << ", max G(k)=" << G[k].max()
+//              << std::endl;
+//    G[k].print();
+//  }
+//
+//  for (ulong k = 0; k < n_nodes; ++k) {
+//    std::cout << "\nsum_G " << k
+//              << ", min sum_G(k)=" << sum_G[k].min()
+//              << ", max sum_G(k)=" << sum_G[k].max()
+//              << std::endl;
+//    sum_G[k].print();
+//  }
 }
 
 void ModelHawkesFixedSumExpKernLogLik::allocate_weights() {
@@ -92,23 +92,38 @@ void ModelHawkesFixedSumExpKernLogLik::compute_weights_dim_i(const ulong i) {
 
           if (k < n_jumps_i) g_i[get_index(k, j, u)] = g_i[get_index(k - 1, j, u)] * ebt;
           G_i[get_index(k, j, u)] = g_i[get_index(k - 1, j, u)] * (1 - ebt) / decays[u];
+
+//          std::cout << "use g[" << get_index(k - 1, j, u) << "] = " << g_i[get_index(k - 1, j, u)]
+//                    << std::endl;
+//          std::cout << "k=" << k << ", j * get_n_decays() + u=" << j * get_n_decays() + u
+//                    //                  << ", adds : " << G_i[get_index(k, j, u)]
+//                    << ", updates=" << get_index(k, j, u)
+//                    << ", with=" << g_i[get_index(k - 1, j, u)] * (1 - ebt) / decays[u]
+//                    << "\n      g_i[get_index(k - 1, j, u)]=" << g_i[get_index(k - 1, j, u)]
+////                    << ", (1 - ebt)=" << (1 - ebt)
+////                    << ", decays[u]=" << decays[u]
+//                    << std::endl;
         } else {
           g_i[get_index(k, j, u)] = 0;
           G_i[get_index(k, j, u)] = 0;
           sum_G_i[j * get_n_decays() + u] = 0.;
         }
+      }
 
-        while ((ij < (*n_jumps_per_node)[j]) && (t_j[ij] < t_i_k)) {
+      while ((ij < (*n_jumps_per_node)[j]) && (t_j[ij] < t_i_k)) {
+        for (ulong u = 0; u < get_n_decays(); ++u) {
           const double ebt = std::exp(-decays[u] * (t_i_k - t_j[ij]));
-          if (k < n_jumps_i) g_i[get_index(k, j, u)] += decays[u] * ebt;
+          if (k < n_jumps_i) {
+//            std::cout << "fill g[" << get_index(k, j, u) << "] = " << decays[u] * ebt
+//                      << std::endl;
+            g_i[get_index(k, j, u)] += decays[u] * ebt;
+          }
           G_i[get_index(k, j, u)] += 1 - ebt;
-          ij++;
         }
+        ij++;
+      }
+      for (ulong u = 0; u < get_n_decays(); ++u) {
         sum_G_i[j * get_n_decays() + u] += G_i[get_index(k, j, u)];
-        std::cout << "i=" << i << ", j * get_n_decays() + u=" << j * get_n_decays() + u
-//                  << ", adds : " << G_i[get_index(k, j, u)]
-                  << "sum_G_i[j * get_n_decays() + u]=" << sum_G_i[j * get_n_decays() + u]
-                  << std::endl;
       }
     }
   }

@@ -84,21 +84,21 @@ TEST_F(HawkesModelTest, check_sto_loglikelihood){
 }
 
 TEST_F(HawkesModelTest, compute_loss_loglikelihood_sum_exp_kern){
-  ArrayDouble decays {1., 2.};
+  ArrayDouble decays {1., 2., 3.};
 
   const double end_time = 5.65;
   ModelHawkesFixedSumExpKernLogLik model(decays, 1);
   model.set_data(timestamps, end_time);
   model.compute_weights();
 
-  ArrayDouble coeffs = ArrayDouble {1., 3., 2., 3., 4., 1., 5., 3., 2., 4.};
+  ArrayDouble coeffs = ArrayDouble {1., 3., 2., 3., 4., 1., 5., 3., 2., 4., 2., 3., 4., 5.};
 
-  EXPECT_DOUBLE_EQ(model.loss_i(0, coeffs), 709.43688360602232);
-  EXPECT_DOUBLE_EQ(model.loss_i(1, coeffs), 1717.7627409202796);
+  EXPECT_DOUBLE_EQ(model.loss_i(0, coeffs), 0.74573314143220193);
+  EXPECT_DOUBLE_EQ(model.loss_i(1, coeffs), 9.111996931266539);
 
-  EXPECT_DOUBLE_EQ(model.loss(coeffs), 220.65451132057288);
+  EXPECT_DOUBLE_EQ(model.loss(coeffs), 18.230198548394196);
 
-  EXPECT_DOUBLE_EQ(model.get_n_coeffs(), 10);
+  EXPECT_DOUBLE_EQ(model.get_n_coeffs(), 14);
 }
 
 TEST_F(HawkesModelTest, compute_loss_least_squares){

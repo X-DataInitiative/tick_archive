@@ -54,6 +54,7 @@ class Test(unittest.TestCase):
             intensities, timestamps, self.end_time, precision=precision)
         integral_approx /= self.model.n_jumps
         print('integral_approx', integral_approx)
+        print('self.model.loss(self.coeffs)', self.model.loss(self.coeffs))
 
         self.assertAlmostEqual(integral_approx, self.model.loss(self.coeffs),
                                places=precision)
