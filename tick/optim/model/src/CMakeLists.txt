@@ -8,6 +8,7 @@ add_library(tick_model EXCLUDE_FROM_ALL
         logreg.h logreg.cpp
         poisreg.cpp poisreg.h
 		base/hawkes_model.cpp base/hawkes_model.h
+		base/hawkes_fixed_kern_loglik.cpp base/hawkes_fixed_kern_loglik.h
         hawkes_fixed_expkern_loglik.h hawkes_fixed_expkern_loglik.cpp
 		hawkes_fixed_sumexpkern_loglik.h hawkes_fixed_sumexpkern_loglik.cpp
         hawkes_fixed_expkern_leastsq.h hawkes_fixed_expkern_leastsq.cpp
@@ -21,7 +22,7 @@ add_library(tick_model EXCLUDE_FROM_ALL
 		variants/hawkes_fixed_expkern_loglik_list.h variants/hawkes_fixed_expkern_loglik_list.cpp
         base/hawkes_single.cpp base/hawkes_single.h
         variants/hawkes_fixed_sumexpkern_leastsq_list.h variants/hawkes_fixed_sumexpkern_leastsq_list.cpp
-        sccs.cpp sccs.h base/hawkes_fixed_kern_loglik.cpp base/hawkes_fixed_kern_loglik.h)
+        sccs.cpp sccs.h)
 
 target_link_libraries(tick_model
 		${TICK_LIB_BASE}
