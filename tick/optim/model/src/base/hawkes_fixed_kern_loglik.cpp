@@ -1,83 +1,36 @@
 // License: BSD 3 clause
 
+#include "hawkes_fixed_kern_loglik.h"
 
-#include "hawkes_fixed_expkern_loglik.h"
+ModelHawkesFixedKernLogLik::ModelHawkesFixedKernLogLik(const int max_n_threads) :
+  ModelHawkesSingle(max_n_threads, 0) {}
 
-ModelHawkesFixedExpKernLogLik::ModelHawkesFixedExpKernLogLik(
-    const double decay, const int max_n_threads) :
-    ModelHawkesSingle(max_n_threads, 0),
-    decay(decay) {}
-
-void ModelHawkesFixedExpKernLogLik::compute_weights() {
+void ModelHawkesFixedKernLogLik::compute_weights() {
   allocate_weights();
-  parallel_run(get_n_threads(), n_nodes, &ModelHawkesFixedExpKernLogLik::compute_weights_dim_i, this);
+  parallel_run(get_n_threads(), n_nodes, &ModelHawkesFixedKernLogLik::compute_weights_dim_i, this);
   weights_computed = true;
 }
 
-void ModelHawkesFixedExpKernLogLik::allocate_weights() {
-  if (n_nodes == 0) {
-    TICK_ERROR("Please provide valid timestamps before allocating weights")
-  }
-  g = ArrayDouble2dList1D(n_nodes);
-  G = ArrayDouble2dList1D(n_nodes);
-  sum_G = ArrayDoubleList1D(n_nodes);
-
-  for (ulong i = 0; i < n_nodes; i++) {
-    g[i] = ArrayDouble2d((*n_jumps_per_node)[i], n_nodes);
-    g[i].init_to_zero();
-    G[i] = ArrayDouble2d((*n_jumps_per_node)[i] + 1, n_nodes);
-    G[i].init_to_zero();
-    sum_G[i] = ArrayDouble(n_nodes);
-  }
+void ModelHawkesFixedKernLogLik::allocate_weights() {
+  TICK_CLASS_DOES_NOT_IMPLEMENT("");
 }
 
-void ModelHawkesFixedExpKernLogLik::compute_weights_dim_i(const ulong i) {
-  const ArrayDouble t_i = view(*timestamps[i]);
-  ArrayDouble2d g_i = view(g[i]);
-  ArrayDouble2d G_i = view(G[i]);
-  ArrayDouble sum_G_i = view(sum_G[i]);
-
-  const ulong n_jumps_i = (*n_jumps_per_node)[i];
-
-  for (ulong j = 0; j < n_nodes; j++) {
-    const ArrayDouble t_j = view(*timestamps[j]);
-    ulong ij = 0;
-    for (ulong k = 0; k < n_jumps_i + 1; k++) {
-      const double t_i_k = k < n_jumps_i ? t_i[k] : end_time;
-      if (k > 0) {
-        const double ebt = std::exp(-decay * (t_i_k - t_i[k - 1]));
-
-        if (k < n_jumps_i) g_i[k * n_nodes + j] = g_i[(k - 1) * n_nodes + j] * ebt;
-        G_i[k * n_nodes + j] = g_i[(k - 1) * n_nodes + j] * (1 - ebt) / decay;
-      } else {
-        g_i[k * n_nodes + j] = 0;
-        G_i[k * n_nodes + j] = 0;
-        sum_G[i][j] = 0.;
-      }
-
-      while ((ij < (*n_jumps_per_node)[j]) && (t_j[ij] < t_i_k)) {
-        const double ebt = std::exp(-decay * (t_i_k - t_j[ij]));
-        if (k < n_jumps_i) g_i[k * n_nodes + j] += decay * ebt;
-        G_i[k * n_nodes + j] += 1 - ebt;
-        ij++;
-      }
-      sum_G_i[j] += G_i[k * n_nodes + j];
-    }
-  }
+void ModelHawkesFixedKernLogLik::compute_weights_dim_i(const ulong i) {
+  TICK_CLASS_DOES_NOT_IMPLEMENT("");
 }
 
-double ModelHawkesFixedExpKernLogLik::loss(const ArrayDouble &coeffs) {
+double ModelHawkesFixedKernLogLik::loss(const ArrayDouble &coeffs) {
   if (!weights_computed) compute_weights();
 
   const double loss =
-      parallel_map_additive_reduce(get_n_threads(), n_nodes,
-                                   &ModelHawkesFixedExpKernLogLik::loss_dim_i,
-                                   this,
-                                   coeffs);
+    parallel_map_additive_reduce(get_n_threads(), n_nodes,
+                                 &ModelHawkesFixedKernLogLik::loss_dim_i,
+                                 this,
+                                 coeffs);
   return loss / n_total_jumps;
 }
 
-double ModelHawkesFixedExpKernLogLik::loss_i(const ulong sampled_i,
+double ModelHawkesFixedKernLogLik::loss_i(const ulong sampled_i,
                                              const ArrayDouble &coeffs) {
   if (!weights_computed) compute_weights();
   ulong i;
@@ -87,17 +40,17 @@ double ModelHawkesFixedExpKernLogLik::loss_i(const ulong sampled_i,
   return loss_i_k(i, k, coeffs);
 }
 
-void ModelHawkesFixedExpKernLogLik::grad(const ArrayDouble &coeffs,
+void ModelHawkesFixedKernLogLik::grad(const ArrayDouble &coeffs,
                                          ArrayDouble &out) {
   if (!weights_computed) compute_weights();
   out.fill(0);
 
   // This allows to run in a multithreaded environment the computation of each component
-  parallel_run(get_n_threads(), n_nodes, &ModelHawkesFixedExpKernLogLik::grad_dim_i, this, coeffs, out);
+  parallel_run(get_n_threads(), n_nodes, &ModelHawkesFixedKernLogLik::grad_dim_i, this, coeffs, out);
   out /= n_total_jumps;
 }
 
-void ModelHawkesFixedExpKernLogLik::grad_i(const ulong sampled_i,
+void ModelHawkesFixedKernLogLik::grad_i(const ulong sampled_i,
                                            const ArrayDouble &coeffs,
                                            ArrayDouble &out) {
   if (!weights_computed) compute_weights();
@@ -112,39 +65,39 @@ void ModelHawkesFixedExpKernLogLik::grad_i(const ulong sampled_i,
   grad_i_k(i, k, coeffs, out);
 }
 
-double ModelHawkesFixedExpKernLogLik::loss_and_grad(const ArrayDouble &coeffs,
+double ModelHawkesFixedKernLogLik::loss_and_grad(const ArrayDouble &coeffs,
                                                     ArrayDouble &out) {
   if (!weights_computed) compute_weights();
   out.fill(0);
 
   const double loss =
-      parallel_map_additive_reduce(get_n_threads(), n_nodes,
-                                   &ModelHawkesFixedExpKernLogLik::loss_and_grad_dim_i,
-                                   this,
-                                   coeffs, out);
+    parallel_map_additive_reduce(get_n_threads(), n_nodes,
+                                 &ModelHawkesFixedKernLogLik::loss_and_grad_dim_i,
+                                 this,
+                                 coeffs, out);
   out /= n_total_jumps;
   return loss / n_total_jumps;
 }
 
-double ModelHawkesFixedExpKernLogLik::hessian_norm(const ArrayDouble &coeffs,
+double ModelHawkesFixedKernLogLik::hessian_norm(const ArrayDouble &coeffs,
                                                    const ArrayDouble &vector) {
   if (!weights_computed) compute_weights();
 
   const double norm_sum =
-      parallel_map_additive_reduce(get_n_threads(), n_nodes,
-                                   &ModelHawkesFixedExpKernLogLik::hessian_norm_dim_i,
-                                   this,
-                                   coeffs, vector);
+    parallel_map_additive_reduce(get_n_threads(), n_nodes,
+                                 &ModelHawkesFixedKernLogLik::hessian_norm_dim_i,
+                                 this,
+                                 coeffs, vector);
 
   return norm_sum / n_total_jumps;
 }
 
 
-void ModelHawkesFixedExpKernLogLik::hessian(const ArrayDouble &coeffs, ArrayDouble &out) {
+void ModelHawkesFixedKernLogLik::hessian(const ArrayDouble &coeffs, ArrayDouble &out) {
   if (!weights_computed) compute_weights();
 
   // This allows to run in a multithreaded environment the computation of each component
-  parallel_run(get_n_threads(), n_nodes, &ModelHawkesFixedExpKernLogLik::hessian_i,
+  parallel_run(get_n_threads(), n_nodes, &ModelHawkesFixedKernLogLik::hessian_i,
                this, coeffs, out);
   out /= n_total_jumps;
 }
@@ -155,7 +108,7 @@ void ModelHawkesFixedExpKernLogLik::hessian(const ArrayDouble &coeffs, ArrayDoub
 //                                    PRIVATE METHODS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ModelHawkesFixedExpKernLogLik::sampled_i_to_index(const ulong sampled_i,
+void ModelHawkesFixedKernLogLik::sampled_i_to_index(const ulong sampled_i,
                                                        ulong *i,
                                                        ulong *k) {
   ulong cum_N_i = 0;
@@ -169,7 +122,7 @@ void ModelHawkesFixedExpKernLogLik::sampled_i_to_index(const ulong sampled_i,
   }
 }
 
-double ModelHawkesFixedExpKernLogLik::loss_dim_i(const ulong i,
+double ModelHawkesFixedKernLogLik::loss_dim_i(const ulong i,
                                                  const ArrayDouble &coeffs) {
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
@@ -184,8 +137,8 @@ double ModelHawkesFixedExpKernLogLik::loss_dim_i(const ulong i,
     s += alpha_i.dot(g_i_k);
     if (s <= 0) {
       TICK_ERROR("The sum of the influence on someone cannot be negative. "
-                     "Maybe did you forget to add a positive constraint to "
-                     "your proximal operator");
+                   "Maybe did you forget to add a positive constraint to "
+                   "your proximal operator");
     }
     loss -= log(s);
   }
@@ -194,7 +147,7 @@ double ModelHawkesFixedExpKernLogLik::loss_dim_i(const ulong i,
   return loss;
 }
 
-double ModelHawkesFixedExpKernLogLik::loss_i_k(const ulong i,
+double ModelHawkesFixedKernLogLik::loss_i_k(const ulong i,
                                                const ulong k,
                                                const ArrayDouble &coeffs) {
   const double mu_i = coeffs[i];
@@ -215,8 +168,8 @@ double ModelHawkesFixedExpKernLogLik::loss_i_k(const ulong i,
 
   if (s <= 0) {
     TICK_ERROR("The sum of the influence on someone cannot be negative. Maybe did "
-                   "you forget to add a positive constraint to your "
-                   "proximal operator");
+                 "you forget to add a positive constraint to your "
+                 "proximal operator");
   }
   loss -= log(s);
 
@@ -227,7 +180,7 @@ double ModelHawkesFixedExpKernLogLik::loss_i_k(const ulong i,
   return loss;
 }
 
-void ModelHawkesFixedExpKernLogLik::grad_dim_i(const ulong i,
+void ModelHawkesFixedKernLogLik::grad_dim_i(const ulong i,
                                                const ArrayDouble &coeffs,
                                                ArrayDouble &out) {
   const double mu_i = coeffs[i];
@@ -250,7 +203,7 @@ void ModelHawkesFixedExpKernLogLik::grad_dim_i(const ulong i,
   grad_alpha_i.mult_incr(sum_G[i], 1);
 }
 
-void ModelHawkesFixedExpKernLogLik::grad_i_k(const ulong i, const ulong k,
+void ModelHawkesFixedKernLogLik::grad_i_k(const ulong i, const ulong k,
                                              const ArrayDouble &coeffs,
                                              ArrayDouble &out) {
   const double mu_i = coeffs[i];
@@ -279,7 +232,7 @@ void ModelHawkesFixedExpKernLogLik::grad_i_k(const ulong i, const ulong k,
     grad_alpha_i.mult_incr(view_row(G[i], k + 1), 1.);
 }
 
-double ModelHawkesFixedExpKernLogLik::loss_and_grad_dim_i(const ulong i,
+double ModelHawkesFixedKernLogLik::loss_and_grad_dim_i(const ulong i,
                                                           const ArrayDouble &coeffs,
                                                           ArrayDouble &out) {
   const double mu_i = coeffs[i];
@@ -300,8 +253,8 @@ double ModelHawkesFixedExpKernLogLik::loss_and_grad_dim_i(const ulong i,
 
     if (s <= 0) {
       TICK_ERROR("The sum of the influence on someone cannot be negative. Maybe did "
-                     "you forget to add a positive constraint to your "
-                     "proximal operator");
+                   "you forget to add a positive constraint to your "
+                   "proximal operator");
     }
     loss -= log(s);
     grad_mu_i -= 1. / s;
@@ -315,7 +268,7 @@ double ModelHawkesFixedExpKernLogLik::loss_and_grad_dim_i(const ulong i,
   return loss;
 }
 
-double ModelHawkesFixedExpKernLogLik::hessian_norm_dim_i(const ulong i,
+double ModelHawkesFixedKernLogLik::hessian_norm_dim_i(const ulong i,
                                                          const ArrayDouble &coeffs,
                                                          const ArrayDouble &vector) {
   const double mu_i = coeffs[i];
@@ -341,7 +294,7 @@ double ModelHawkesFixedExpKernLogLik::hessian_norm_dim_i(const ulong i,
   return hess_norm;
 }
 
-void ModelHawkesFixedExpKernLogLik::hessian_i(const ulong i,
+void ModelHawkesFixedKernLogLik::hessian_i(const ulong i,
                                               const ArrayDouble &coeffs,
                                               ArrayDouble &out) {
   if (!weights_computed) TICK_ERROR("Please compute weights before calling hessian_i");
@@ -376,8 +329,4 @@ void ModelHawkesFixedExpKernLogLik::hessian_i(const ulong i,
       }
     }
   }
-}
-
-ulong ModelHawkesFixedExpKernLogLik::get_n_coeffs() const {
-  return n_nodes + n_nodes * n_nodes;
 }

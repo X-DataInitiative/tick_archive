@@ -21,7 +21,7 @@ add_library(tick_model EXCLUDE_FROM_ALL
 		variants/hawkes_fixed_expkern_loglik_list.h variants/hawkes_fixed_expkern_loglik_list.cpp
         base/hawkes_single.cpp base/hawkes_single.h
         variants/hawkes_fixed_sumexpkern_leastsq_list.h variants/hawkes_fixed_sumexpkern_leastsq_list.cpp
-        sccs.cpp sccs.h)
+        sccs.cpp sccs.h base/hawkes_fixed_kern_loglik.cpp base/hawkes_fixed_kern_loglik.h)
 
 target_link_libraries(tick_model
 		${TICK_LIB_BASE}
