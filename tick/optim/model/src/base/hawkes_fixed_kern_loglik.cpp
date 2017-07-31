@@ -31,7 +31,7 @@ double ModelHawkesFixedKernLogLik::loss(const ArrayDouble &coeffs) {
 }
 
 double ModelHawkesFixedKernLogLik::loss_i(const ulong sampled_i,
-                                             const ArrayDouble &coeffs) {
+                                          const ArrayDouble &coeffs) {
   if (!weights_computed) compute_weights();
   ulong i;
   ulong k;
@@ -41,18 +41,23 @@ double ModelHawkesFixedKernLogLik::loss_i(const ulong sampled_i,
 }
 
 void ModelHawkesFixedKernLogLik::grad(const ArrayDouble &coeffs,
-                                         ArrayDouble &out) {
+                                      ArrayDouble &out) {
   if (!weights_computed) compute_weights();
   out.fill(0);
 
   // This allows to run in a multithreaded environment the computation of each component
-  parallel_run(get_n_threads(), n_nodes, &ModelHawkesFixedKernLogLik::grad_dim_i, this, coeffs, out);
+  parallel_run(get_n_threads(),
+               n_nodes,
+               &ModelHawkesFixedKernLogLik::grad_dim_i,
+               this,
+               coeffs,
+               out);
   out /= n_total_jumps;
 }
 
 void ModelHawkesFixedKernLogLik::grad_i(const ulong sampled_i,
-                                           const ArrayDouble &coeffs,
-                                           ArrayDouble &out) {
+                                        const ArrayDouble &coeffs,
+                                        ArrayDouble &out) {
   if (!weights_computed) compute_weights();
 
   ulong i;
@@ -66,7 +71,7 @@ void ModelHawkesFixedKernLogLik::grad_i(const ulong sampled_i,
 }
 
 double ModelHawkesFixedKernLogLik::loss_and_grad(const ArrayDouble &coeffs,
-                                                    ArrayDouble &out) {
+                                                 ArrayDouble &out) {
   if (!weights_computed) compute_weights();
   out.fill(0);
 
@@ -80,7 +85,7 @@ double ModelHawkesFixedKernLogLik::loss_and_grad(const ArrayDouble &coeffs,
 }
 
 double ModelHawkesFixedKernLogLik::hessian_norm(const ArrayDouble &coeffs,
-                                                   const ArrayDouble &vector) {
+                                                const ArrayDouble &vector) {
   if (!weights_computed) compute_weights();
 
   const double norm_sum =
@@ -91,7 +96,6 @@ double ModelHawkesFixedKernLogLik::hessian_norm(const ArrayDouble &coeffs,
 
   return norm_sum / n_total_jumps;
 }
-
 
 void ModelHawkesFixedKernLogLik::hessian(const ArrayDouble &coeffs, ArrayDouble &out) {
   if (!weights_computed) compute_weights();
@@ -109,8 +113,8 @@ void ModelHawkesFixedKernLogLik::hessian(const ArrayDouble &coeffs, ArrayDouble 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ModelHawkesFixedKernLogLik::sampled_i_to_index(const ulong sampled_i,
-                                                       ulong *i,
-                                                       ulong *k) {
+                                                    ulong *i,
+                                                    ulong *k) {
   ulong cum_N_i = 0;
   for (ulong d = 0; d < n_nodes; d++) {
     cum_N_i += (*n_jumps_per_node)[d];
@@ -123,7 +127,7 @@ void ModelHawkesFixedKernLogLik::sampled_i_to_index(const ulong sampled_i,
 }
 
 double ModelHawkesFixedKernLogLik::loss_dim_i(const ulong i,
-                                                 const ArrayDouble &coeffs) {
+                                              const ArrayDouble &coeffs) {
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
@@ -148,8 +152,8 @@ double ModelHawkesFixedKernLogLik::loss_dim_i(const ulong i,
 }
 
 double ModelHawkesFixedKernLogLik::loss_i_k(const ulong i,
-                                               const ulong k,
-                                               const ArrayDouble &coeffs) {
+                                            const ulong k,
+                                            const ArrayDouble &coeffs) {
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
   double loss = 0;
@@ -181,8 +185,8 @@ double ModelHawkesFixedKernLogLik::loss_i_k(const ulong i,
 }
 
 void ModelHawkesFixedKernLogLik::grad_dim_i(const ulong i,
-                                               const ArrayDouble &coeffs,
-                                               ArrayDouble &out) {
+                                            const ArrayDouble &coeffs,
+                                            ArrayDouble &out) {
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
@@ -204,8 +208,8 @@ void ModelHawkesFixedKernLogLik::grad_dim_i(const ulong i,
 }
 
 void ModelHawkesFixedKernLogLik::grad_i_k(const ulong i, const ulong k,
-                                             const ArrayDouble &coeffs,
-                                             ArrayDouble &out) {
+                                          const ArrayDouble &coeffs,
+                                          ArrayDouble &out) {
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
@@ -233,8 +237,8 @@ void ModelHawkesFixedKernLogLik::grad_i_k(const ulong i, const ulong k,
 }
 
 double ModelHawkesFixedKernLogLik::loss_and_grad_dim_i(const ulong i,
-                                                          const ArrayDouble &coeffs,
-                                                          ArrayDouble &out) {
+                                                       const ArrayDouble &coeffs,
+                                                       ArrayDouble &out) {
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
@@ -269,8 +273,8 @@ double ModelHawkesFixedKernLogLik::loss_and_grad_dim_i(const ulong i,
 }
 
 double ModelHawkesFixedKernLogLik::hessian_norm_dim_i(const ulong i,
-                                                         const ArrayDouble &coeffs,
-                                                         const ArrayDouble &vector) {
+                                                      const ArrayDouble &coeffs,
+                                                      const ArrayDouble &vector) {
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
@@ -295,15 +299,18 @@ double ModelHawkesFixedKernLogLik::hessian_norm_dim_i(const ulong i,
 }
 
 void ModelHawkesFixedKernLogLik::hessian_i(const ulong i,
-                                              const ArrayDouble &coeffs,
-                                              ArrayDouble &out) {
+                                           const ArrayDouble &coeffs,
+                                           ArrayDouble &out) {
   if (!weights_computed) TICK_ERROR("Please compute weights before calling hessian_i");
 
   const double mu_i = coeffs[i];
   const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
-  const ulong start_mu_line = i * (n_nodes + 1);
-  const ulong block_start = (i + 1) * n_nodes * (n_nodes + 1);
+  // number of alphas per dimension
+  const ulong n_alpha_i = get_alpha_i_last_index(i) - get_alpha_i_first_index(i);
+
+  const ulong start_mu_line = i * (n_alpha_i + 1);
+  const ulong block_start = (n_nodes + i * n_alpha_i) * (n_alpha_i + 1);
 
   for (ulong k = 0; k < (*n_jumps_per_node)[i]; ++k) {
     const ArrayDouble g_i_k = view_row(g[i], k);
@@ -315,16 +322,16 @@ void ModelHawkesFixedKernLogLik::hessian_i(const ulong i,
     // fill mu mu
     out[start_mu_line] += 1. / s_2;
     // fill mu alpha
-    for (ulong j = 0; j < n_nodes; ++j) {
+    for (ulong j = 0; j < n_alpha_i; ++j) {
       out[start_mu_line + j + 1] += g_i_k[j] / s_2;
     }
 
-    for (ulong l = 0; l < n_nodes; ++l) {
-      const ulong start_alpha_line = block_start + l * (n_nodes + 1);
+    for (ulong l = 0; l < n_alpha_i; ++l) {
+      const ulong start_alpha_line = block_start + l * (n_alpha_i + 1);
       // fill alpha mu
       out[start_alpha_line] += g_i_k[l] / s_2;
       // fill alpha square
-      for (ulong m = 0; m < n_nodes; ++m) {
+      for (ulong m = 0; m < n_alpha_i; ++m) {
         out[start_alpha_line + m + 1] += g_i_k[l] * g_i_k[m] / s_2;
       }
     }

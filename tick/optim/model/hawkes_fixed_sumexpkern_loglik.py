@@ -4,7 +4,7 @@ import numpy as np
 
 from .base import ModelHawkes, ModelSecondOrder, ModelSelfConcordant, \
     LOSS_AND_GRAD
-from .build.model import ModelHawkesFixedSumExpKernLogLik as \
+from .build.model import ModelHawkesFixedSumExpKernLogLikList as \
     _ModelHawkesFixedSumExpKernLogLik
 
 

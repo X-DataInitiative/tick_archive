@@ -9,7 +9,7 @@ ModelHawkesFixedKernLogLikList::ModelHawkesFixedKernLogLikList(const int max_n_t
 void ModelHawkesFixedKernLogLikList::incremental_set_data(
     const SArrayDoublePtrList1D &timestamps, double end_time) {
   weights_computed = false;
-  if (model_list.size() == 0) {
+  if (model_list.empty()) {
     set_n_nodes(timestamps.size());
 
     n_realizations = 0;
@@ -43,6 +43,10 @@ void ModelHawkesFixedKernLogLikList::incremental_set_data(
 }
 
 void ModelHawkesFixedKernLogLikList::compute_weights() {
+  if (!model_list.empty() && timestamps_list.size() != model_list.size()) {
+    TICK_ERROR("Cannot compute weights as timestamps have not been stored. "
+                 "Did you use incremental_fit?");
+  }
   model_list = std::vector< std::unique_ptr<ModelHawkesFixedKernLogLik> >(n_realizations);
 
   for (ulong r = 0; r < n_realizations; ++r) {
