@@ -189,6 +189,7 @@ class ModelPoisReg(ModelGeneralizedLinear,
                              "'linear'.")
 
     def _sdca_primal_dual_relation(self, l_l2sq, dual_vector):
+        scaled_l_l2sq = l_l2sq * self.n_samples / self._sdca_rand_max
         psi = np.sum(self.features, axis=0) / self._sdca_rand_max
 
         # print('l_l2sq * self._sdca_rand_max', 1 / (l_l2sq * self._sdca_rand_max))
@@ -196,14 +197,14 @@ class ModelPoisReg(ModelGeneralizedLinear,
         # Only samples with non zero labels are considered in SDCA
         non_zero_labels = self.labels != 0
         alpha_part = dual_vector.dot(self.features[non_zero_labels, :]) / \
-                     (l_l2sq * self._sdca_rand_max)
+                     (scaled_l_l2sq * self._sdca_rand_max)
 
         # print(dual_vector)
         # print(self.features[non_zero_labels, :])
 
         # print('alpha_part', alpha_part)
 
-        psi_part = 1 / l_l2sq * psi
+        psi_part = 1 / scaled_l_l2sq * psi
         primal_vector = alpha_part - psi_part
         return primal_vector
 
@@ -219,8 +220,17 @@ class ModelPoisReg(ModelGeneralizedLinear,
         if self.link != "identity":
             raise(NotImplementedError())
 
-        non_zero_labels = self.labels != 0
-        dual_loss = self.labels[non_zero_labels] * (
-            1 + np.log(dual_coeffs / self.labels[non_zero_labels]))
-        return np.mean(dual_loss)
+        # non_zero_labels = self.labels != 0
+        # dual_loss = self.labels[non_zero_labels] * (
+        #     1 + np.log(dual_coeffs / self.labels[non_zero_labels]))
+        dual_loss = []
+        for label in self.labels:
+            if label != 0:
+                dual = dual_coeffs[len(dual_loss)]
+                dual_loss += [label + label * np.log(dual / label)]
+        dual_loss = np.array(dual_loss)
+        # print(dual_loss)
+        # print(self.labels[non_zero_labels] * (
+        #     1 + np.log(dual_coeffs / self.labels[non_zero_labels])))
+        return np.mean(dual_loss) * self._sdca_rand_max / self.n_samples
 

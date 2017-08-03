@@ -82,6 +82,8 @@ class Test(TestSolver):
                            features=features, n_samples=n_samples,
                            link='identity')
         features, labels = simu.simulate()
+        labels[labels != 0] = 10
+
         model = ModelPoisReg(fit_intercept=False, link='identity')
         model.fit(features, labels)
 
@@ -101,21 +103,28 @@ class Test(TestSolver):
         print("solver primal")
         print(sdca._solver.get_primal_vector())
 
-        print('P(w) = ', sdca.objective(sdca._solver.get_primal_vector()))
-        print('D(a) = ', sdca.dual_objective(sdca._solver.get_dual_vector()))
 
-        print('P(w0) = ', sdca.objective(weight0))
 
         svrg = SVRG(max_iter=100, verbose=True, tol=1-10,
                     seed=Test.sto_seed)
         svrg.set_model(model)
-        prox_l2sq = ProxL2Sq(l_l2sq * model._sdca_rand_max / n_samples)
+        prox_l2sq = ProxL2Sq(l_l2sq)
         svrg.set_prox(prox_l2sq)
         coeffs_svrg = svrg.solve(0.5 * np.ones(model.n_coeffs), step=1e-1)
 
         print("solver sqvrg")
         print(coeffs_svrg)
 
+        print('P(w) = ', svrg.objective(coeffs_svrg))
         print('P(w) = ', sdca.objective(coeffs_svrg))
+        print('P(w) = ', sdca.objective(sdca._solver.get_primal_vector()))
+        print('D(a) = ', sdca.dual_objective(sdca._solver.get_dual_vector()))
+
+        from scipy.optimize import approx_fprime
+        print(approx_fprime(sdca._solver.get_primal_vector(), sdca.objective, 1e-10))
+        print(approx_fprime(sdca._solver.get_dual_vector(), sdca.dual_objective,
+                            1e-10).max())
+
+
 if __name__ == '__main__':
     unittest.main()

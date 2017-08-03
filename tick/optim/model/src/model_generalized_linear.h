@@ -64,7 +64,6 @@ class ModelGeneralizedLinear : public ModelLabelsFeatures {
   }
 
   ulong get_n_coeffs() const override {
-    TICK_DEBUG() << "alright?";
     return get_n_features() + static_cast<int>(fit_intercept);
   }
 

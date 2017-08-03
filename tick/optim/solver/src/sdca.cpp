@@ -76,15 +76,17 @@ void SDCA::solve() {
     init_stored_variables();
   }
 
+  double scaled_l_l2sq = l_l2sq * model->get_n_samples() / rand_max;
+
   ulong i;
-  double _1_over_lbda_n = 1 / (l_l2sq * rand_max);
+  double _1_over_lbda_n = 1 / (scaled_l_l2sq * rand_max);
   ulong start_t = t;
 
   for (t = start_t; t < start_t + epoch_size; ++t) {
     // Pick i uniformly at random
     i = get_next_i();
     // Maximize the dual coordinate i
-    double delta_dual_i = model->sdca_dual_min_i(i, dual_vector, iterate, delta, l_l2sq);
+    double delta_dual_i = model->sdca_dual_min_i(i, dual_vector, iterate, delta, scaled_l_l2sq);
     // Update the dual variable
     dual_vector[i] += delta_dual_i;
 
@@ -101,6 +103,6 @@ void SDCA::solve() {
       tmp_primal_vector.mult_incr(features_i, delta_dual_i * _1_over_lbda_n);
     }
     // Call prox on the primal variable
-    prox->call(tmp_primal_vector, 1. / l_l2sq, iterate);
+    prox->call(tmp_primal_vector, 1. / scaled_l_l2sq, iterate);
   }
 }
