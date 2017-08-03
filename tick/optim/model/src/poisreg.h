@@ -7,8 +7,9 @@
 
 // License: BSD 3 clause
 
-#include "model_generalized_linear.h"
+#include <unordered_map>
 
+#include "model_generalized_linear.h"
 
 // TODO: labels should be a ArrayUInt
 
@@ -20,6 +21,8 @@ enum class LinkType {
 class ModelPoisReg : public ModelGeneralizedLinear {
  private:
   LinkType link_type;
+  bool non_zero_label_map_computed;
+  std::unordered_map<ulong, ulong> non_zero_label_map;
 
  public:
   ModelPoisReg(const SBaseArrayDouble2dPtr features,
@@ -32,16 +35,36 @@ class ModelPoisReg : public ModelGeneralizedLinear {
     return "ModelPoisReg";
   }
 
+  double loss_i(const ulong i, const ArrayDouble &coeffs) override;
+
+  double grad_i_factor(const ulong i, const ArrayDouble &coeffs) override;
+
   double sdca_dual_min_i(const ulong i,
                          const ArrayDouble &dual_vector,
                          const ArrayDouble &primal_vector,
                          const ArrayDouble &previous_delta_dual,
                          const double l_l2sq) override;
 
-  double loss_i(const ulong i, const ArrayDouble &coeffs) override;
+  BaseArrayDouble get_sdca_features(const ulong i) override;
 
-  double grad_i_factor(const ulong i, const ArrayDouble &coeffs) override;
+ private:
+  double sdca_dual_min_i_exponential(const ulong i,
+                                     const ArrayDouble &dual_vector,
+                                     const ArrayDouble &primal_vector,
+                                     const ArrayDouble &previous_delta_dual,
+                                     const double l_l2sq);
 
+  ulong get_non_zero_i(ulong i);
+
+  void init_non_zero_label_map();
+
+  double sdca_dual_min_i_identity(const ulong i,
+                                  const ArrayDouble &dual_vector,
+                                  const ArrayDouble &primal_vector,
+                                  const ArrayDouble &previous_delta_dual,
+                                  const double l_l2sq);
+
+ public:
   virtual void set_link_type(const LinkType link_type) {
     this->link_type = link_type;
   }

@@ -76,6 +76,10 @@ class Model {
     TICK_CLASS_DOES_NOT_IMPLEMENT(get_class_name());
   }
 
+  virtual BaseArrayDouble get_sdca_features(const ulong i) {
+    TICK_CLASS_DOES_NOT_IMPLEMENT(get_class_name());
+  }
+
   virtual bool is_sparse() const {
     return false;
   }

@@ -98,5 +98,13 @@ class SDCA(SolverFirstOrderSto):
         prox_l2_value = 0.5 * self.l_l2sq * np.linalg.norm(coeffs) ** 2
         return SolverFirstOrderSto.objective(self, coeffs, loss) + prox_l2_value
         
+    def _set_rand_max(self, model):
+        try:
+            # Some model, like Poisreg with linear link, have a special
+            # rand_max for SDCA
+            model_rand_max = model._sdca_rand_max
+            print('model_rand_max', model_rand_max)
+        except (AttributeError, NotImplementedError):
+            model_rand_max = model._rand_max
 
-
+        self._set("_rand_max", model_rand_max)

@@ -18,10 +18,8 @@
 
 
 class SDCA : public StoSolver {
-  // SDCA Solver's class
-
  protected:
-  ulong n_samples, n_coeffs;
+  ulong n_coeffs;
 
   // A boolean that attests that our arrays of ascent variables and dual variables are initialized
   // with the right size
@@ -40,19 +38,20 @@ class SDCA : public StoSolver {
   ArrayDouble dual_vector;
 
  public:
-  SDCA(double l_l2sq,
+  explicit SDCA(double l_l2sq,
        ulong epoch_size = 0,
        double tol = 0.,
        RandType rand_type = RandType::unif,
        int seed = -1);
 
-  void reset();
+  void reset() override;
 
-  void solve();
+  void solve() override;
 
-  void set_model(ModelPtr model);
+  void set_model(ModelPtr model) override;
 
   void init_stored_variables();
+  void init_stored_variables(ArrayDouble &primal_vector, ArrayDouble &dual_vector);
 
   double get_l_l2sq() const {
     return l_l2sq;
@@ -60,6 +59,16 @@ class SDCA : public StoSolver {
 
   void set_l_l2sq(double l_l2sq) {
     this->l_l2sq = l_l2sq;
+  }
+
+  SArrayDoublePtr get_primal_vector() const {
+    ArrayDouble copy = tmp_primal_vector;
+    return copy.as_sarray_ptr();
+  }
+
+  SArrayDoublePtr get_dual_vector() const {
+    ArrayDouble copy = dual_vector;
+    return copy.as_sarray_ptr();
   }
 };
 

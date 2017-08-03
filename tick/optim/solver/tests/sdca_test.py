@@ -3,10 +3,11 @@
 import unittest
 import numpy as np
 
-from tick.optim.model import ModelLogReg
-from tick.optim.prox import ProxL1, ProxElasticNet
+from tick.optim.model import ModelLogReg, ModelPoisReg
+from tick.optim.prox import ProxL1, ProxElasticNet, ProxZero
 from tick.optim.solver import SDCA, SVRG
 from tick.optim.solver.tests.solver import TestSolver
+from tick.simulation import SimuPoisReg
 
 
 class Test(TestSolver):
@@ -60,6 +61,47 @@ class Test(TestSolver):
 
         self._test_solver_sparse_and_dense_consistency(create_solver)
 
+    def test_sdca_identity_poisreg(self):
+        """...Test SDCA on specific case of Poisson regression with
+        indentity link
+        """
+        l_l2sq = 1e-1
+        n_samples = 100
+        n_features = 3
+
+        np.random.seed(123)
+        weight0 = np.random.rand(n_features)
+        features = np.random.rand(n_samples, n_features)
+
+        simu = SimuPoisReg(weight0, intercept=None,
+                           features=features, n_samples=n_samples,
+                           link='identity')
+        features, labels = simu.simulate()
+        model = ModelPoisReg(fit_intercept=False, link='identity')
+        model.fit(features, labels)
+
+        sdca = SDCA(l_l2sq=l_l2sq, max_iter=10, verbose=True, tol=0,
+                    seed=Test.sto_seed).set_model(model).set_prox(ProxZero())
+
+        primal, dual = model.init_sdca_primal_dual_variables(l_l2sq, init_dual=0.001)
+        print('initial primal')
+        print(primal)
+        sdca._solver.init_stored_variables(primal.copy(), dual.copy())
+
+        print(model._sdca_primal_dual_relation(l_l2sq,
+                                               sdca._solver.get_dual_vector()))
+
+        sdca.solve()
+
+        print('original coeffs')
+        print(weight0)
+
+        print("solver primal")
+        print(sdca._solver.get_primal_vector())
+
+        print('primal dual relation')
+        print(model._sdca_primal_dual_relation(l_l2sq,
+                                               sdca._solver.get_dual_vector()))
 
 if __name__ == '__main__':
     unittest.main()

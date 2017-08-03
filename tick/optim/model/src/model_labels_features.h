@@ -42,6 +42,10 @@ class ModelLabelsFeatures : public virtual Model {
     return view_row(*features, i);
   }
 
+  BaseArrayDouble get_sdca_features(const ulong i) override {
+    return get_features(i);
+  }
+
   virtual double get_label(ulong i) const {
     return (*labels)[i];
   }

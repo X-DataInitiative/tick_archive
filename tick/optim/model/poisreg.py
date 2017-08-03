@@ -98,10 +98,10 @@ class ModelPoisReg(ModelGeneralizedLinear,
 
         Parameters
         ----------
-        features : `numpy.ndarray`, shape=(n_samples, n_features)
+        features : `np.ndarray`, shape=(n_samples, n_features)
             The features matrix
 
-        labels : `numpy.ndarray`, shape=(n_samples,)
+        labels : `np.ndarray`, shape=(n_samples,)
             The labels vector
 
         Returns
@@ -168,4 +168,50 @@ class ModelPoisReg(ModelGeneralizedLinear,
         else:
             raise ValueError("``link`` must be either 'exponential' or "
                              "'linear'.")
+
+    def init_sdca_primal_dual_variables(self, l_l2sq, init_dual=None):
+        if self.link == "identity":
+            if init_dual is None:
+                init_dual = np.sqrt(l_l2sq * self._sdca_rand_max)
+
+            print('INIT DUAL', init_dual)
+
+            dual_vector = init_dual * np.ones(self._sdca_rand_max)
+
+            primal_vector = self._sdca_primal_dual_relation(l_l2sq, dual_vector)
+
+            return primal_vector, dual_vector
+
+        elif self.link == "exponential":
+            raise NotImplementedError("exp link is not yet implemented")
+        else:
+            raise ValueError("``link`` must be either 'exponential' or "
+                             "'linear'.")
+
+    def _sdca_primal_dual_relation(self, l_l2sq, dual_vector):
+        psi = np.sum(self.features, axis=0) / self._sdca_rand_max
+
+        # print('l_l2sq * self._sdca_rand_max', 1 / (l_l2sq * self._sdca_rand_max))
+
+        # Only samples with non zero labels are considered in SDCA
+        non_zero_labels = self.labels != 0
+        alpha_part = dual_vector.dot(self.features[non_zero_labels, :]) / \
+                     (l_l2sq * self._sdca_rand_max)
+
+        # print(dual_vector)
+        # print(self.features[non_zero_labels, :])
+
+        # print('alpha_part', alpha_part)
+
+        psi_part = 1 / l_l2sq * psi
+        primal_vector = alpha_part - psi_part
+        return primal_vector
+
+    @property
+    def _sdca_rand_max(self):
+        if self.link == "identity":
+            non_zero_labels = self.labels != 0
+            return non_zero_labels.sum().item()
+        else:
+            raise NotImplementedError()
 
