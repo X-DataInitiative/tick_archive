@@ -61,6 +61,7 @@ class Model {
   // Number of parameters to be estimated. Can differ from the number of
   // features, e.g. when including an intercept.
   virtual ulong get_n_coeffs() const {
+    TICK_DEBUG() << "before error";
     TICK_CLASS_DOES_NOT_IMPLEMENT(get_class_name());
   }
 

@@ -97,6 +97,11 @@ class SDCA(SolverFirstOrderSto):
         """
         prox_l2_value = 0.5 * self.l_l2sq * np.linalg.norm(coeffs) ** 2
         return SolverFirstOrderSto.objective(self, coeffs, loss) + prox_l2_value
+
+    def dual_objective(self, dual_coeffs):
+        primal = self.model._sdca_primal_dual_relation(self.l_l2sq, dual_coeffs)
+        prox_l2_value = 0.5 * self.l_l2sq * np.linalg.norm(primal) ** 2
+        return self.model.dual_loss(dual_coeffs) - prox_l2_value
         
     def _set_rand_max(self, model):
         try:

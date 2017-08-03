@@ -125,11 +125,11 @@ void ModelPoisReg::init_non_zero_label_map() {
       n_non_zeros++;
     }
   }
+  n_non_zeros_labels = n_non_zeros;
 }
 
 BaseArrayDouble ModelPoisReg::get_sdca_features(const ulong i) {
   if (!non_zero_label_map_computed) init_non_zero_label_map();
-  std::cout << "About to get "<< i << std::endl;
   get_features(non_zero_label_map[i]);
   return get_features(non_zero_label_map[i]);
 }
@@ -150,69 +150,22 @@ double ModelPoisReg::sdca_dual_min_i_identity(const ulong rand_i,
 
   ulong i = get_non_zero_i(rand_i);
 
-  double label = get_label(i);
-  double dual = dual_vector[rand_i];
+  const double label = get_label(i);
+  const double dual = dual_vector[rand_i];
   if (label == 0) {
     TICK_ERROR("Labels 0 should not be considered in SDCA");
   }
 
-  double epsilon = 1e-1;
-
-  std::cout << "primal in sdca min" << std::endl;
-  primal_vector.print();
-  std::cout << "dual_vector[rand_i]=" << dual
-            << ", features_norm_sq[i]=" << features_norm_sq[i]
-            << ", label[i]=" << get_label(i)
-            << ", get_inner_prod(i, primal_vector)=" << get_inner_prod(i, primal_vector)
-            << std::endl;
-
-  double normalized_features_norm = features_norm_sq[i] / (l_l2sq * n_samples);
+  double normalized_features_norm = features_norm_sq[i] / (l_l2sq * n_non_zeros_labels);
   if (use_intercept()) {
-    normalized_features_norm += 1. / (l_l2sq * n_samples);
+    normalized_features_norm += 1. / (l_l2sq * n_non_zeros_labels);
   }
   double primal_dot_features = get_inner_prod(i, primal_vector);
-  double delta_dual = previous_delta_dual[rand_i];
-  double new_dual{0.};
 
-  for (int j = 0; j < 100; ++j) {
-    new_dual = dual + delta_dual;
+  double tmp = dual * normalized_features_norm - primal_dot_features;
+  double new_dual = (std::sqrt(tmp * tmp + 4 * label * normalized_features_norm) + tmp) / (2
+    * normalized_features_norm);
 
-    // Check we are in the correct bounds
-    if (new_dual <= 0) {
-      new_dual = epsilon;
-      delta_dual = new_dual - dual;
-      epsilon *= 1e-1;
-    }
-
-    // Do newton descent
-    // Poisson loss part
-    double f_prime = -label / new_dual;
-    double f_second = label / (new_dual * new_dual);
-
-    // Ridge regression part
-    f_prime += normalized_features_norm * delta_dual + primal_dot_features;
-    f_second += normalized_features_norm;
-
-    delta_dual -= f_prime / f_second;
-    new_dual = dual + delta_dual;
-
-    if (std::abs(f_prime / f_second) < 1e-10) {
-      break;
-    }
-  }
-  // Check we are in the correct bounds
-  if (new_dual <= 0) {
-    new_dual = epsilon;
-    delta_dual = new_dual - dual;
-  }
-
-//  if (new_dual < 1e-20){
-//    std::cout << "label = " << dual;
-//    std::cout << "dual = " << dual;
-//  }
-
-  std::cout << "new_dual = " << dual + delta_dual << std::endl;
-
-  return delta_dual;
+  return new_dual - dual;
 
 }

@@ -98,9 +98,6 @@ double ModelGeneralizedLinear::loss(const ArrayDouble &coeffs) {
 double ModelGeneralizedLinear::get_inner_prod(const ulong i, const ArrayDouble &coeffs) const {
   const BaseArrayDouble x_i = get_features(i);
 
-  std::cout << "in inner prod" << std::endl;
-  x_i.print();
-
   if (fit_intercept) {
     // The last coefficient of coeffs is the intercept
     const ulong size = coeffs.size();

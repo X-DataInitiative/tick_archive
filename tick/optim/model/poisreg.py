@@ -215,3 +215,12 @@ class ModelPoisReg(ModelGeneralizedLinear,
         else:
             raise NotImplementedError()
 
+    def dual_loss(self, dual_coeffs):
+        if self.link != "identity":
+            raise(NotImplementedError())
+
+        non_zero_labels = self.labels != 0
+        dual_loss = self.labels[non_zero_labels] * (
+            1 + np.log(dual_coeffs / self.labels[non_zero_labels]))
+        return np.mean(dual_loss)
+

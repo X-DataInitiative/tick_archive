@@ -23,6 +23,7 @@ class ModelPoisReg : public ModelGeneralizedLinear {
   LinkType link_type;
   bool non_zero_label_map_computed;
   std::unordered_map<ulong, ulong> non_zero_label_map;
+  ulong n_non_zeros_labels;
 
  public:
   ModelPoisReg(const SBaseArrayDouble2dPtr features,

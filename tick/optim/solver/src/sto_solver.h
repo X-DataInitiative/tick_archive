@@ -79,10 +79,15 @@ class StoSolver {
     virtual ~StoSolver() = default;
 
     virtual void set_model(ModelPtr model) {
+      TICK_DEBUG() << "1.1";
         this->model = model;
+      TICK_DEBUG() << "1.2";
         permutation_ready = false;
+      TICK_DEBUG() << "1.3 " << model->get_class_name();
         iterate = ArrayDouble(model->get_n_coeffs());
+      TICK_DEBUG() << "1.4";
         iterate.init_to_zero();
+      TICK_DEBUG() << "1.5";
     }
 
     virtual void set_prox(ProxPtr prox) {

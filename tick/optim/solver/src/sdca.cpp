@@ -17,9 +17,13 @@ SDCA::SDCA(double l_l2sq,
 }
 
 void SDCA::set_model(ModelPtr model) {
+  TICK_DEBUG() << "1";
   StoSolver::set_model(model);
+  TICK_DEBUG() << "2";
   this->model = model;
+  TICK_DEBUG() << "3";
   stored_variables_ready = false;
+  TICK_DEBUG() << "4";
 }
 
 void SDCA::reset() {
@@ -66,9 +70,6 @@ void SDCA::init_stored_variables(ArrayDouble &original_primal_vector,
     tmp_primal_vector = original_primal_vector;
   iterate = original_primal_vector;
 
-  std::cout << "Initialized primal to" << std::endl;
-  tmp_primal_vector.print();
-  iterate.print();
 
   delta.init_to_zero();
   stored_variables_ready = true;
@@ -83,15 +84,11 @@ void SDCA::solve() {
   double _1_over_lbda_n = 1 / (l_l2sq * rand_max);
   ulong start_t = t;
 
-  std::cout << "_1_over_lbda_n = " << _1_over_lbda_n << std::endl;
-
   for (t = start_t; t < start_t + epoch_size; ++t) {
     // Pick i uniformly at random
     i = get_next_i();
-
     // Maximize the dual coordinate i
     double delta_dual_i = model->sdca_dual_min_i(i, dual_vector, iterate, delta, l_l2sq);
-
     // Update the dual variable
     dual_vector[i] += delta_dual_i;
 
@@ -100,26 +97,14 @@ void SDCA::solve() {
 
     // Update the primal variable
     BaseArrayDouble features_i = model->get_sdca_features(i);
-//    std::cout << "did get "<< i << std::endl;
-
     if (model->use_intercept()) {
       ArrayDouble primal_features = view(tmp_primal_vector, 0, features_i.size());
       primal_features.mult_incr(features_i, delta_dual_i * _1_over_lbda_n);
       tmp_primal_vector[model->get_n_features()] += delta_dual_i * _1_over_lbda_n;
     } else {
-      std::cout << "features_i" << std::endl;
-      features_i.print();
       tmp_primal_vector.mult_incr(features_i, delta_dual_i * _1_over_lbda_n);
-      std::cout << "primal" << std::endl;
-      tmp_primal_vector.print();
     }
-
     // Call prox on the primal variable
     prox->call(tmp_primal_vector, 1. / l_l2sq, iterate);
-    std::cout << "primal after prox" << std::endl;
-    iterate.print();
-    std::cout << "new dual" << std::endl;
-    dual_vector.print();
-    std::cout << "-------" << std::endl;
   }
 }
