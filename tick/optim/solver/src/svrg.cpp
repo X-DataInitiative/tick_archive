@@ -42,12 +42,6 @@ void SVRG::solve() {
 
         for (ulong t = 0; t < epoch_size; ++t) {
             ulong i = get_next_i();
-            std::cout << "iterate" << std::endl;
-            iterate.print();
-            std::cout << "fixed_w" << std::endl;
-            fixed_w.print();
-            std::cout << "_------------_" << std::endl;
-
             model->grad_i(i, iterate, grad_i);
             model->grad_i(i, fixed_w, grad_i_fixed_w);
             for (ulong j = 0; j < iterate.size(); ++j) {

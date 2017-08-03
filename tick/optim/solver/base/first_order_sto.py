@@ -167,7 +167,11 @@ class SolverFirstOrderSto(SolverFirstOrder, SolverSto):
 
         step, obj, minimizer, prev_minimizer = self._initialize_values(x0, step,
                                                                    n_empty_vectors=1)
-        # self._solver.set_starting_iterate(minimizer)
+
+        from tick.optim.solver import SDCA
+        if not isinstance(self, SDCA):
+            self._solver.set_starting_iterate(minimizer)
+
         # At each iteration we call self._solver.solve that does a full
         # epoch
         for n_iter in range(self.max_iter + 1):

@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 
 from tick.optim.model import ModelLogReg, ModelPoisReg
-from tick.optim.prox import ProxL1, ProxElasticNet, ProxZero
+from tick.optim.prox import ProxL1, ProxElasticNet, ProxZero, ProxL2Sq
 from tick.optim.solver import SDCA, SVRG
 from tick.optim.solver.tests.solver import TestSolver
 from tick.simulation import SimuPoisReg
@@ -35,14 +35,14 @@ class Test(TestSolver):
 
             # SDCA "elastic-net" formulation is different from elastic-net
             # implementation
-            # l_l2_sdca = ratio * l_enet
-            # l_l1_sdca = (1 - ratio) * l_enet
-            # sdca = SDCA(l_l2sq=l_l2_sdca, max_iter=100, verbose=False, tol=0,
-            #             seed=Test.sto_seed)
-            # sdca.set_model(model)
-            # prox_l1 = ProxL1(l_l1_sdca)
-            # sdca.set_prox(prox_l1)
-            # coeffs_sdca = sdca.solve()
+            l_l2_sdca = ratio * l_enet
+            l_l1_sdca = (1 - ratio) * l_enet
+            sdca = SDCA(l_l2sq=l_l2_sdca, max_iter=100, verbose=False, tol=0,
+                        seed=Test.sto_seed)
+            sdca.set_model(model)
+            prox_l1 = ProxL1(l_l1_sdca)
+            sdca.set_prox(prox_l1)
+            coeffs_sdca = sdca.solve()
 
             # Compare with SVRG
             svrg = SVRG(max_iter=100, verbose=False, tol=0,
@@ -70,7 +70,7 @@ class Test(TestSolver):
         """
         np.set_printoptions(precision=4, linewidth=200)
 
-        l_l2sq = 1e-2
+        l_l2sq = 1e-1
         n_samples = 190
         n_features = 10
 
@@ -85,19 +85,14 @@ class Test(TestSolver):
         model = ModelPoisReg(fit_intercept=False, link='identity')
         model.fit(features, labels)
 
-        sdca = SDCA(l_l2sq=l_l2sq, max_iter=100, verbose=True, tol=1e-10,
-                    seed=Test.sto_seed, print_every=1).set_model(model).set_prox(ProxZero())
+        sdca = SDCA(l_l2sq=l_l2sq, max_iter=100, verbose=True, tol=1e-14,
+                    seed=Test.sto_seed, print_every=10).set_model(model).set_prox(ProxZero())
 
         sdca.history.set_minimizer(weight0)
 
         primal, dual = model.init_sdca_primal_dual_variables(l_l2sq, init_dual=None)
-        print('initial primal')
         print(primal)
         sdca._solver.init_stored_variables(primal.copy(), dual.copy())
-
-        print(model._sdca_primal_dual_relation(l_l2sq,
-                                               sdca._solver.get_dual_vector()))
-
         sdca.solve()
 
         print('original coeffs')
@@ -111,5 +106,16 @@ class Test(TestSolver):
 
         print('P(w0) = ', sdca.objective(weight0))
 
+        svrg = SVRG(max_iter=100, verbose=True, tol=1-10,
+                    seed=Test.sto_seed)
+        svrg.set_model(model)
+        prox_l2sq = ProxL2Sq(l_l2sq * model._sdca_rand_max / n_samples)
+        svrg.set_prox(prox_l2sq)
+        coeffs_svrg = svrg.solve(0.5 * np.ones(model.n_coeffs), step=1e-1)
+
+        print("solver sqvrg")
+        print(coeffs_svrg)
+
+        print('P(w) = ', sdca.objective(coeffs_svrg))
 if __name__ == '__main__':
     unittest.main()

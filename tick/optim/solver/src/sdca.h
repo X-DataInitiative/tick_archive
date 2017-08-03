@@ -70,6 +70,10 @@ class SDCA : public StoSolver {
     ArrayDouble copy = dual_vector;
     return copy.as_sarray_ptr();
   }
+
+  void set_starting_iterate(ArrayDouble &new_iterate) override {
+    TICK_ERROR("Cannot call set_starting_iterate in SDCA, use init_stored_variables")
+  }
 };
 
 #endif  // TICK_OPTIM_SOLVER_SRC_SDCA_H_

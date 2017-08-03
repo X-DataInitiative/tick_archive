@@ -17,13 +17,9 @@ SDCA::SDCA(double l_l2sq,
 }
 
 void SDCA::set_model(ModelPtr model) {
-  TICK_DEBUG() << "1";
   StoSolver::set_model(model);
-  TICK_DEBUG() << "2";
   this->model = model;
-  TICK_DEBUG() << "3";
   stored_variables_ready = false;
-  TICK_DEBUG() << "4";
 }
 
 void SDCA::reset() {
