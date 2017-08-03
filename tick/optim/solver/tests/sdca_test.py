@@ -25,7 +25,7 @@ class Test(TestSolver):
         n_samples = Test.n_samples
         n_features = Test.n_features
 
-        for fit_intercept in [True, False]:
+        for fit_intercept in [False]:
             y, X, coeffs0, interc0 = TestSolver.generate_logistic_data(
                 n_features, n_samples)
 
@@ -35,23 +35,24 @@ class Test(TestSolver):
 
             # SDCA "elastic-net" formulation is different from elastic-net
             # implementation
-            l_l2_sdca = ratio * l_enet
-            l_l1_sdca = (1 - ratio) * l_enet
-            sdca = SDCA(l_l2sq=l_l2_sdca, max_iter=100, verbose=False, tol=0,
-                        seed=Test.sto_seed)
-            sdca.set_model(model)
+            # l_l2_sdca = ratio * l_enet
+            # l_l1_sdca = (1 - ratio) * l_enet
+            # sdca = SDCA(l_l2sq=l_l2_sdca, max_iter=100, verbose=False, tol=0,
+            #             seed=Test.sto_seed)
+            # sdca.set_model(model)
             # prox_l1 = ProxL1(l_l1_sdca)
             # sdca.set_prox(prox_l1)
             # coeffs_sdca = sdca.solve()
-            #
-            # # Compare with SVRG
-            # svrg = SVRG(max_iter=100, verbose=False, tol=0,
-            #             seed=Test.sto_seed).set_model(model)
-            # prox_enet = ProxElasticNet(l_enet, ratio)
-            # svrg.set_prox(prox_enet)
-            # coeffs_svrg = svrg.solve(step=0.1)
-            #
-            # np.testing.assert_allclose(coeffs_sdca, coeffs_svrg)
+
+            # Compare with SVRG
+            svrg = SVRG(max_iter=100, verbose=False, tol=0,
+                        seed=Test.sto_seed)
+            svrg.set_model(model)
+            prox_enet = ProxElasticNet(l_enet, ratio)
+            svrg.set_prox(prox_enet)
+            coeffs_svrg = svrg.solve(step=0.1)
+
+            np.testing.assert_allclose(coeffs_sdca, coeffs_svrg)
 
     def test_sdca_sparse_and_dense_consistency(self):
         """...Test SDCA can run all glm models and is consistent with sparsity

@@ -145,7 +145,7 @@ struct LogExitCout {
   Anything that can be inserted into std::stringstream can also be inserted as a parameter here.
  */
 #define TICK_ERROR(fmt) \
-  {throw std::runtime_error(((tick::TemporaryLog<tick::LogExitNoop>{} << fmt << '\n')).value());}
+  {throw std::runtime_error(((tick::TemporaryLog<tick::LogExitNoop>{} << fmt << '\n').insert_backtrace()).value());}
 
 #endif  // TICK_DEBUG_VERBOSE_MODE
 
