@@ -35,11 +35,14 @@ void SVRG::prepare_solve() {
   // Allocation and computation of the full gradient
   full_gradient = ArrayDouble(iterate.size());
   model->grad(fixed_w, full_gradient);
-  if (model->is_sparse()) {
-    last_time = ArrayULong(model->get_n_features());
-    last_time.fill(0);
-    if (!ready_step_corrections) {
-      compute_step_corrections();
+  if ((model->is_sparse()) && (prox->is_separable())) {
+    if (delayed_updates == DelayedUpdatesMethod::Exact) {
+      // TODO: Initialize this only when model is setted ?
+      last_time = ArrayULong(model->get_n_features());
+      last_time.fill(0);
+      if (!ready_step_corrections) {
+        compute_step_corrections();
+      }
     }
   } else {
     grad_i = ArrayDouble(iterate.size());
@@ -57,7 +60,7 @@ void SVRG::prepare_solve() {
 
 void SVRG::solve() {
   prepare_solve();
-  if (model->is_sparse() && prox->is_separable()) {
+  if ((model->is_sparse()) && (prox->is_separable())) {
     bool use_intercept = model->use_intercept();
     ulong n_features = model->get_n_features();
     if (delayed_updates == DelayedUpdatesMethod::Exact) {
