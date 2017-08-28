@@ -40,6 +40,7 @@ void SVRG::prepare_solve() {
       // TODO: Initialize this only when model is setted ?
       last_time = ArrayULong(model->get_n_features());
       last_time.fill(0);
+    } else {
       if (!ready_step_corrections) {
         compute_step_corrections();
       }
@@ -75,21 +76,19 @@ void SVRG::solve() {
 }
 
 void SVRG::compute_step_corrections() {
-  if ((model->is_sparse()) && delayed_updates == DelayedUpdatesMethod::Proba) {
-    ulong n_features = model->get_n_features();
-    ulong n_samples = model->get_n_samples();
-    std::shared_ptr<ModelLabelsFeatures> casted_model;
-    casted_model = std::dynamic_pointer_cast<ModelLabelsFeatures>(model);
-    ArrayULong columns_non_zeros(n_features);
-    if (!casted_model->is_ready_columns_sparsity()) {
-      casted_model->compute_columns_non_zeros(columns_non_zeros);
-    }
-    steps_correction = ArrayDouble(n_features);
-    for (ulong j = 0; j < n_features; ++j) {
-      steps_correction[j] = static_cast<double>(n_samples / columns_non_zeros[j]);
-    }
-    ready_step_corrections = true;
+  ulong n_features = model->get_n_features();
+  ulong n_samples = model->get_n_samples();
+  std::shared_ptr<ModelLabelsFeatures> casted_model;
+  casted_model = std::dynamic_pointer_cast<ModelLabelsFeatures>(model);
+  ArrayULong columns_non_zeros(n_features);
+  if (!casted_model->is_ready_columns_sparsity()) {
+    casted_model->compute_columns_non_zeros(columns_non_zeros);
   }
+  steps_correction = ArrayDouble(n_features);
+  for (ulong j = 0; j < n_features; ++j) {
+    steps_correction[j] = static_cast<double>(n_samples / columns_non_zeros[j]);
+  }
+  ready_step_corrections = true;
 }
 
 void SVRG::solve_dense() {

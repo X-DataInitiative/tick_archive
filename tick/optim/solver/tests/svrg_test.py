@@ -168,33 +168,37 @@ class Test(TestSolver):
 
         X, y = self.simu_linreg_data()
         model_dense, model_spars = self.get_dense_and_sparse_linreg_model(X, y)
+        models = [model_dense, model_spars]
+        # models = [model_dense]
+
         prox_l1 = ProxL1(strength=1e-7)
         prox_tv = ProxTV(strength=1e-7)
         step = 1 / model_spars.get_lip_max()
 
         variance_reductions = ['last', 'rand']
         rand_types = ['unif', 'perm']
-        delayed_updates = ['exact', 'proba']
-        proxs = [prox_l1, prox_tv]
+        # delayed_updates = ['exact', 'proba']
+        delayed_updates = ['proba']
+        # proxs = [prox_l1, prox_tv]
+        proxs = [prox_l1]
         solutions = []
 
         products = product(variance_reductions, rand_types, delayed_updates,
-                           proxs)
-        for variance_reduction, rand_type, delayed_update, prox in products:
+                           models, proxs)
+        for variance_reduction, rand_type, delayed_update, model, prox \
+                in products:
             solver = SVRG(step=step, tol=1e-10, max_iter=30, verbose=False,
                           variance_reduction=variance_reduction,
                           rand_type=rand_type,
                           delayed_updates=delayed_update,
                           seed=123) \
-                .set_model(model_spars) \
+                .set_model(model) \
                 .set_prox(prox)
             solution = solver.solve()
             solutions.append(solution)
 
         distances = pdist(solutions, 'chebyshev')
         np.testing.assert_array_less(distances, 1e-5)
-
-
 
 
 if __name__ == '__main__':
