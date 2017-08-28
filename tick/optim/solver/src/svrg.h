@@ -49,9 +49,9 @@ class SVRG : public StoSolver {
 
   void solve_dense();
 
-  void solve_sparse_proba_updates(bool is_prox_separable, bool use_intercept, ulong n_features);
+  void solve_sparse_proba_updates(bool use_intercept, ulong n_features);
 
-  void solve_sparse_exact_updates(bool is_prox_separable, bool use_intercept, ulong n_features);
+  void solve_sparse_exact_updates(bool use_intercept, ulong n_features);
 
   void compute_step_corrections();
 

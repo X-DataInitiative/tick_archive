@@ -57,15 +57,14 @@ void SVRG::prepare_solve() {
 
 void SVRG::solve() {
   prepare_solve();
-  if (model->is_sparse()) {
-    bool is_prox_separable = prox->is_separable();
+  if (model->is_sparse() && prox->is_separable()) {
     bool use_intercept = model->use_intercept();
     ulong n_features = model->get_n_features();
     if (delayed_updates == DelayedUpdatesMethod::Exact) {
-      solve_sparse_exact_updates(is_prox_separable, use_intercept, n_features);
+      solve_sparse_exact_updates(use_intercept, n_features);
     }
     if (delayed_updates == DelayedUpdatesMethod::Proba) {
-      solve_sparse_proba_updates(is_prox_separable, use_intercept, n_features);
+      solve_sparse_proba_updates(use_intercept, n_features);
     }
   } else {
     solve_dense();
@@ -112,14 +111,13 @@ void SVRG::solve_dense() {
   t += epoch_size;
 }
 
-void SVRG::solve_sparse_proba_updates(bool is_prox_separable, bool use_intercept, ulong n_features) {
+void SVRG::solve_sparse_proba_updates(bool use_intercept, ulong n_features) {
   // Data is sparse, and we use the probabilistic update strategy
   // This means that the model is a child of ModelGeneralizedLinear.
   // The strategy used here uses non-delayed updates, with corrected
   // step-sizes using a probabilistic approximation and the
-  // penalization trick: with such a model and prox (if prox is separable),
-  // we can work only inside the current support (non-zero values) of
-  // the sampled vector of features
+  // penalization trick: with such a model and prox, we can work only inside the current
+  // support (non-zero values) of the sampled vector of features
   for (t = 0; t < epoch_size; ++t) {
     // Get next sample index
     ulong i = get_next_i();
@@ -137,14 +135,8 @@ void SVRG::solve_sparse_proba_updates(bool is_prox_separable, bool use_intercept
       double step_correction = steps_correction[j];
       // Gradient descent with probabilistic step-size correction
       iterate[j] -= step * (x_i.data()[idx_nnz] * grad_i_diff + step_correction * full_gradient_j);
-      // If prox is separable, apply regularization on the current coordinate
-      if (is_prox_separable) {
-        iterate[j] = casted_prox->call_single(iterate[j], step * step_correction);
-      }
-    }
-    if (!is_prox_separable) {
-      // If prox is not separable, apply it in a non-delayed fashion
-      prox->call(iterate, step, iterate);
+      // Prox is separable, apply regularization on the current coordinate
+      iterate[j] = casted_prox->call_single(iterate[j], step * step_correction);
     }
     // And let's not forget to update the intercept as well
     // It's updated at each step, so no step-correction and no prox applied it
@@ -166,7 +158,7 @@ void SVRG::solve_sparse_proba_updates(bool is_prox_separable, bool use_intercept
   }
 }
 
-void SVRG::solve_sparse_exact_updates(bool is_prox_separable, bool use_intercept, ulong n_features) {
+void SVRG::solve_sparse_exact_updates(bool use_intercept, ulong n_features) {
   // Data is sparse, and we use the exact strategy based on delayed updates.
   // This means that the model is a child of ModelGeneralizedLinear.
   // The strategy used here uses delayed updates strategy and the
@@ -197,23 +189,13 @@ void SVRG::solve_sparse_exact_updates(bool is_prox_separable, bool use_intercept
       if (delay_j > 0) {
         // then we need to correct variance reduction
         iterate[j] -= step * delay_j * full_gradient_j;
-        // and regularization if prox is separable
-        if (is_prox_separable) {
-          iterate[j] = casted_prox->call_single(iterate[j], step, delay_j);
-        }
+        iterate[j] = casted_prox->call_single(iterate[j], step, delay_j);
       }
       // Apply gradient descent to the model weights in the support of x_i
       iterate[j] -= step * (x_i.data()[idx_nnz] * grad_i_diff + full_gradient_j);
-      if (is_prox_separable) {
-        // And regularize if the prox is separable
-        iterate[j] = casted_prox->call_single(iterate[j], step);
-      }
+      iterate[j] = casted_prox->call_single(iterate[j], step);
       // Update last_time
       last_time[j] = t;
-    }
-    if (!is_prox_separable) {
-      // If prox is not separable, apply it in a non-delayed fashion
-      prox->call(iterate, step, iterate);
     }
     // And let's not forget to update the intercept as well
     // It's updated at each step, so no step-correction and no prox applied it
@@ -239,9 +221,7 @@ void SVRG::solve_sparse_exact_updates(bool is_prox_separable, bool use_intercept
     }
     if (delay_j > 0) {
       iterate[j] -= step * delay_j * full_gradient[j];
-      if (is_prox_separable) {
-        iterate[j] = casted_prox->call_single(iterate[j], step, delay_j);
-      }
+      iterate[j] = casted_prox->call_single(iterate[j], step, delay_j);
     }
   }
   t += epoch_size;

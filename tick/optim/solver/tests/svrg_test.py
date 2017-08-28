@@ -158,7 +158,6 @@ class Test(TestSolver):
             self.assertTrue(issubclass(w[0].category, UserWarning))
             self.assertEqual(str(w[0].message), msg)
 
-
     def test_dense_and_sparse_match(self):
         """...Test in SVRG that dense and sparse code matches in all possible
         settings
@@ -194,6 +193,8 @@ class Test(TestSolver):
 
         distances = pdist(solutions, 'chebyshev')
         np.testing.assert_array_less(distances, 1e-5)
+
+
 
 
 if __name__ == '__main__':
