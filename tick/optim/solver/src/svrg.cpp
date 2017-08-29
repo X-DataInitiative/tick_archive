@@ -23,14 +23,12 @@ void SVRG::set_model(ModelPtr model) {
 
 void SVRG::set_prox(ProxPtr prox) {
   StoSolver::set_prox(prox);
-  if (prox->is_separable()) {
-    casted_prox = std::static_pointer_cast<ProxSeparable>(prox);
-  }
 }
 
 void SVRG::prepare_solve() {
   // The point where we compute the full gradient for variance reduction is the
   // new iterate obtained at the previous epoch
+  next_iterate = iterate;
   fixed_w = next_iterate;
   // Allocation and computation of the full gradient
   full_gradient = ArrayDouble(iterate.size());
@@ -120,6 +118,10 @@ void SVRG::solve_sparse_proba_updates(bool use_intercept, ulong n_features) {
   // step-sizes using a probabilistic approximation and the
   // penalization trick: with such a model and prox, we can work only inside the current
   // support (non-zero values) of the sampled vector of features
+  std::shared_ptr<ProxSeparable> casted_prox;
+  if (prox->is_separable()) {
+    casted_prox = std::static_pointer_cast<ProxSeparable>(prox);
+  }
   for (t = 0; t < epoch_size; ++t) {
     // Get next sample index
     ulong i = get_next_i();
@@ -167,41 +169,50 @@ void SVRG::solve_sparse_exact_updates(bool use_intercept, ulong n_features) {
   // delayed penalization trick when the prox is separable, so that
   // we can work when possible only inside the current support
   // (non-zero values) of the sampled vector of features
+  std::shared_ptr<ProxSeparable> casted_prox;
+  if (prox->is_separable()) {
+    casted_prox = std::static_pointer_cast<ProxSeparable>(prox);
+  }
   for (t = 0; t < epoch_size; ++t) {
     // Get next sample index
     ulong i = get_next_i();
     // Sparse features vector
     BaseArrayDouble x_i = model->get_features(i);
-    // Gradients factors (model is a GLM)
-    // TODO: a grad_i_factor(i, array1, array2) to loop once on the features
-    double grad_i_diff = model->grad_i_factor(i, iterate) - model->grad_i_factor(i, fixed_w);
+
     // We update the iterate within the support of the features vector
     for (ulong idx_nnz = 0; idx_nnz < x_i.size_sparse(); ++idx_nnz) {
       // Get the index of the idx-th sparse feature of x_i
       ulong j = x_i.indices()[idx_nnz];
       // How many iterations since the last update of feature j ?
-      ulong delay_j = 0;
-      ulong last_time_j_plus_one = last_time[j] + 1;
-      if (t > last_time_j_plus_one) {
-        delay_j = t - last_time_j_plus_one;
-      }
+      ulong last_time_j = last_time[j];
+      ulong missed_steps_j = t - last_time_j;
       // Full gradient's coordinate j
       double full_gradient_j = full_gradient[j];
       // If there is delay
-      if (delay_j > 0) {
+      if (missed_steps_j > 0) {
         // then we need to correct variance reduction
-        iterate[j] -= step * delay_j * full_gradient_j;
-        iterate[j] = casted_prox->call_single(iterate[j], step, delay_j);
+        iterate[j] -= step * missed_steps_j * full_gradient_j;
+        iterate[j] = casted_prox->call_single(iterate[j], step, missed_steps_j);
       }
+    }
+    // Gradients factors (model is a GLM)
+    // TODO: a grad_i_factor(i, array1, array2) to loop once on the features
+    double grad_i_diff = model->grad_i_factor(i, iterate) - model->grad_i_factor(i, fixed_w);
+
+    for (ulong idx_nnz = 0; idx_nnz < x_i.size_sparse(); ++idx_nnz) {
+      // Get the index of the idx-th sparse feature of x_i
+      ulong j = x_i.indices()[idx_nnz];
+      double full_gradient_j = full_gradient[j];
       // Apply gradient descent to the model weights in the support of x_i
       iterate[j] -= step * (x_i.data()[idx_nnz] * grad_i_diff + full_gradient_j);
       iterate[j] = casted_prox->call_single(iterate[j], step);
       // Update last_time
-      last_time[j] = t;
+      last_time[j] = t + 1;
     }
     // And let's not forget to update the intercept as well
     // It's updated at each step, so no step-correction and no prox applied it
     if (use_intercept) {
+      // TODO still call prox...
       iterate[n_features] -= step * (grad_i_diff + full_gradient[n_features]);
     }
     // Note that the average option for variance reduction with sparse data is a very bad idea,
@@ -216,14 +227,12 @@ void SVRG::solve_sparse_exact_updates(bool use_intercept, ulong n_features) {
   // Now we need to fully update the iterate (not the intercept),
   // since we reached the end of the epoch
   for (ulong j = 0; j < n_features; ++j) {
-    ulong delay_j = 0;
-    ulong last_time_j_plus_one = last_time[j] + 1;
-    if (t > last_time_j_plus_one) {
-      delay_j = t - last_time_j_plus_one;
-    }
-    if (delay_j > 0) {
-      iterate[j] -= step * delay_j * full_gradient[j];
-      iterate[j] = casted_prox->call_single(iterate[j], step, delay_j);
+    ulong missed_steps_j = 0;
+    ulong last_time_j = last_time[j];
+    missed_steps_j = t - last_time_j;
+    if (missed_steps_j > 0) {
+      iterate[j] -= step * missed_steps_j * full_gradient[j];
+      iterate[j] = casted_prox->call_single(iterate[j], step, missed_steps_j);
     }
   }
   t += epoch_size;

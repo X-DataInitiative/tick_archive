@@ -43,8 +43,6 @@ class SVRG : public StoSolver {
   // coefficient (model-weights)
   ArrayULong last_time;
 
-  std::shared_ptr<ProxSeparable> casted_prox;
-
   void prepare_solve();
 
   void solve_dense();
