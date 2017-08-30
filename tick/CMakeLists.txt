@@ -96,6 +96,7 @@ if (${GTEST_FOUND})
     add_subdirectory(base/tests/src)
     add_subdirectory(base/array/tests/src)
     add_subdirectory(optim/model/tests/src)
+    add_subdirectory(optim/solver/tests/src)
     add_subdirectory(simulation/tests/src)
 
     add_custom_target(check
@@ -104,6 +105,7 @@ if (${GTEST_FOUND})
             COMMAND base/array/tests/src/tick_test_varray
             COMMAND optim/model/tests/src/tick_test_model
             COMMAND simulation/tests/src/tick_test_hawkes
+            COMMAND optim/model/tests/src/tick_test_solver
             )
 else()
     message(STATUS "Testing in C++ NOT enabled")
