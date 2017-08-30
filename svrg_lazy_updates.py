@@ -8,23 +8,7 @@ import sys
 sys.path.append('/Users/stephane.gaiffas/Code/tick')
 
 
-# In[2]:
-
-import matplotlib.pyplot as plt
-# get_ipython().magic('matplotlib inline')
-
-from tick.simulation import SimuLinReg, weights_sparse_gauss
-from tick.optim.model import ModelLinReg
-from tick.plot import stems
-
-from scipy.linalg import norm
 import numpy as np
-
-# from bokeh.plotting import output_notebook
-# output_notebook()
-
-
-# In[3]:
 
 from numpy.random import multivariate_normal, randn
 from scipy.linalg.special_matrices import toeplitz
@@ -81,63 +65,93 @@ n, d = A_spars.shape
 
 from tick.optim.model import ModelLinReg, ModelLogReg
 from tick.optim.solver import SVRG
-from tick.optim.prox import ProxL2Sq, ProxZero, ProxL1, ProxTV
+from tick.optim.prox import ProxL2Sq, ProxZero, ProxL1, ProxTV, ProxEquality, \
+    ProxElasticNet, ProxPositive, ProxGroupL1, ProxSlope
 
 from time import time
 
 t1 = time()
+
+
 model_spars = ModelLinReg().fit(A_spars, b)
 model_dense = ModelLinReg().fit(A_dense, b)
-# prox = ProxL2Sq(strength=5e-2)
-# prox = ProxL1(strength=5e-3)
 
-prox = ProxTV(strength=1e-3)
+proxs = [
+    ProxL2Sq(strength=1e-2, range=(0, d)),
+    ProxL1(strength=1e-2, range=(0, d)),
+    ProxTV(strength=1e-2, range=(0, d)),
+    ProxElasticNet(strength=1e-2, ratio=0.9, range=(0, d)),
+    ProxSlope(strength=1e-3, fdr=0.6, range=(0, d)),
+    ProxGroupL1(strength=1e-2, blocks_start = [0, 5, 10],
+                blocks_length=[5, 5, 8], range=(0, d)),
+    ProxEquality(range=(0, d))
+]
+
 step = 1 / model_spars.get_lip_max()
-t2 = time()
-print(t2 - t1)
-
 
 # variance_reductions = ['last', 'rand', 'avg']
 variance_reductions = ['last']
 # rand_types = ['unif', 'perm']
 rand_types = ['unif']
-# delayed_updates = ['exact', 'proba']
-# delayed_updates = ['exact', 'proba']
-delayed_updates = ['proba']
+delayed_updates = ['exact', 'proba']
+
 
 seed = 123
-solvers = []
+solvers_dense = []
+solvers_sparse = []
 solutions = []
 titles = []
+tol = 0.
+max_iter = 30
+
 
 from itertools import product
 
-for variance_reduction, rand_type, delayed_update in product(variance_reductions, 
-                                                             rand_types,
-                                                             delayed_updates):
+for variance_reduction, rand_type, delayed_update, prox \
+        in product(variance_reductions, rand_types, delayed_updates, proxs):
     if variance_reduction == 'avg':
         continue
-    solver = SVRG(step=step, tol=1e-10, max_iter=30, verbose=True,
-                  print_every=1,
+    solver = SVRG(step=step, tol=tol, max_iter=max_iter, verbose=False,
+                  print_every=10,
                   variance_reduction=variance_reduction,
                   rand_type=rand_type,
                   delayed_updates=delayed_update,
                   seed=seed)\
         .set_model(model_spars)\
         .set_prox(prox)
-    solvers.append(solver)
+    solvers_sparse.append(solver)
 
-    title = "VR='" + variance_reduction + "' RT='" + rand_type + "UP='" + delayed_update + "'"
+    solver = SVRG(step=step, tol=tol, max_iter=max_iter, verbose=False,
+                  print_every=10,
+                  variance_reduction=variance_reduction,
+                  rand_type=rand_type,
+                  delayed_updates=delayed_update,
+                  seed=seed)\
+        .set_model(model_dense)\
+        .set_prox(prox)
+    solvers_dense.append(solver)
+
+    title = "VR='" + variance_reduction + "'; RT='" + rand_type + "; UP='" \
+            + delayed_update + "' " + "; prox=" + prox.name
     titles.append(title)
 
 
-# In[48]:
-
-# print(n / np.array((np.abs(A_spars) > 0).sum(axis=0).ravel()))
-
-for solver, title in zip(solvers, titles):
+for solver_sparse, solver_dense, title in zip(solvers_sparse, solvers_dense,
+                                              titles):
+    print("-" * 80)
     print(title)
-    solver.solve()
+    solver_sparse.solve()
+    solver_dense.solve()
+    err = np.abs(solver_sparse.solution - solver_dense.solution).max()
+    if err < 1e-10:
+        print(err,
+              np.linalg.norm(solver_sparse.solution[:-1]),
+              np.linalg.norm(solver_dense.solution[:-1]))
+    else:
+        print(err,
+              np.linalg.norm(solver_sparse.solution[:-1]),
+              np.linalg.norm(solver_dense.solution[:-1]), '*****')
+
 
 # for solver in solvers:
 #     print(solver.solution)
