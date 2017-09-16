@@ -17,7 +17,7 @@ const char *ModelQuadraticHinge::get_class_name() const {
   return "ModelQuadraticHinge";
 }
 
-double ModelHinge::loss_i(const ulong i,
+double ModelQuadraticHinge::loss_i(const ulong i,
                           const ArrayDouble &coeffs) {
   // Compute x_i^T \beta + b
   const double z = get_inner_prod(i, coeffs);
