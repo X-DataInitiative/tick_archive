@@ -12,5 +12,6 @@ class ModelHinge : public virtual ModelGeneralizedLinear,
   ModelHinge(const SBaseArrayDouble2dPtr features,
               const SArrayDoublePtr labels,
               const bool fit_intercept,
+              const double threshold,
               const int n_threads);
 };

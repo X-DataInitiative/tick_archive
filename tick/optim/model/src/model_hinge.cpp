@@ -5,13 +5,16 @@
 ModelHinge::ModelHinge(const SBaseArrayDouble2dPtr features,
                        const SArrayDoublePtr labels,
                        const bool fit_intercept,
+                       const double threshold,
                        const int n_threads)
 
     : ModelGeneralizedLinear(features,
                              labels,
                              fit_intercept,
                              n_threads),
-      ModelLipschitz() {}
+      ModelLipschitz() {
+  this->threshold = threshold;
+}
 
 const char *ModelHinge::get_class_name() const {
   return "ModelHinge";
@@ -19,16 +22,23 @@ const char *ModelHinge::get_class_name() const {
 
 double ModelHinge::loss_i(const ulong i,
                           const ArrayDouble &coeffs) {
-  // Compute x_i^T \beta + b
-  const double z = get_inner_prod(i, coeffs);
-  const double d = get_label(i) - z;
-  return d * d / 2;
+  const double z = get_label(i) * get_inner_prod(i, coeffs);
+
+  if (z <= threshold) {
+    return threshold - z;
+  } else {
+    return 0.;
+  }
 }
 
 double ModelHinge::grad_i_factor(const ulong i,
                                  const ArrayDouble &coeffs) {
-  const double z = get_inner_prod(i, coeffs);
-  return z - get_label(i);
+  const double y = get_label(i);
+  if (y * get_inner_prod(i, coeffs) <= threshold) {
+    return y;
+  } else {
+    return 0;
+  }
 }
 
 void ModelHinge::compute_lip_consts() {

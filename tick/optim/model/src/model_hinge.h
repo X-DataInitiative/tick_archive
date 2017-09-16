@@ -13,6 +13,7 @@ class ModelHinge : public virtual ModelGeneralizedLinear, public ModelLipschitz 
   ModelHinge(const SBaseArrayDouble2dPtr features,
              const SArrayDoublePtr labels,
              const bool fit_intercept,
+             const double threshold = 1.,
              const int n_threads = 1);
 
   const char *get_class_name() const override;
