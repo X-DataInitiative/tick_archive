@@ -12,5 +12,6 @@ class ModelSmoothedHinge : public virtual ModelGeneralizedLinear,
   ModelSmoothedHinge(const SBaseArrayDouble2dPtr features,
               const SArrayDoublePtr labels,
               const bool fit_intercept,
+              const double smoothness,
               const int n_threads);
 };

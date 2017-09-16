@@ -19,6 +19,9 @@ class ModelSmoothedHinge(ModelFirstOrder,
     fit_intercept : `bool`
         If `True`, the model uses an intercept
 
+    smoothness : `double`, default=1.
+        The smoothness parameter used in the loss
+
     Attributes
     ----------
     features : `numpy.ndarray`, shape=(n_samples, n_features) (read-only)
@@ -44,11 +47,20 @@ class ModelSmoothedHinge(ModelFirstOrder,
         * otherwise the desired number of threads
     """
 
-    def __init__(self, fit_intercept: bool = True, n_threads: int = 1):
+    _attrinfos = {
+        "smoothness": {
+            "writable": True,
+            "cpp_setter": "set_smoothness"
+        }
+    }
+
+    def __init__(self, fit_intercept: bool = True, smoothness: float = 1.,
+                 n_threads: int = 1):
         ModelFirstOrder.__init__(self)
         ModelGeneralizedLinear.__init__(self, fit_intercept)
         ModelLipschitz.__init__(self)
         self.n_threads = n_threads
+        self.smoothness = smoothness
 
     # TODO: implement _set_data and not fit
     def fit(self, features, labels):

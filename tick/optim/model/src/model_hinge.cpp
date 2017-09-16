@@ -31,7 +31,7 @@ double ModelHinge::loss_i(const ulong i,
   }
 }
 
-double ModelHinge::grad_i_factor(const ulong i,
+double ModelHinge::grad_i_factowr(const ulong i,
                                  const ArrayDouble &coeffs) {
   const double y = get_label(i);
   if (y * get_inner_prod(i, coeffs) <= threshold) {

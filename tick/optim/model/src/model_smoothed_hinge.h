@@ -9,10 +9,14 @@
 #include <cereal/types/base_class.hpp>
 
 class ModelSmoothedHinge : public virtual ModelGeneralizedLinear, public ModelLipschitz {
+ private:
+  double smoothness;
+
  public:
   ModelSmoothedHinge(const SBaseArrayDouble2dPtr features,
                      const SArrayDoublePtr labels,
                      const bool fit_intercept,
+                     const double smoothness = 1.,
                      const int n_threads = 1);
 
   const char *get_class_name() const override;
@@ -22,6 +26,18 @@ class ModelSmoothedHinge : public virtual ModelGeneralizedLinear, public ModelLi
   double grad_i_factor(const ulong i, const ArrayDouble &coeffs) override;
 
   void compute_lip_consts() override;
+
+  double get_smoothness() const {
+    return smoothness;
+  }
+
+  void set_smoothness(double smoothness) {
+    if (smoothness < 0) {
+      TICK_ERROR("smoothness should be positive");
+    } else {
+      this->smoothness = smoothness;
+    }
+  }
 
   template<class Archive>
   void serialize(Archive &ar) {
