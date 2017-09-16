@@ -3,17 +3,16 @@
 import numpy as np
 from numpy.linalg import svd
 from .base import ModelGeneralizedLinear, ModelFirstOrder, ModelLipschitz
-from .build.model import ModelLinReg as _ModelLinReg
-
+from .build.model import ModelSmoothedHinge as _ModelSmoothedHinge
 
 __author__ = 'Stephane Gaiffas'
 
 
-class ModelLinReg(ModelFirstOrder,
-                  ModelGeneralizedLinear,
-                  ModelLipschitz):
-    """Linear regression model. This class gives first order
-    information (gradient and loss) for this model
+class ModelSmoothedHinge(ModelFirstOrder,
+                         ModelGeneralizedLinear,
+                         ModelLipschitz):
+    """Smoothed hinge loss model for binary classification. This class gives
+    first order information (gradient and loss) for this model.
 
     Parameters
     ----------
@@ -51,7 +50,31 @@ class ModelLinReg(ModelFirstOrder,
         ModelLipschitz.__init__(self)
         self.n_threads = n_threads
 
+    # TODO: implement _set_data and not fit
+    def fit(self, features, labels):
+        """Set the data into the model object
 
+        Parameters
+        ----------
+        features : `numpy.ndarray`, shape=(n_samples, n_features)
+            The features matrix
+
+        labels : `numpy.ndarray`, shape=(n_samples,)
+            The labels vector
+
+        Returns
+        -------
+        output : `ModelLogReg`
+            The current instance with given data
+        """
+        ModelFirstOrder.fit(self, features, labels)
+        ModelGeneralizedLinear.fit(self, features, labels)
+        ModelLipschitz.fit(self, features, labels)
+        self._set("_model", _ModelSmoothedHinge(self.features,
+                                                self.labels,
+                                                self.fit_intercept,
+                                                self.n_threads))
+        return self
 
     def _grad(self, coeffs: np.ndarray, out: np.ndarray) -> None:
         self._model.grad(coeffs, out)
