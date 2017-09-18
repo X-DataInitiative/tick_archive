@@ -25,8 +25,6 @@ class ModelEpsilonInsensitive : public virtual ModelGeneralizedLinear {
 
   double grad_i_factor(const ulong i, const ArrayDouble &coeffs) override;
 
-  void compute_lip_consts() override;
-
   virtual double get_threshold(void) const {
     return threshold;
   }

@@ -21,8 +21,6 @@ class ModelHinge : public virtual ModelGeneralizedLinear {
 
   double grad_i_factor(const ulong i, const ArrayDouble &coeffs) override;
 
-  void compute_lip_consts() override;
-
   template<class Archive>
   void serialize(Archive &ar) {
     ar(cereal::make_nvp("ModelGeneralizedLinear", cereal::base_class<ModelGeneralizedLinear>(this)));

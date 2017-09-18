@@ -37,7 +37,7 @@ double ModelEpsilonInsensitive::grad_i_factor(const ulong i,
     if (d > 0) {
       return d;
     } else {
-      return -d
+      return -d;
     }
   } else {
     return 0.;
