@@ -18,7 +18,7 @@ const char *ModelQuadraticHinge::get_class_name() const {
 }
 
 double ModelQuadraticHinge::loss_i(const ulong i,
-                          const ArrayDouble &coeffs) {
+                                   const ArrayDouble &coeffs) {
   const double z = get_label(i) * get_inner_prod(i, coeffs);
   if (z < 1.) {
     const double d = 1. - z;

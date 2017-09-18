@@ -9,10 +9,14 @@
 #include <cereal/types/base_class.hpp>
 
 class ModelHuber : public virtual ModelGeneralizedLinear, public ModelLipschitz {
+ private:
+  double threshold, threshold_squared_over_two;
+
  public:
   ModelHuber(const SBaseArrayDouble2dPtr features,
              const SArrayDoublePtr labels,
              const bool fit_intercept,
+             const double threshold,
              const int n_threads = 1);
 
   const char *get_class_name() const override;
@@ -22,6 +26,19 @@ class ModelHuber : public virtual ModelGeneralizedLinear, public ModelLipschitz 
   double grad_i_factor(const ulong i, const ArrayDouble &coeffs) override;
 
   void compute_lip_consts() override;
+
+  inline double get_threshold(void) const {
+    return threshold;
+  }
+
+  inline void set_threshold(const double threshold) {
+    if (threshold <= 0.) {
+      TICK_ERROR("threshold must be > 0");
+    } else {
+      this->threshold = threshold;
+      threshold_squared_over_two = threshold * threshold / 2;
+    }
+  }
 
   template<class Archive>
   void serialize(Archive &ar) {
