@@ -67,7 +67,6 @@ class ModelHinge(ModelFirstOrder,
         """
         ModelFirstOrder.fit(self, features, labels)
         ModelGeneralizedLinear.fit(self, features, labels)
-        ModelLipschitz.fit(self, features, labels)
         self._set("_model", _ModelHinge(self.features,
                                         self.labels,
                                         self.fit_intercept,

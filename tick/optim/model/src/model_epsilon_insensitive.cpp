@@ -35,9 +35,9 @@ double ModelEpsilonInsensitive::grad_i_factor(const ulong i,
   const double d = get_inner_prod(i, coeffs) - get_label(i);
   if (std::abs(d) > threshold) {
     if (d > 0) {
-      return d;
+      return 1;
     } else {
-      return -d;
+      return -1;
     }
   } else {
     return 0.;

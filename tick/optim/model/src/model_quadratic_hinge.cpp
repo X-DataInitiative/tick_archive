@@ -31,9 +31,9 @@ double ModelQuadraticHinge::loss_i(const ulong i,
 double ModelQuadraticHinge::grad_i_factor(const ulong i,
                                           const ArrayDouble &coeffs) {
   const double y = get_label(i);
-  const double z = get_inner_prod(i, coeffs);
-  if (y * z < 1) {
-    return z - y;
+  const double z = y * get_inner_prod(i, coeffs);
+  if (z < 1) {
+    return y * (z - 1);
   } else {
     return 0;
   }

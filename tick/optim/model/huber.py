@@ -57,6 +57,7 @@ class ModelHuber(ModelFirstOrder,
         ModelGeneralizedLinear.__init__(self, fit_intercept)
         ModelLipschitz.__init__(self)
         self.n_threads = n_threads
+        self.threshold = threshold
 
     # TODO: implement _set_data and not fit
     def fit(self, features, labels):

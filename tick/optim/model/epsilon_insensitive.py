@@ -75,7 +75,6 @@ class ModelEpsilonInsensitive(ModelFirstOrder,
         """
         ModelFirstOrder.fit(self, features, labels)
         ModelGeneralizedLinear.fit(self, features, labels)
-        ModelLipschitz.fit(self, features, labels)
         self._set("_model", _ModelEpsilonInsensitive(self.features,
                                                      self.labels,
                                                      self.fit_intercept,
