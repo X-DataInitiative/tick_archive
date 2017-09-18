@@ -27,11 +27,11 @@ class ModelHuber : public virtual ModelGeneralizedLinear, public ModelLipschitz 
 
   void compute_lip_consts() override;
 
-  inline double get_threshold(void) const {
+  virtual double get_threshold(void) const {
     return threshold;
   }
 
-  inline void set_threshold(const double threshold) {
+  virtual void set_threshold(const double threshold) {
     if (threshold <= 0.) {
       TICK_ERROR("threshold must be > 0");
     } else {

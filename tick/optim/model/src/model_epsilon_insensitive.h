@@ -8,11 +8,15 @@
 
 #include <cereal/types/base_class.hpp>
 
-class ModelEpsilonInsensitive : public virtual ModelGeneralizedLinear, public ModelLipschitz {
+class ModelEpsilonInsensitive : public virtual ModelGeneralizedLinear {
+ private:
+  double threshold;
+
  public:
   ModelEpsilonInsensitive(const SBaseArrayDouble2dPtr features,
                           const SArrayDoublePtr labels,
                           const bool fit_intercept,
+                          const double threshold,
                           const int n_threads = 1);
 
   const char *get_class_name() const override;
@@ -22,6 +26,18 @@ class ModelEpsilonInsensitive : public virtual ModelGeneralizedLinear, public Mo
   double grad_i_factor(const ulong i, const ArrayDouble &coeffs) override;
 
   void compute_lip_consts() override;
+
+  virtual double get_threshold(void) const {
+    return threshold;
+  }
+
+  virtual void set_threshold(const double threshold) {
+    if (threshold <= 0.) {
+      TICK_ERROR("threshold must be > 0");
+    } else {
+      this->threshold = threshold;
+    }
+  }
 
   template<class Archive>
   void serialize(Archive &ar) {

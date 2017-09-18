@@ -44,7 +44,15 @@ class ModelHuber(ModelFirstOrder,
         * otherwise the desired number of threads
     """
 
-    def __init__(self, fit_intercept: bool = True, n_threads: int = 1):
+    _attrinfos = {
+        "smoothness": {
+            "writable": True,
+            "cpp_setter": "set_threshold"
+        }
+    }
+
+    def __init__(self, fit_intercept: bool = True, threshold: float = 1,
+                 n_threads: int = 1):
         ModelFirstOrder.__init__(self)
         ModelGeneralizedLinear.__init__(self, fit_intercept)
         ModelLipschitz.__init__(self)
@@ -73,6 +81,7 @@ class ModelHuber(ModelFirstOrder,
         self._set("_model", _ModelHuber(self.features,
                                         self.labels,
                                         self.fit_intercept,
+                                        self.threshold,
                                         self.n_threads))
         return self
 

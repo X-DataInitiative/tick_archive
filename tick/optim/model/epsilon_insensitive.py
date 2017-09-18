@@ -1,7 +1,6 @@
 # License: BSD 3 clause
 
 import numpy as np
-from numpy.linalg import svd
 from .base import ModelGeneralizedLinear, ModelFirstOrder, ModelLipschitz
 from .build.model import ModelEpsilonInsensitive as _ModelEpsilonInsensitive
 
@@ -9,8 +8,7 @@ __author__ = 'Stephane Gaiffas'
 
 
 class ModelEpsilonInsensitive(ModelFirstOrder,
-                              ModelGeneralizedLinear,
-                              ModelLipschitz):
+                              ModelGeneralizedLinear):
     """Hinge loss model for binary classification. This class gives first order
     information (gradient and loss) for this model.
 
@@ -44,11 +42,19 @@ class ModelEpsilonInsensitive(ModelFirstOrder,
         * otherwise the desired number of threads
     """
 
-    def __init__(self, fit_intercept: bool = True, n_threads: int = 1):
+    _attrinfos = {
+        "smoothness": {
+            "writable": True,
+            "cpp_setter": "set_threshold"
+        }
+    }
+
+    def __init__(self, fit_intercept: bool = True, threshold: float = 1,
+                 n_threads: int = 1):
         ModelFirstOrder.__init__(self)
         ModelGeneralizedLinear.__init__(self, fit_intercept)
-        ModelLipschitz.__init__(self)
         self.n_threads = n_threads
+        self.threshold = threshold
 
     # TODO: implement _set_data and not fit
     def fit(self, features, labels):
@@ -73,6 +79,7 @@ class ModelEpsilonInsensitive(ModelFirstOrder,
         self._set("_model", _ModelEpsilonInsensitive(self.features,
                                                      self.labels,
                                                      self.fit_intercept,
+                                                     self.threshold,
                                                      self.n_threads))
         return self
 
@@ -81,12 +88,3 @@ class ModelEpsilonInsensitive(ModelFirstOrder,
 
     def _loss(self, coeffs: np.ndarray) -> float:
         return self._model.loss(coeffs)
-
-    def _get_lip_best(self):
-        # TODO: Use sklearn.decomposition.TruncatedSVD instead?
-        s = svd(self.features, full_matrices=False,
-                compute_uv=False)[0] ** 2
-        if self.fit_intercept:
-            return (s + 1) / self.n_samples
-        else:
-            return s / self.n_samples
