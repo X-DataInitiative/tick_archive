@@ -19,16 +19,32 @@ const char *ModelModifiedHuber::get_class_name() const {
 
 double ModelModifiedHuber::loss_i(const ulong i,
                                   const ArrayDouble &coeffs) {
-  // Compute x_i^T \beta + b
-  const double z = get_inner_prod(i, coeffs);
-  const double d = get_label(i) - z;
-  return d * d / 2;
+  const double z = get_label(i); * get_inner_prod(i, coeffs);
+  if (z >= 1) {
+    return 0.;
+  } else {
+    if (z <=-1) {
+    return -4 * z;
+    } else {
+      const double d = 1 - z;
+      return d * d;
+    }
+  }
 }
 
 double ModelModifiedHuber::grad_i_factor(const ulong i,
                                          const ArrayDouble &coeffs) {
-  const double z = get_inner_prod(i, coeffs);
-  return z - get_label(i);
+  const double y = get_label(i);
+  const double z = y * get_inner_prod(i, coeffs);
+  if (z >= 1) {
+    return 0.;
+  } else {
+    if (z <=-1) {
+      return -4 * y;
+    } else {
+      return 2 * y * (z - 1);
+    }
+  }
 }
 
 void ModelModifiedHuber::compute_lip_consts() {
@@ -39,9 +55,9 @@ void ModelModifiedHuber::compute_lip_consts() {
     lip_consts = ArrayDouble(n_samples);
     for (ulong i = 0; i < n_samples; ++i) {
       if (fit_intercept) {
-        lip_consts[i] = features_norm_sq[i] + 1;
+        lip_consts[i] = 2 * (features_norm_sq[i] + 1);
       } else {
-        lip_consts[i] = features_norm_sq[i];
+        lip_consts[i] = 2 * features_norm_sq[i];
       }
     }
   }

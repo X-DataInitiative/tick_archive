@@ -85,6 +85,7 @@ class ModelSmoothedHinge(ModelFirstOrder,
         self._set("_model", _ModelSmoothedHinge(self.features,
                                                 self.labels,
                                                 self.fit_intercept,
+                                                self.smoothness,
                                                 self.n_threads))
         return self
 

@@ -19,16 +19,24 @@ const char *ModelQuadraticHinge::get_class_name() const {
 
 double ModelQuadraticHinge::loss_i(const ulong i,
                           const ArrayDouble &coeffs) {
-  // Compute x_i^T \beta + b
-  const double z = get_inner_prod(i, coeffs);
-  const double d = get_label(i) - z;
-  return d * d / 2;
+  const double z = get_label(i) * get_inner_prod(i, coeffs);
+  if (z < 1.) {
+    const double d = 1. - z;
+    return d * d / 2;
+  } else {
+    return 0.;
+  }
 }
 
 double ModelQuadraticHinge::grad_i_factor(const ulong i,
                                           const ArrayDouble &coeffs) {
+  const double y = get_label(i);
   const double z = get_inner_prod(i, coeffs);
-  return z - get_label(i);
+  if (y * z < 1) {
+    return z - y;
+  } else {
+    return 0;
+  }
 }
 
 void ModelQuadraticHinge::compute_lip_consts() {

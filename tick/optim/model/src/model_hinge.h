@@ -8,12 +8,11 @@
 
 #include <cereal/types/base_class.hpp>
 
-class ModelHinge : public virtual ModelGeneralizedLinear, public ModelLipschitz {
+class ModelHinge : public virtual ModelGeneralizedLinear {
  public:
   ModelHinge(const SBaseArrayDouble2dPtr features,
              const SArrayDoublePtr labels,
              const bool fit_intercept,
-             const double threshold = 1.,
              const int n_threads = 1);
 
   const char *get_class_name() const override;
@@ -27,7 +26,6 @@ class ModelHinge : public virtual ModelGeneralizedLinear, public ModelLipschitz 
   template<class Archive>
   void serialize(Archive &ar) {
     ar(cereal::make_nvp("ModelGeneralizedLinear", cereal::base_class<ModelGeneralizedLinear>(this)));
-    ar(cereal::make_nvp("ModelLipschitz", cereal::base_class<ModelLipschitz>(this)));
   }
 };
 

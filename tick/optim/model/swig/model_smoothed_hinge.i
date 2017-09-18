@@ -14,4 +14,8 @@ class ModelSmoothedHinge : public virtual ModelGeneralizedLinear,
               const bool fit_intercept,
               const double smoothness,
               const int n_threads);
+
+  double get_smoothness() const;
+
+  void set_smoothness(double smoothness);
 };

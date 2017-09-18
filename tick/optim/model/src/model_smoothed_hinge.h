@@ -32,8 +32,8 @@ class ModelSmoothedHinge : public virtual ModelGeneralizedLinear, public ModelLi
   }
 
   void set_smoothness(double smoothness) {
-    if (smoothness < 0) {
-      TICK_ERROR("smoothness should be positive");
+    if (smoothness <= 1e-2 || smoothness > 1) {
+      TICK_ERROR("smoothness should be in the (0.01, 1] interval");
     } else {
       this->smoothness = smoothness;
     }

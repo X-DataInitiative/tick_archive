@@ -9,8 +9,7 @@ __author__ = 'Stephane Gaiffas'
 
 
 class ModelHinge(ModelFirstOrder,
-                 ModelGeneralizedLinear,
-                 ModelLipschitz):
+                 ModelGeneralizedLinear):
     """Hinge loss model for binary classification. This class gives first order
     information (gradient and loss) for this model.
 
@@ -47,7 +46,6 @@ class ModelHinge(ModelFirstOrder,
     def __init__(self, fit_intercept: bool = True, n_threads: int = 1):
         ModelFirstOrder.__init__(self)
         ModelGeneralizedLinear.__init__(self, fit_intercept)
-        ModelLipschitz.__init__(self)
         self.n_threads = n_threads
 
     # TODO: implement _set_data and not fit
@@ -81,12 +79,3 @@ class ModelHinge(ModelFirstOrder,
 
     def _loss(self, coeffs: np.ndarray) -> float:
         return self._model.loss(coeffs)
-
-    def _get_lip_best(self):
-        # TODO: Use sklearn.decomposition.TruncatedSVD instead?
-        s = svd(self.features, full_matrices=False,
-                compute_uv=False)[0] ** 2
-        if self.fit_intercept:
-            return (s + 1) / self.n_samples
-        else:
-            return s / self.n_samples

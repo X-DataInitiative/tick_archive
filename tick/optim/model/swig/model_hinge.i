@@ -5,13 +5,11 @@
 %}
 
 
-class ModelHinge : public virtual ModelGeneralizedLinear,
-                    public ModelLipschitz {
+class ModelHinge : public virtual ModelGeneralizedLinear {
  public:
 
   ModelHinge(const SBaseArrayDouble2dPtr features,
               const SArrayDoublePtr labels,
               const bool fit_intercept,
-              const double threshold,
               const int n_threads);
 };

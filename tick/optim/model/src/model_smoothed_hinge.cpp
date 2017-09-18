@@ -28,7 +28,8 @@ double ModelSmoothedHinge::loss_i(const ulong i,
     if (z <= 1 - smoothness) {
       return 1 - z - smoothness / 2;
     } else {
-      return (1 - z) * (1 - z) / (2 * smoothness);
+      const double d = (1 - z);
+      return d * d / (2 * smoothness);
     }
   }
 }
@@ -41,9 +42,9 @@ double ModelSmoothedHinge::grad_i_factor(const ulong i,
     return 0.;
   } else {
     if (z <= 1 - smoothness) {
-      return y;
+      return -y;
     } else {
-      return (1 - z) * y / smoothness;
+      return (z - 1) * y / smoothness;
     }
   }
 }
@@ -56,9 +57,9 @@ void ModelSmoothedHinge::compute_lip_consts() {
     lip_consts = ArrayDouble(n_samples);
     for (ulong i = 0; i < n_samples; ++i) {
       if (fit_intercept) {
-        lip_consts[i] = features_norm_sq[i] + 1;
+        lip_consts[i] = (features_norm_sq[i] + 1) / smoothness;
       } else {
-        lip_consts[i] = features_norm_sq[i];
+        lip_consts[i] = features_norm_sq[i] / smoothness;
       }
     }
   }
