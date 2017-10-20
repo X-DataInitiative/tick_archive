@@ -41,6 +41,7 @@
 %shared_ptr(ModelHawkesFixedSumExpKernLogLikList);
 
 %shared_ptr(ModelCoxRegPartialLik);
+%shared_ptr(ModelCoxRegFullLik);
 %shared_ptr(ModelSCCS);
 
 %{
@@ -84,5 +85,7 @@
 %include poisreg.i
 
 %include coxreg_partial_lik.i
+
+%include coxreg_full_lik.i
 
 %include sccs.i

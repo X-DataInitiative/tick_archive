@@ -21,6 +21,7 @@ add_library(tick_model EXCLUDE_FROM_ALL
         hawkes_fixed_expkern_leastsq.h hawkes_fixed_expkern_leastsq.cpp
         hawkes_fixed_sumexpkern_leastsq.h hawkes_fixed_sumexpkern_leastsq.cpp
         coxreg_partial_lik.cpp coxreg_partial_lik.h
+		coxreg_full_lik.cpp coxreg_full_lik.h
         model_lipschitz.cpp model_lipschitz.h
         hawkes_utils.h hawkes_utils.cpp
 		base/hawkes_list.h base/hawkes_list.cpp

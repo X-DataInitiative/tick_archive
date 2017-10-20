@@ -17,6 +17,7 @@ from .modified_huber import ModelModifiedHuber
 from .poisreg import ModelPoisReg
 
 from .coxreg_partial_lik import ModelCoxRegPartialLik
+from .coxreg_full_lik import ModelCoxRegFullLik
 
 from .hawkes_fixed_expkern_loglik import ModelHawkesFixedExpKernLogLik
 from .hawkes_fixed_sumexpkern_loglik import ModelHawkesFixedSumExpKernLogLik
@@ -37,6 +38,7 @@ __all__ = ["ModelLinReg",
            'ModelEpsilonInsensitive',
            'ModelAbsoluteRegression',
            "ModelCoxRegPartialLik",
+           'ModelCoxRegFullLik',
            "ModelHawkesFixedExpKernLogLik",
            "ModelHawkesFixedSumExpKernLogLik",
            "ModelHawkesFixedExpKernLeastSq",
