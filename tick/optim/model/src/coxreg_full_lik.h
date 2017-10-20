@@ -7,7 +7,6 @@
 
 // License: BSD 3 clause
 
-#include "model.h"
 #include "model_generalized_linear.h"
 
 enum class BaselineType {
@@ -18,54 +17,65 @@ enum class BaselineType {
 
 class DLL_PUBLIC ModelCoxRegFullLik : public ModelGeneralizedLinear {
  private:
-    ulong n_samples, n_features, n_failures;
+  BaselineType baseline;
 
-    SBaseArrayDouble2dPtr features;
-    ArrayDouble times;
-    ArrayUShort censoring;
+  ulong n_samples, n_features, n_failures;
 
-    inline double get_time(ulong i) const {
-        return times[i];
-    }
+  // Number of bins used whenever baseline="histogram"
+  uint32_t n_bins;
 
-    inline ushort get_censoring(ulong i) const {
-        return censoring[i];
-    }
+  SBaseArrayDouble2dPtr features;
+  ArrayDouble times;
+  ArrayUShort censoring;
 
-    inline ulong get_idx_failure(ulong i) const {
-        return idx_failures[i];
-    }
+  inline double get_time(ulong i) const {
+    return times[i];
+  }
+
+  inline ushort get_censoring(ulong i) const {
+    return censoring[i];
+  }
 
  public:
   ModelCoxRegFullLik(const SBaseArrayDouble2dPtr features,
                      const SArrayDoublePtr times,
                      const SArrayUShortPtr censoring,
-                     const BaselineType baseline);
+                     const BaselineType baseline,
+                     const int n_threads);
 
-    const char *get_class_name() const override {
-        return "ModelCoxRegFullLik";
-    }
+  const char *get_class_name() const override {
+    return "ModelCoxRegFullLik";
+  }
 
-    /**
-     * \brief Computation of the value of minus the partial Cox
-     * log-likelihood at
-     * point coeffs.
-     * It should be overflow proof and fast.
-     *
-     * \note
-     * This code assumes that the times are inversely sorted and that the
-     * rows of the features matrix and index of failure times are sorted
-     * accordingly. This sorting is done automatically by the SurvData object.
-     *
-     * \param coeffs : The vector at which the loss is computed
-    */
-    double loss(const ArrayDouble &coeffs) override;
+  double grad_i_factor(const ulong i, const ArrayDouble &coeffs) override;
 
-    void grad(const ArrayDouble &coeffs, ArrayDouble &out) override;
+  void grad_i(const ulong i, const ArrayDouble &coeffs, ArrayDouble &out) override;
 
-    inline ulong const get_n_coeffs() {
-      return 0;
-    }
+  /**
+   * To be used by grad(ArrayDouble&, ArrayDouble&) to calculate grad by incrementally
+   * updating 'out'
+   * out and coeffs are not in the same order as in grad_i as this is necessary for
+   * parallel_map_array
+   */
+  virtual void inc_grad_i(const ulong i, ArrayDouble &out, const ArrayDouble &coeffs);
+
+  void grad(const ArrayDouble &coeffs, ArrayDouble &out) override;
+
+  double loss(const ArrayDouble &coeffs) override;
+
+  bool use_intercept() const override {
+    return fit_intercept;
+  }
+
+  bool is_sparse() const override {
+    return features->is_sparse();
+  }
+
+  ulong get_n_coeffs() const override {
+    TICK_CLASS_DOES_NOT_IMPLEMENT("get_n_coeffs");
+  }
+
+  virtual double get_inner_prod(const ulong i, const ArrayDouble &coeffs) const;
 
   template<class Archive>
   void serialize(Archive &ar) {
@@ -73,5 +83,6 @@ class DLL_PUBLIC ModelCoxRegFullLik : public ModelGeneralizedLinear {
   }
 };
 
+CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(ModelCoxRegFullLik, cereal::specialization::member_serialize)
 
 #endif  // TICK_OPTIM_MODEL_SRC_COXREG_FULL_LIK_H_
