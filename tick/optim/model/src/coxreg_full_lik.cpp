@@ -2,22 +2,15 @@
 
 #include "coxreg_full_lik.h"
 
-
-
 ModelCoxRegFullLik::ModelCoxRegFullLik(const SBaseArrayDouble2dPtr features,
-                   const SArrayDoublePtr times,
-                   const SArrayUShortPtr censoring,
-                   const BaselineType baseline,
+                                       const SArrayDoublePtr times,
+                                       const SArrayUShortPtr censoring,
+                                       const BaselineType baseline,
                                        const int n_threads)
 
-    : ModelGeneralizedLinear(features, labels, false, n_threads),
-      baseline(baseline) {
-
-}
-
-
-double ModelCoxRegFullLik::grad_i_factor(const ulong i,
-                                         const ArrayDouble &coeffs) {
+    : ModelGeneralizedLinear(features, times, false, n_threads),
+      baseline(baseline), censoring(censoring) {
+  n_bins = 0;
 
 }
 
@@ -26,7 +19,6 @@ void ModelCoxRegFullLik::grad_i(const ulong i,
                                 ArrayDouble &out) {
 
 }
-
 
 void ModelCoxRegFullLik::inc_grad_i(const ulong i,
                                     ArrayDouble &out,
@@ -40,11 +32,6 @@ void ModelCoxRegFullLik::grad(const ArrayDouble &coeffs,
 }
 
 double ModelCoxRegFullLik::loss(const ArrayDouble &coeffs) {
-
+  return 0;
 }
 
-
-double ModelCoxRegFullLik::get_inner_prod(const ulong i,
-                                          const ArrayDouble &coeffs) {
-
-}

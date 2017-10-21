@@ -14,9 +14,12 @@ class ModelCoxRegFullLik : public Model {
  public:
 
   ModelCoxRegFullLik(const SBaseArrayDouble2dPtr features,
-                        const SArrayDoublePtr times,
-                        const SArrayUShortPtr censoring,
-                        const BaselineType baseline);
+                     const SArrayDoublePtr times,
+                     const SArrayUShortPtr censoring,
+                     const BaselineType baseline,
+                     const int n_threads);
 
-  inline void set_baseline(BaselineType baseline);
+  void set_baseline(BaselineType baseline);
+
+  BaselineType get_baseline();
 };

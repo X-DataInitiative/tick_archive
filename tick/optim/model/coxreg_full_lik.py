@@ -2,13 +2,16 @@
 
 import numpy as np
 
-from tick.optim.model.base import Model, ModelFirstOrder
+from tick.optim.model.base import Model, ModelFirstOrder, ModelGeneralizedLinear
 from tick.preprocessing.utils import safe_array
 from tick.optim.model.build.model import ModelCoxRegFullLik \
     as _ModelCoxRegFullLik
+from .build.model import BaselineType_exponential as exponential
+from .build.model import BaselineType_histogram as histogram
+from .build.model import BaselineType_weibull as weibull
 
 
-class ModelCoxRegFullLik(ModelFirstOrder):
+class ModelCoxRegFullLik(ModelFirstOrder, ModelGeneralizedLinear):
     """Full likelihood of the Cox regression model (proportional
     hazards).
     This class gives first order information (gradient and loss) for
@@ -72,11 +75,16 @@ class ModelCoxRegFullLik(ModelFirstOrder):
         },
         "censoring_rate": {
             "writable": False
+        },
+        "_baseline": {
+            "writable": False,
+            "cpp_setter": "set_baseline"
         }
     }
 
-    def __init__(self):
+    def __init__(self, baseline: str = 'exponential', n_threads=1):
         ModelFirstOrder.__init__(self)
+        ModelGeneralizedLinear.__init__(self, False)
         self.features = None
         self.times = None
         self.censoring = None
@@ -84,10 +92,12 @@ class ModelCoxRegFullLik(ModelFirstOrder):
         self.n_features = None
         self.n_failures = None
         self.censoring_rate = None
+        self._baseline = None
         self._model = None
+        self.baseline = baseline
+        self.n_threads = n_threads
 
-    def fit(self, features: np.ndarray, times: np.array,
-            censoring: np.array) -> Model:
+    def fit(self, features: np.ndarray, times: np.array, censoring: np.array):
         """Set the data into the model object
 
         Parameters
@@ -132,7 +142,8 @@ class ModelCoxRegFullLik(ModelFirstOrder):
         self._set("n_samples", n_samples)
         self._set("n_features", n_features)
         self._set("_model", _ModelCoxRegFullLik(self.features, self.times,
-                                                self.censoring))
+                                                self.censoring, self._baseline,
+                                                self.n_threads))
 
     def _grad(self, coeffs: np.ndarray, out: np.ndarray) -> None:
         self._model.grad(coeffs, out)
@@ -143,15 +154,44 @@ class ModelCoxRegFullLik(ModelFirstOrder):
     def _get_n_coeffs(self, *args, **kwargs):
         return self.n_features
 
+    # TODO: self.baseline returns the name of the baseline
+    # self.baseline = sets the name of the baseline and check that it's
+    # indeed in the right value
+    # If self._model is not none, then we set the model
+    # We only set the baseline when creating the model
+    # How to use the C++ settter in this case ?
+
+    @property
+    def baseline(self):
+        _baseline = self._baseline
+        if _baseline == exponential:
+            return 'exponential'
+        elif _baseline == weibull:
+            return 'weibull'
+        else:
+            return 'histogram'
+
+    @baseline.setter
+    def baseline(self, value):
+        if value == 'exponential':
+            self._set('_baseline', exponential)
+        elif value == 'weibull':
+            self._set('_baseline', weibull)
+        elif value == 'histogram':
+            self._set('_baseline', histogram)
+        else:
+            raise ValueError("``baseline`` must be either 'exponential' or "
+                             "'weibull' or 'histogram'.")
+
     @property
     def _epoch_size(self):
-        return self.n_failures
+        return self.n_samples
 
     @property
     def _rand_max(self):
         # This allows to obtain the range of the random sampling when
         # using a stochastic optimization algorithm
-        return self.n_failures
+        return self.n_samples
 
     def _as_dict(self):
         dd = ModelFirstOrder._as_dict(self)

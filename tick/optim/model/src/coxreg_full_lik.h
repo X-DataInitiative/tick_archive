@@ -19,21 +19,19 @@ class DLL_PUBLIC ModelCoxRegFullLik : public ModelGeneralizedLinear {
  private:
   BaselineType baseline;
 
-  ulong n_samples, n_features, n_failures;
+  // ulong n_samples, n_features, n_failures;
 
   // Number of bins used whenever baseline="histogram"
   uint32_t n_bins;
 
-  SBaseArrayDouble2dPtr features;
-  ArrayDouble times;
-  ArrayUShort censoring;
+  SArrayUShortPtr censoring;
 
   inline double get_time(ulong i) const {
-    return times[i];
+    return get_label(i);
   }
 
   inline ushort get_censoring(ulong i) const {
-    return censoring[i];
+    return (*censoring)[i];
   }
 
  public:
@@ -47,8 +45,6 @@ class DLL_PUBLIC ModelCoxRegFullLik : public ModelGeneralizedLinear {
     return "ModelCoxRegFullLik";
   }
 
-  double grad_i_factor(const ulong i, const ArrayDouble &coeffs) override;
-
   void grad_i(const ulong i, const ArrayDouble &coeffs, ArrayDouble &out) override;
 
   /**
@@ -57,7 +53,7 @@ class DLL_PUBLIC ModelCoxRegFullLik : public ModelGeneralizedLinear {
    * out and coeffs are not in the same order as in grad_i as this is necessary for
    * parallel_map_array
    */
-  virtual void inc_grad_i(const ulong i, ArrayDouble &out, const ArrayDouble &coeffs);
+  virtual void inc_grad_i(const ulong i, ArrayDouble &out, const ArrayDouble &coeffs) override;
 
   void grad(const ArrayDouble &coeffs, ArrayDouble &out) override;
 
@@ -75,7 +71,13 @@ class DLL_PUBLIC ModelCoxRegFullLik : public ModelGeneralizedLinear {
     TICK_CLASS_DOES_NOT_IMPLEMENT("get_n_coeffs");
   }
 
-  virtual double get_inner_prod(const ulong i, const ArrayDouble &coeffs) const;
+  void set_baseline(BaselineType baseline) {
+    this->baseline = baseline;
+  }
+
+  inline BaselineType get_baseline() const {
+    return baseline;
+  }
 
   template<class Archive>
   void serialize(Archive &ar) {
