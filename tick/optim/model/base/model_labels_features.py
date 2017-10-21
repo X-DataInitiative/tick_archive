@@ -54,7 +54,7 @@ class ModelLabelsFeatures(Model):
         self.n_features = None
         self.n_samples = None
 
-    def fit(self, features: np.ndarray, labels: np.ndarray) -> Model:
+    def fit(self, *args) -> Model:
         """Set the data into the model object
 
         Parameters
@@ -71,9 +71,13 @@ class ModelLabelsFeatures(Model):
             The current instance with given data
         """
         # The fit from Model calls the _set_data below
+        features = args[0]
+        labels = args[1]
         return Model.fit(self, features, labels)
 
-    def _set_data(self, features, labels):
+    def _set_data(self, *args):
+        features = args[0]
+        labels = args[1]
         n_samples, n_features = features.shape
         if n_samples != labels.shape[0]:
             raise ValueError(("Features has %i samples while labels "
