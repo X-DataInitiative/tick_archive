@@ -22,6 +22,9 @@ class ModelCoxRegFullLik(ModelFirstOrder, ModelGeneralizedLinear):
     baseline : {'exponential', 'weibull', 'histogram'}, default='exponential'
         The model used for the baseline intensity of the model.
 
+    n_bins : `int`
+        Number of bins to use when baseline='histogram'
+
     Attributes
     ----------
     features : `numpy.ndarray`, shape=(n_samples, n_features), (read-only)
@@ -82,6 +85,7 @@ class ModelCoxRegFullLik(ModelFirstOrder, ModelGeneralizedLinear):
         }
     }
 
+    # TODO: times must be aligned with zero
     def __init__(self, baseline: str = 'exponential', n_threads=1):
         ModelFirstOrder.__init__(self)
         ModelGeneralizedLinear.__init__(self, False)
@@ -96,6 +100,7 @@ class ModelCoxRegFullLik(ModelFirstOrder, ModelGeneralizedLinear):
         self._model = None
         self.baseline = baseline
         self.n_threads = n_threads
+        self.n_bins = None
 
     def fit(self, features: np.ndarray, times: np.array, censoring: np.array):
         """Set the data into the model object
@@ -152,7 +157,12 @@ class ModelCoxRegFullLik(ModelFirstOrder, ModelGeneralizedLinear):
         return self._model.loss(coeffs)
 
     def _get_n_coeffs(self, *args, **kwargs):
-        return self.n_features
+        if self.baseline == 'exponential':
+            return self.n_features + 1
+        elif self.baseline == 'weibull':
+            return self.n_features + 2
+        else:
+            return self.n_features + self.n_bins
 
     # TODO: self.baseline returns the name of the baseline
     # self.baseline = sets the name of the baseline and check that it's

@@ -19,7 +19,7 @@ class DLL_PUBLIC ModelCoxRegFullLik : public ModelGeneralizedLinear {
  private:
   BaselineType baseline;
 
-  // ulong n_samples, n_features, n_failures;
+  ulong n_samples, n_features;
 
   // Number of bins used whenever baseline="histogram"
   uint32_t n_bins;
@@ -34,6 +34,8 @@ class DLL_PUBLIC ModelCoxRegFullLik : public ModelGeneralizedLinear {
     return (*censoring)[i];
   }
 
+  void compute_grad_i(const ulong i, const ArrayDouble &coeffs, ArrayDouble &out, const bool fill) override;
+
  public:
   ModelCoxRegFullLik(const SBaseArrayDouble2dPtr features,
                      const SArrayDoublePtr times,
@@ -45,19 +47,7 @@ class DLL_PUBLIC ModelCoxRegFullLik : public ModelGeneralizedLinear {
     return "ModelCoxRegFullLik";
   }
 
-  void grad_i(const ulong i, const ArrayDouble &coeffs, ArrayDouble &out) override;
-
-  /**
-   * To be used by grad(ArrayDouble&, ArrayDouble&) to calculate grad by incrementally
-   * updating 'out'
-   * out and coeffs are not in the same order as in grad_i as this is necessary for
-   * parallel_map_array
-   */
-  virtual void inc_grad_i(const ulong i, ArrayDouble &out, const ArrayDouble &coeffs) override;
-
-  void grad(const ArrayDouble &coeffs, ArrayDouble &out) override;
-
-  double loss(const ArrayDouble &coeffs) override;
+  double loss_i(const ulong i, const ArrayDouble &coeffs) override;
 
   bool use_intercept() const override {
     return fit_intercept;
