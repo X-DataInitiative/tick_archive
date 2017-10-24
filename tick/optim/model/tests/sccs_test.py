@@ -26,13 +26,13 @@ class ModelSCCSTest(unittest.TestCase):
 
     def test_loss(self):
         """Test longitudinal multinomial model loss."""
-        X = LongitudinalFeaturesLagger(n_lags=1)\
+        X, _, _ = LongitudinalFeaturesLagger(n_lags=1)\
             .fit_transform(self.X)
         model = ModelSCCS(n_intervals=2, n_lags=1)\
             .fit(X, self.y)
         loss = model.loss(coeffs=np.array([0.0, 0.0, 1.0, 0.0]))
         expected_loss = - np.log((np.e / (2*np.e) * 1 / (1 + np.e))) / 2
-        self.assertAlmostEquals(loss, expected_loss)
+        self.assertAlmostEqual(loss, expected_loss)
 
     def test_grad(self):
         """Test longitudinal multinomial model gradient value."""
@@ -41,7 +41,7 @@ class ModelSCCSTest(unittest.TestCase):
              np.array([[1, 0.],
                        [0, 1]])
              ]
-        X = LongitudinalFeaturesLagger(n_lags=1) \
+        X, _, _ = LongitudinalFeaturesLagger(n_lags=1) \
             .fit_transform(X)
         model = ModelSCCS(n_intervals=2, n_lags=1) \
             .fit(X, self.y)
@@ -54,10 +54,10 @@ class ModelSCCSTest(unittest.TestCase):
 
     def test_grad_loss_consistency(self):
         """Test longitudinal multinomial model gradient properties."""
-        sim = SimuSCCS(500, 36, 3, 9, None, True, "infinite", seed=42,
+        sim = SimuSCCS(500, 36, 3, 9, None, "single_exposure", seed=42,
                        verbose=False)
-        X, y, censoring, coeffs = sim.simulate()
-        X = LongitudinalFeaturesLagger(n_lags=9) \
+        _, X, y, censoring, coeffs = sim.simulate()
+        X, _, _ = LongitudinalFeaturesLagger(n_lags=9) \
             .fit_transform(X, censoring)
         model = ModelSCCS(n_intervals=36, n_lags=9)\
             .fit(X, y, censoring)
@@ -79,24 +79,24 @@ class ModelSCCSTest(unittest.TestCase):
         y = [np.array([0, 1, 0], dtype="int32"),
              np.array([0, 1, 0], dtype="int32")
              ]
-        X = LongitudinalFeaturesLagger(n_lags=1) \
+        X, _, _ = LongitudinalFeaturesLagger(n_lags=1) \
             .fit_transform(X)
         model = ModelSCCS(n_intervals=3, n_lags=1).fit(
             X, y)
         lip_constant = model.get_lip_max()
         expected_lip_constant = .5
-        self.assertEquals(lip_constant, expected_lip_constant)
+        self.assertEqual(lip_constant, expected_lip_constant)
 
     def test_convergence_with_lags(self):
         """Test longitudinal multinomial model convergence."""
         n_intervals = 10
-        n_lags = 3
-        n_samples = 5000
-        n_features = 3
+        n_lags = 2
+        n_samples = 800
+        n_features = 2
         sim = SimuSCCS(n_samples, n_intervals, n_features, n_lags, None,
-                       True, "short", seed=42, verbose=False)
-        X, y, censoring, coeffs = sim.simulate()
-        X = LongitudinalFeaturesLagger(n_lags=n_lags) \
+                       "multiple_exposures", seed=42)
+        _, X, y, censoring, coeffs = sim.simulate()
+        X, _, _ = LongitudinalFeaturesLagger(n_lags=n_lags) \
             .fit_transform(X, censoring)
         model = ModelSCCS(n_intervals=n_intervals,
                           n_lags=n_lags).fit(X, y, censoring)
@@ -109,12 +109,12 @@ class ModelSCCSTest(unittest.TestCase):
         """Test longitudinal multinomial model convergence."""
         n_intervals = 10
         n_lags = 0
-        n_samples = 3000
-        n_features = 3
-        sim = SimuSCCS(n_samples, n_intervals, n_features, n_lags, None, True,
-                       "short", seed=42, verbose=False)
-        X, y, censoring, coeffs = sim.simulate()
-        X = LongitudinalFeaturesLagger(n_lags=n_lags) \
+        n_samples = 600
+        n_features = 2
+        sim = SimuSCCS(n_samples, n_intervals, n_features, n_lags, None,
+                       "multiple_exposures", seed=42, verbose=False)
+        _, X, y, censoring, coeffs = sim.simulate()
+        X, _, _ = LongitudinalFeaturesLagger(n_lags=n_lags) \
             .fit_transform(X, censoring)
         model = ModelSCCS(n_intervals=n_intervals,
                           n_lags=n_lags).fit(X, y, censoring)
