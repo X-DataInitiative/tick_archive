@@ -1,4 +1,4 @@
-set(TICK_PREPROCESSING_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/preprocessing)
+set(TICK_PREPROCESSING_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/tick/preprocessing)
 
 add_library(tick_preprocessing EXCLUDE_FROM_ALL
         sparse_longitudinal_features_product.cpp 

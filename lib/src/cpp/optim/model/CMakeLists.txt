@@ -1,4 +1,4 @@
-set(TICK_MODEL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/optim/model)
+set(TICK_MODEL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/tick/optim/model)
 
 add_library(tick_model EXCLUDE_FROM_ALL
         ${TICK_MODEL_INCLUDE_DIR}/model.h

@@ -1,4 +1,4 @@
-set(TICK_INFERENCE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/inference)
+set(TICK_INFERENCE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/tick/inference)
 
 add_library(tick_inference EXCLUDE_FROM_ALL
         ${TICK_INFERENCE_INCLUDE_DIR}/hawkes_conditional_law.h

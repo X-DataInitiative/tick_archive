@@ -1,4 +1,4 @@
-set(TICK_ARRAY_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/array)
+set(TICK_ARRAY_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/tick/array)
 
 add_library(tick_array EXCLUDE_FROM_ALL
         ${TICK_ARRAY_INCLUDE_DIR}/abstractarray1d2d.h

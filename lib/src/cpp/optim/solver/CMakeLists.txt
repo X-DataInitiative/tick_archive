@@ -1,4 +1,4 @@
-set(TICK_SOLVER_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/optim/solver)
+set(TICK_SOLVER_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/tick/optim/solver)
 
 add_library(tick_solver EXCLUDE_FROM_ALL
         ${TICK_SOLVER_INCLUDE_DIR}/sgd.h 

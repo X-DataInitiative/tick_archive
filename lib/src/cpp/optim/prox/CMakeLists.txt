@@ -1,4 +1,4 @@
-set(TICK_PROX_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/optim/prox)
+set(TICK_PROX_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/tick/optim/prox)
 
 add_library(tick_prox EXCLUDE_FROM_ALL
         prox.cpp 

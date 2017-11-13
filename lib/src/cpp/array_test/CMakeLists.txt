@@ -1,4 +1,4 @@
-set(TICK_ARRAY_TEST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/array_test)
+set(TICK_ARRAY_TEST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/tick/array_test)
 
 add_library(tick_array_test EXCLUDE_FROM_ALL
         array_test.cpp 

@@ -1,4 +1,4 @@
-set(TICK_BASE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/base)
+set(TICK_BASE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/tick/base)
 
 add_library(tick_base EXCLUDE_FROM_ALL
         ${TICK_BASE_INCLUDE_DIR}/time_func.h

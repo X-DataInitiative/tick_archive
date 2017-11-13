@@ -1,4 +1,4 @@
-set(TICK_RANDOM_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/random)
+set(TICK_RANDOM_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/tick/random)
 
 add_library(tick_crandom EXCLUDE_FROM_ALL
         rand.cpp 

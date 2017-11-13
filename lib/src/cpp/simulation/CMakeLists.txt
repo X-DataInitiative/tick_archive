@@ -1,4 +1,4 @@
-set(TICK_SIMULATION_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/simulation)
+set(TICK_SIMULATION_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/tick/simulation)
 
 add_library(tick_simulation EXCLUDE_FROM_ALL
         pp.cpp 
