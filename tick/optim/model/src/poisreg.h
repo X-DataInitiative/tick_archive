@@ -128,6 +128,8 @@ class DLL_PUBLIC ModelPoisReg : public ModelGeneralizedLinear {
     ArrayDouble &delta_duals, ArrayDouble &p, ArrayDouble2d &g,
     ArrayDouble &n_grad, ArrayDouble2d & n_hess);
 
+  void compute_descent_many(ulong n_indices, ArrayDouble &n_grad, ArrayDouble2d &n_hess);
+
  public:
   virtual void set_link_type(const LinkType link_type) {
     this->link_type = link_type;

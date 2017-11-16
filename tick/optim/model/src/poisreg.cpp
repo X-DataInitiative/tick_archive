@@ -337,28 +337,11 @@ void ModelPoisReg::fill_gradient_hessian_many(
     n_hess(i, i) -= labels[i] / (new_duals[i] * new_duals[i]);
   }
 }
-//
-//void ModelPoisReg::fill_hessian_ij(double label_i, double label_j,
-//                                   double new_dual_i, double new_dual_j,
-//                                   double g_ii, double g_jj, double g_ij,
-//                                   double &n_hess_ii, double &n_hess_jj, double &n_hess_ij) {
-//  n_hess_ii = -label_i / (new_dual_i * new_dual_i) - g_ii;
-//  n_hess_jj = -label_j / (new_dual_j * new_dual_j) - g_jj;
-//  n_hess_ij = -g_ij;
-//}
-//
-//void ModelPoisReg::compute_descent(double n_grad_i, double n_grad_j,
-//                                   double n_hess_ii, double n_hess_jj, double n_hess_ij,
-//                                   double &newton_descent_i, double &newton_descent_j) {
-//  double b[2]{n_grad_i, n_grad_j};
-//  double A[4]{n_hess_ii, n_hess_ij, n_hess_ij, n_hess_jj};
-//
-////    tick::vector_operations<double>{}.solve_symmetric_linear_system(2, A, b);
-//  tick::vector_operations<double>{}.solve_linear_system(2, A, b);
-//
-//  newton_descent_i = b[0];
-//  newton_descent_j = b[1];
-//}
+
+void ModelPoisReg::compute_descent_many(ulong n_indices,
+                                        ArrayDouble &n_grad, ArrayDouble2d &n_hess) {
+  tick::vector_operations<double>{}.solve_linear_system(n_indices, n_hess.data(), n_grad.data());
+}
 
 ArrayDouble ModelPoisReg::sdca_dual_min_many(const ArrayULong indices,
                                              const ArrayDouble duals,
@@ -450,7 +433,8 @@ ArrayDouble ModelPoisReg::sdca_dual_min_many(const ArrayULong indices,
 //      n_hess(i, i) -= labels[i] / (new_duals[i] * new_duals[i]);
 //    }
 
-    tick::vector_operations<double>{}.solve_linear_system(n_indices, n_hess.data(), n_grad.data());
+//    tick::vector_operations<double>{}.solve_linear_system(n_indices, n_hess.data(), n_grad.data());
+    compute_descent_many(n_indices, n_grad, n_hess);
 
     delta_duals.mult_incr(n_grad, -1.);
 
