@@ -172,6 +172,9 @@ void ModelPoisReg::compute_descent(double n_grad_i, double n_grad_j,
   newton_descent_j = b[1];
 }
 
+#define REMOVE_CHECK 1
+#define BREAK_AT_CONVERGENCE 1
+
 std::tuple<double, double> ModelPoisReg::sdca_dual_min_ij(
   const ulong i, const ulong j, const double dual_i, const double dual_j,
   const ArrayDouble &primal_vector, double l_l2sq) {
@@ -185,9 +188,12 @@ std::tuple<double, double> ModelPoisReg::sdca_dual_min_ij(
 
   const double label_i = get_label(i);
   const double label_j = get_label(j);
+
+#ifndef REMOVE_CHECK
   if (label_i * label_j == 0) {
     TICK_ERROR("Labels 0 should not be considered in SDCA");
   }
+#endif
 
   const double _1_lambda_n = 1 / (l_l2sq * n_non_zeros_labels);
 //  double g_ii = features_norm_sq[i] * _1_lambda_n;
@@ -275,17 +281,21 @@ std::tuple<double, double> ModelPoisReg::sdca_dual_min_ij(
     delta_dual_i -= newton_descent_i;
     delta_dual_j -= newton_descent_j;
 
+#ifdef BREAK_AT_CONVERGENCE
     if (std::abs(newton_descent_i) < 1e-10 && std::abs(newton_descent_j) < 1e-10) {
       break;
     }
+#endif
   }
 
+#ifndef REMOVE_CHECK
   if (std::abs(newton_descent_i) > 1e-4 || std::abs(newton_descent_j) > 1e-4) {
 
     std::cout << "did not converge newton_descent_i=" << newton_descent_i
               << ", newton_descent_j" << newton_descent_j << "i, j = " << i << " " << j
               << std::endl;
   }
+#endif
 
   if (new_dual_i <= 0) {
     new_dual_i = epsilon;
@@ -361,11 +371,14 @@ ArrayDouble ModelPoisReg::sdca_dual_min_many(const ArrayULong indices,
 
   ArrayDouble labels(n_indices);
   for (ulong i = 0; i < n_indices; ++i) labels[i] = get_label(indices[i]);
+
+#ifndef REMOVE_CHECK
   if (labels.min() == 0) {
     indices.print();
     labels.print();
     TICK_ERROR("Labels 0 should not be considered in SDCA");
   }
+#endif
 
   const double _1_lambda_n = 1 / (l_l2sq * n_non_zeros_labels);
   ArrayDouble2d g(n_indices, n_indices);
@@ -438,6 +451,7 @@ ArrayDouble ModelPoisReg::sdca_dual_min_many(const ArrayULong indices,
 
     delta_duals.mult_incr(n_grad, -1.);
 
+#ifdef BREAK_AT_CONVERGENCE
     bool all_converged = true;
     for (ulong i = 0; i < n_indices; ++i) {
       all_converged &= std::abs(n_grad[i]) < 1e-10;
@@ -445,8 +459,10 @@ ArrayDouble ModelPoisReg::sdca_dual_min_many(const ArrayULong indices,
     if (all_converged) {
       break;
     }
+#endif
   }
 
+#ifndef REMOVE_CHECK
   double mean = 0;
   for (ulong i = 0; i < n_indices; ++i) {
     const double abs_grad_i = std::abs(n_grad[i]);
@@ -455,6 +471,7 @@ ArrayDouble ModelPoisReg::sdca_dual_min_many(const ArrayULong indices,
   mean /= n_indices;
 
   if (mean > 1e-4) std::cout << "did not converge with mean=" << mean << std::endl;
+#endif
 
   for (ulong i = 0; i < n_indices; ++i) {
     // Check we are in the correct bounds
