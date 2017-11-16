@@ -321,15 +321,22 @@ void ModelPoisReg::compute_primal_dot_products_many(
   for (ulong i = 0; i < n_indices; ++i) p[i] = get_inner_prod(indices[i], primal_vector);
 }
 //
-//void ModelPoisReg::fill_gradient_ij(double label_i, double label_j,
-//                                    double new_dual_i, double new_dual_j,
-//                                    double delta_dual_i, double delta_dual_j,
-//                                    double p_i, double p_j,
-//                                    double g_ii, double g_jj, double g_ij,
-//                                    double &n_grad_i, double &n_grad_j) {
-//  n_grad_i = label_i / new_dual_i - p_i - delta_dual_i * g_ii - delta_dual_j * g_ij;
-//  n_grad_j = label_j / new_dual_j - p_j - delta_dual_j * g_jj - delta_dual_i * g_ij;
-//}
+void ModelPoisReg::fill_gradient_hessian_many(
+  ulong n_indices, ArrayDouble &labels, ArrayDouble &new_duals,
+  ArrayDouble &delta_duals, ArrayDouble &p, ArrayDouble2d &g,
+  ArrayDouble &n_grad, ArrayDouble2d & n_hess) {
+
+  for (ulong i = 0; i < n_indices; ++i) {
+    n_grad[i] = labels[i] / new_duals[i] - p[i];
+
+    for (ulong j = 0; j < n_indices; ++j) {
+      n_grad[i] -= delta_duals[j] * g(i, j);
+      n_hess(i, j) = -g(i, j);
+    }
+
+    n_hess(i, i) -= labels[i] / (new_duals[i] * new_duals[i]);
+  }
+}
 //
 //void ModelPoisReg::fill_hessian_ij(double label_i, double label_j,
 //                                   double new_dual_i, double new_dual_j,
@@ -430,16 +437,18 @@ ArrayDouble ModelPoisReg::sdca_dual_min_many(const ArrayULong indices,
       }
     }
 
-    for (ulong i = 0; i < n_indices; ++i) {
-      n_grad[i] = labels[i] / new_duals[i] - p[i];
-
-      for (ulong j = 0; j < n_indices; ++j) {
-        n_grad[i] -= delta_duals[j] * g(i, j);
-        n_hess(i, j) = -g(i, j);
-      }
-
-      n_hess(i, i) -= labels[i] / (new_duals[i] * new_duals[i]);
-    }
+    fill_gradient_hessian_many(n_indices, labels, new_duals, delta_duals, p, g,
+                               n_grad, n_hess);
+//    for (ulong i = 0; i < n_indices; ++i) {
+//      n_grad[i] = labels[i] / new_duals[i] - p[i];
+//
+//      for (ulong j = 0; j < n_indices; ++j) {
+//        n_grad[i] -= delta_duals[j] * g(i, j);
+//        n_hess(i, j) = -g(i, j);
+//      }
+//
+//      n_hess(i, i) -= labels[i] / (new_duals[i] * new_duals[i]);
+//    }
 
     tick::vector_operations<double>{}.solve_linear_system(n_indices, n_hess.data(), n_grad.data());
 

@@ -123,6 +123,11 @@ class DLL_PUBLIC ModelPoisReg : public ModelGeneralizedLinear {
     ulong n_indices, const ArrayULong &indices, const ArrayDouble &primal_vector,
     ArrayDouble &p);
 
+  void fill_gradient_hessian_many(
+    ulong n_indices, ArrayDouble &labels, ArrayDouble &new_duals,
+    ArrayDouble &delta_duals, ArrayDouble &p, ArrayDouble2d &g,
+    ArrayDouble &n_grad, ArrayDouble2d & n_hess);
+
  public:
   virtual void set_link_type(const LinkType link_type) {
     this->link_type = link_type;
