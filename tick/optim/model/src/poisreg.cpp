@@ -299,6 +299,61 @@ std::tuple<double, double> ModelPoisReg::sdca_dual_min_ij(
   return {delta_dual_i, delta_dual_j};
 }
 
+
+
+//void ModelPoisReg::compute_features_dot_products_many(ulong i, ulong j, double _1_lambda_n,
+//                                                      bool use_intercept,
+//                                                      double &g_ii, double &g_jj, double &g_ij){
+//  g_ii = features_norm_sq[i] * _1_lambda_n;
+//  g_jj = features_norm_sq[j] * _1_lambda_n;
+//  g_ij = get_features(i).dot(get_features(j)) * _1_lambda_n;
+//
+//  if (use_intercept) {
+//    g_ii += _1_lambda_n;
+//    g_jj += _1_lambda_n;
+//    g_ij += _1_lambda_n;
+//  }
+//}
+
+//void ModelPoisReg::compute_primal_dot_products_ij(ulong i, ulong j,
+//                                                  const ArrayDouble &primal_vector,
+//                                                  double &p_i, double &p_j) {
+//  p_i = get_inner_prod(i, primal_vector);
+//  p_j = get_inner_prod(j, primal_vector);
+//}
+//
+//void ModelPoisReg::fill_gradient_ij(double label_i, double label_j,
+//                                    double new_dual_i, double new_dual_j,
+//                                    double delta_dual_i, double delta_dual_j,
+//                                    double p_i, double p_j,
+//                                    double g_ii, double g_jj, double g_ij,
+//                                    double &n_grad_i, double &n_grad_j) {
+//  n_grad_i = label_i / new_dual_i - p_i - delta_dual_i * g_ii - delta_dual_j * g_ij;
+//  n_grad_j = label_j / new_dual_j - p_j - delta_dual_j * g_jj - delta_dual_i * g_ij;
+//}
+//
+//void ModelPoisReg::fill_hessian_ij(double label_i, double label_j,
+//                                   double new_dual_i, double new_dual_j,
+//                                   double g_ii, double g_jj, double g_ij,
+//                                   double &n_hess_ii, double &n_hess_jj, double &n_hess_ij) {
+//  n_hess_ii = -label_i / (new_dual_i * new_dual_i) - g_ii;
+//  n_hess_jj = -label_j / (new_dual_j * new_dual_j) - g_jj;
+//  n_hess_ij = -g_ij;
+//}
+//
+//void ModelPoisReg::compute_descent(double n_grad_i, double n_grad_j,
+//                                   double n_hess_ii, double n_hess_jj, double n_hess_ij,
+//                                   double &newton_descent_i, double &newton_descent_j) {
+//  double b[2]{n_grad_i, n_grad_j};
+//  double A[4]{n_hess_ii, n_hess_ij, n_hess_ij, n_hess_jj};
+//
+////    tick::vector_operations<double>{}.solve_symmetric_linear_system(2, A, b);
+//  tick::vector_operations<double>{}.solve_linear_system(2, A, b);
+//
+//  newton_descent_i = b[0];
+//  newton_descent_j = b[1];
+//}
+
 ArrayDouble ModelPoisReg::sdca_dual_min_many(const ArrayULong indices,
                                              const ArrayDouble duals,
                                              const ArrayDouble &primal_vector,
@@ -334,18 +389,18 @@ ArrayDouble ModelPoisReg::sdca_dual_min_many(const ArrayULong indices,
     }
   }
 
-  for (ulong i = 0; i < n_indices; ++i) {
-    for (ulong j = i + 1; j < n_indices; ++j) {
-      // if vector are colinear
-      if (g(i, j) * g(i, j) == g(i, i) * g(j, j)) {
-        ArrayDouble delta_duals(n_indices);
-        delta_duals.init_to_zero();
-        std::cout << "skip colinear" << std::endl;
-        indices.print();
-        return delta_duals;
-      }
-    }
-  }
+//  for (ulong i = 0; i < n_indices; ++i) {
+//    for (ulong j = i + 1; j < n_indices; ++j) {
+//      // if vector are colinear
+//      if (g(i, j) * g(i, j) == g(i, i) * g(j, j)) {
+//        ArrayDouble delta_duals(n_indices);
+//        delta_duals.init_to_zero();
+//        std::cout << "skip colinear" << std::endl;
+//        indices.print();
+//        return delta_duals;
+//      }
+//    }
+//  }
 
   ArrayDouble p(n_indices);
   for (ulong i = 0; i < n_indices; ++i) p[i] = get_inner_prod(indices[i], primal_vector);
