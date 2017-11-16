@@ -301,19 +301,19 @@ std::tuple<double, double> ModelPoisReg::sdca_dual_min_ij(
 
 
 
-//void ModelPoisReg::compute_features_dot_products_many(ulong i, ulong j, double _1_lambda_n,
-//                                                      bool use_intercept,
-//                                                      double &g_ii, double &g_jj, double &g_ij){
-//  g_ii = features_norm_sq[i] * _1_lambda_n;
-//  g_jj = features_norm_sq[j] * _1_lambda_n;
-//  g_ij = get_features(i).dot(get_features(j)) * _1_lambda_n;
-//
-//  if (use_intercept) {
-//    g_ii += _1_lambda_n;
-//    g_jj += _1_lambda_n;
-//    g_ij += _1_lambda_n;
-//  }
-//}
+void ModelPoisReg::compute_features_dot_products_many(
+  ulong n_indices, const ArrayULong &indices, double _1_lambda_n, bool use_intercept,
+  ArrayDouble2d &g){
+
+  for (ulong i = 0; i < n_indices; ++i) {
+    for (ulong j = 0; j < n_indices; ++j) {
+      if (j < i) g(i, j) = g(j, i);
+      else if (i == j) g(i, i) = features_norm_sq[indices[i]] * _1_lambda_n;
+      else g(i, j) = get_features(indices[i]).dot(get_features(indices[j])) * _1_lambda_n;
+      if (use_intercept) g(i, j) += _1_lambda_n;
+    }
+  }
+}
 
 //void ModelPoisReg::compute_primal_dot_products_ij(ulong i, ulong j,
 //                                                  const ArrayDouble &primal_vector,
@@ -380,14 +380,16 @@ ArrayDouble ModelPoisReg::sdca_dual_min_many(const ArrayULong indices,
 
   const double _1_lambda_n = 1 / (l_l2sq * n_non_zeros_labels);
   ArrayDouble2d g(n_indices, n_indices);
-  for (ulong i = 0; i < n_indices; ++i) {
-    for (ulong j = 0; j < n_indices; ++j) {
-      if (j < i) g(i, j) = g(j, i);
-      else if (i == j) g(i, i) = features_norm_sq[indices[i]] * _1_lambda_n;
-      else g(i, j) = get_features(indices[i]).dot(get_features(indices[j])) * _1_lambda_n;
-      if (use_intercept()) g(i, j) += _1_lambda_n;
-    }
-  }
+//  for (ulong i = 0; i < n_indices; ++i) {
+//    for (ulong j = 0; j < n_indices; ++j) {
+//      if (j < i) g(i, j) = g(j, i);
+//      else if (i == j) g(i, i) = features_norm_sq[indices[i]] * _1_lambda_n;
+//      else g(i, j) = get_features(indices[i]).dot(get_features(indices[j])) * _1_lambda_n;
+//      if (use_intercept()) g(i, j) += _1_lambda_n;
+//    }
+//  }
+
+  compute_features_dot_products_many(n_indices, indices, _1_lambda_n, use_intercept(), g);
 
 //  for (ulong i = 0; i < n_indices; ++i) {
 //    for (ulong j = i + 1; j < n_indices; ++j) {
