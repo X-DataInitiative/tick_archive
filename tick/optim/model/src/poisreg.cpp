@@ -417,8 +417,6 @@ ArrayDouble ModelPoisReg::sdca_dual_min_many(const ArrayULong indices,
   ArrayDouble n_grad(n_indices);
   ArrayDouble2d n_hess(n_indices, n_indices);
 
-  ArrayDouble n_grad_copy(n_indices);
-  ArrayDouble2d n_hess_copy(n_indices, n_indices);
   for (int k = 0; k < 20; ++k) {
 
     for (ulong i = 0; i < n_indices; ++i) {
