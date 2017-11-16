@@ -119,6 +119,10 @@ class DLL_PUBLIC ModelPoisReg : public ModelGeneralizedLinear {
     ulong n_indices, const ArrayULong &indices, double _1_lambda_n, bool use_intercept,
     ArrayDouble2d &g);
 
+  void compute_primal_dot_products_many(
+    ulong n_indices, const ArrayULong &indices, const ArrayDouble &primal_vector,
+    ArrayDouble &p);
+
  public:
   virtual void set_link_type(const LinkType link_type) {
     this->link_type = link_type;

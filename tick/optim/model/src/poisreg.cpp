@@ -315,12 +315,11 @@ void ModelPoisReg::compute_features_dot_products_many(
   }
 }
 
-//void ModelPoisReg::compute_primal_dot_products_ij(ulong i, ulong j,
-//                                                  const ArrayDouble &primal_vector,
-//                                                  double &p_i, double &p_j) {
-//  p_i = get_inner_prod(i, primal_vector);
-//  p_j = get_inner_prod(j, primal_vector);
-//}
+void ModelPoisReg::compute_primal_dot_products_many(
+  ulong n_indices, const ArrayULong &indices, const ArrayDouble &primal_vector,
+  ArrayDouble &p) {
+  for (ulong i = 0; i < n_indices; ++i) p[i] = get_inner_prod(indices[i], primal_vector);
+}
 //
 //void ModelPoisReg::fill_gradient_ij(double label_i, double label_j,
 //                                    double new_dual_i, double new_dual_j,
@@ -405,7 +404,8 @@ ArrayDouble ModelPoisReg::sdca_dual_min_many(const ArrayULong indices,
 //  }
 
   ArrayDouble p(n_indices);
-  for (ulong i = 0; i < n_indices; ++i) p[i] = get_inner_prod(indices[i], primal_vector);
+//  for (ulong i = 0; i < n_indices; ++i) p[i] = get_inner_prod(indices[i], primal_vector);
+  compute_primal_dot_products_many(n_indices, indices, primal_vector, p);
 
   ArrayDouble delta_duals(n_indices);
   for (ulong i = 0; i < n_indices; ++i) delta_duals[i] = duals[i] == 0 ? 0.1 : 0;
