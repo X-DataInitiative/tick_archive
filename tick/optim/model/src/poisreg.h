@@ -111,6 +111,10 @@ class DLL_PUBLIC ModelPoisReg : public ModelGeneralizedLinear {
                        double g_ii, double g_jj, double g_ij,
                        double &n_hess_ii, double &n_hess_jj, double &n_hess_ij);
 
+  void compute_descent(double n_grad_i, double n_grad_j,
+                       double n_hess_ii, double n_hess_jj, double n_hess_ij,
+                       double &newton_descent_i, double &newton_descent_j);
+
  public:
   virtual void set_link_type(const LinkType link_type) {
     this->link_type = link_type;

@@ -159,6 +159,19 @@ void ModelPoisReg::fill_hessian_ij(double label_i, double label_j,
   n_hess_ij = -g_ij;
 }
 
+void ModelPoisReg::compute_descent(double n_grad_i, double n_grad_j,
+                                   double n_hess_ii, double n_hess_jj, double n_hess_ij,
+                                   double &newton_descent_i, double &newton_descent_j) {
+  double b[2]{n_grad_i, n_grad_j};
+  double A[4]{n_hess_ii, n_hess_ij, n_hess_ij, n_hess_jj};
+
+//    tick::vector_operations<double>{}.solve_symmetric_linear_system(2, A, b);
+  tick::vector_operations<double>{}.solve_linear_system(2, A, b);
+
+  newton_descent_i = b[0];
+  newton_descent_j = b[1];
+}
+
 std::tuple<double, double> ModelPoisReg::sdca_dual_min_ij(
   const ulong i, const ulong j, const double dual_i, const double dual_j,
   const ArrayDouble &primal_vector, double l_l2sq) {
@@ -248,14 +261,16 @@ std::tuple<double, double> ModelPoisReg::sdca_dual_min_ij(
 //    newton_descent_j =
 //      n_grad_i * inverse_hess_ij_over_n + n_grad_j * inverse_hess_jj_over_n;
 
-    double b[2]{n_grad_i, n_grad_j};
-    double A[4]{n_hess_ii, n_hess_ij, n_hess_ij, n_hess_jj};
+//    double b[2]{n_grad_i, n_grad_j};
+//    double A[4]{n_hess_ii, n_hess_ij, n_hess_ij, n_hess_jj};
 
 //    tick::vector_operations<double>{}.solve_symmetric_linear_system(2, A, b);
-    tick::vector_operations<double>{}.solve_linear_system(2, A, b);
-
-    newton_descent_i = b[0];
-    newton_descent_j = b[1];
+//    tick::vector_operations<double>{}.solve_linear_system(2, A, b);
+//
+//    newton_descent_i = b[0];
+//    newton_descent_j = b[1];
+    compute_descent(n_grad_i, n_grad_j, n_hess_ii, n_hess_jj, n_hess_ij,
+                    newton_descent_i, newton_descent_j);
 
     delta_dual_i -= newton_descent_i;
     delta_dual_j -= newton_descent_j;
