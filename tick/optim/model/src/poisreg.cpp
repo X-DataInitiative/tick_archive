@@ -119,6 +119,46 @@ double ModelPoisReg::sdca_dual_min_i_identity(const ulong i,
   return new_dual - dual_i;
 }
 
+void ModelPoisReg::compute_features_dot_products_ij(ulong i, ulong j, double _1_lambda_n,
+                                                    bool use_intercept,
+                                                    double &g_ii, double &g_jj, double &g_ij){
+  g_ii = features_norm_sq[i] * _1_lambda_n;
+  g_jj = features_norm_sq[j] * _1_lambda_n;
+  g_ij = get_features(i).dot(get_features(j)) * _1_lambda_n;
+
+  if (use_intercept) {
+    g_ii += _1_lambda_n;
+    g_jj += _1_lambda_n;
+    g_ij += _1_lambda_n;
+  }
+}
+
+void ModelPoisReg::compute_primal_dot_products_ij(ulong i, ulong j,
+                                                  const ArrayDouble &primal_vector,
+                                                  double &p_i, double &p_j) {
+  p_i = get_inner_prod(i, primal_vector);
+  p_j = get_inner_prod(j, primal_vector);
+}
+
+void ModelPoisReg::fill_gradient_ij(double label_i, double label_j,
+                                    double new_dual_i, double new_dual_j,
+                                    double delta_dual_i, double delta_dual_j,
+                                    double p_i, double p_j,
+                                    double g_ii, double g_jj, double g_ij,
+                                    double &n_grad_i, double &n_grad_j) {
+  n_grad_i = label_i / new_dual_i - p_i - delta_dual_i * g_ii - delta_dual_j * g_ij;
+  n_grad_j = label_j / new_dual_j - p_j - delta_dual_j * g_jj - delta_dual_i * g_ij;
+}
+
+void ModelPoisReg::fill_hessian_ij(double label_i, double label_j,
+                                   double new_dual_i, double new_dual_j,
+                                   double g_ii, double g_jj, double g_ij,
+                                   double &n_hess_ii, double &n_hess_jj, double &n_hess_ij) {
+  n_hess_ii = -label_i / (new_dual_i * new_dual_i) - g_ii;
+  n_hess_jj = -label_j / (new_dual_j * new_dual_j) - g_jj;
+  n_hess_ij = -g_ij;
+}
+
 std::tuple<double, double> ModelPoisReg::sdca_dual_min_ij(
   const ulong i, const ulong j, const double dual_i, const double dual_j,
   const ArrayDouble &primal_vector, double l_l2sq) {
@@ -137,23 +177,28 @@ std::tuple<double, double> ModelPoisReg::sdca_dual_min_ij(
   }
 
   const double _1_lambda_n = 1 / (l_l2sq * n_non_zeros_labels);
-  double g_ii = features_norm_sq[i] * _1_lambda_n;
-  double g_jj = features_norm_sq[j] * _1_lambda_n;
-  double g_ij = get_features(i).dot(get_features(j)) * _1_lambda_n;
+//  double g_ii = features_norm_sq[i] * _1_lambda_n;
+//  double g_jj = features_norm_sq[j] * _1_lambda_n;
+//  double g_ij = get_features(i).dot(get_features(j)) * _1_lambda_n;
+//  if (use_intercept) {
+//    g_ii += _1_lambda_n;
+//    g_jj += _1_lambda_n;
+//    g_ij += _1_lambda_n;
+//  }
+
+  double g_ii, g_jj, g_ij;
+  compute_features_dot_products_ij(i, j, _1_lambda_n, use_intercept(), g_ii, g_jj, g_ij);
 
   // if vector are colinear
-  if (g_ij * g_ij == g_ii * g_jj) {
-    return {0., 0.};
-  }
+//  if (g_ij * g_ij == g_ii * g_jj) {
+//    return {0., 0.};
+//  }
 
-  if (use_intercept()) {
-    g_ii += _1_lambda_n;
-    g_jj += _1_lambda_n;
-    g_ij += _1_lambda_n;
-  }
+//  const double p_i = get_inner_prod(i, primal_vector);
+//  const double p_j = get_inner_prod(j, primal_vector);
 
-  const double p_i = get_inner_prod(i, primal_vector);
-  const double p_j = get_inner_prod(j, primal_vector);
+  double p_i, p_j;
+  compute_primal_dot_products_ij(i, j, primal_vector, p_i, p_j);
 
   double delta_dual_i = dual_i == 0 ? 0.1 : 0;
   double delta_dual_j = dual_j == 0 ? 0.1 : 0;
@@ -177,20 +222,27 @@ std::tuple<double, double> ModelPoisReg::sdca_dual_min_ij(
       epsilon *= 1e-1;
     }
 
-    const double n_grad_i = label_i / new_dual_i - p_i - delta_dual_i * g_ii - delta_dual_j * g_ij;
-    const double n_grad_j = label_j / new_dual_j - p_j - delta_dual_j * g_jj - delta_dual_i * g_ij;
+//    const double n_grad_i = label_i / new_dual_i - p_i - delta_dual_i * g_ii - delta_dual_j * g_ij;
+//    const double n_grad_j = label_j / new_dual_j - p_j - delta_dual_j * g_jj - delta_dual_i * g_ij;
+    double n_grad_i, n_grad_j;
+    fill_gradient_ij(label_i, label_j, new_dual_i, new_dual_j,  delta_dual_i, delta_dual_j,
+      p_i, p_j, g_ii, g_jj, g_ij, n_grad_i, n_grad_j);
 
-    const double n_hess_ii = -label_i / (new_dual_i * new_dual_i) - g_ii;
-    const double n_hess_jj = -label_j / (new_dual_j * new_dual_j) - g_jj;
-    const double n_hess_ij = -g_ij;
+//    const double n_hess_ii = -label_i / (new_dual_i * new_dual_i) - g_ii;
+//    const double n_hess_jj = -label_j / (new_dual_j * new_dual_j) - g_jj;
+//    const double n_hess_ij = -g_ij;
+
+    double n_hess_ii, n_hess_jj, n_hess_ij;
+    fill_hessian_ij(label_i, label_j, new_dual_i, new_dual_j,
+                    g_ii, g_jj, g_ij, n_hess_ii, n_hess_jj, n_hess_ij);
 
 //    const double n2_det = n_hess_ii * n_hess_jj - n_hess_ij * n_hess_ij;
 //    const double _1_over_n2_det = 1. / n2_det;
-
+//
 //    const double inverse_hess_ii_over_n = _1_over_n2_det * n_hess_jj;
 //    const double inverse_hess_jj_over_n = _1_over_n2_det * n_hess_ii;
 //    const double inverse_hess_ij_over_n = -_1_over_n2_det * n_hess_ij;
-
+//
 //    newton_descent_i =
 //      n_grad_i * inverse_hess_ii_over_n + n_grad_j * inverse_hess_ij_over_n;
 //    newton_descent_j =

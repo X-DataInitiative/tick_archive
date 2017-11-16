@@ -49,12 +49,12 @@ class DLL_PUBLIC ModelPoisReg : public ModelGeneralizedLinear {
   std::tuple<double, double> sdca_dual_min_ij(const ulong i, const ulong j,
                                               const double dual_i, const double dual_j,
                                               const ArrayDouble &primal_vector,
-                                              double l_l2sq) override ;
+                                              double l_l2sq) override;
 
   ArrayDouble sdca_dual_min_many(const ArrayULong indices,
                                  const ArrayDouble duals,
                                  const ArrayDouble &primal_vector,
-                                 double l_l2sq) override ;
+                                 double l_l2sq) override;
 
   void sdca_primal_dual_relation(const double l_l2sq,
                                  const ArrayDouble &dual_vector,
@@ -91,6 +91,25 @@ class DLL_PUBLIC ModelPoisReg : public ModelGeneralizedLinear {
                                   const ArrayDouble &primal_vector,
                                   const double previous_delta_dual_i,
                                   double l_l2sq);
+
+  void compute_features_dot_products_ij(ulong i, ulong j, double _1_lambda_n,
+                                        bool use_intercept,
+                                        double &g_ii, double &g_jj, double &g_ij);
+
+  void compute_primal_dot_products_ij(ulong i, ulong j, const ArrayDouble &primal_vector,
+                                      double &p_i, double &p_j);
+
+  void fill_gradient_ij(double label_i, double label_j,
+                        double new_dual_i, double new_dual_j,
+                        double delta_dual_i, double delta_dual_j,
+                        double p_i, double p_j,
+                        double g_ii, double g_jj, double g_ij,
+                        double &n_grad_i, double &n_grad_j);
+
+  void fill_hessian_ij(double label_i, double label_j,
+                       double new_dual_i, double new_dual_j,
+                       double g_ii, double g_jj, double g_ij,
+                       double &n_hess_ii, double &n_hess_jj, double &n_hess_ij);
 
  public:
   virtual void set_link_type(const LinkType link_type) {
