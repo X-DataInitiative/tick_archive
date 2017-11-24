@@ -1,28 +1,30 @@
+set(TICK_SIMULATION_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/simulation)
+
 add_library(tick_simulation EXCLUDE_FROM_ALL
         pp.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/simulation/pp.h
+        ${TICK_SIMULATION_INCLUDE_DIR}/pp.h
         poisson.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/simulation/poisson.h
+        ${TICK_SIMULATION_INCLUDE_DIR}/poisson.h
         hawkes.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes.h
+        ${TICK_SIMULATION_INCLUDE_DIR}/hawkes.h
         inhomogeneous_poisson.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/simulation/inhomogeneous_poisson.h
+        ${TICK_SIMULATION_INCLUDE_DIR}/inhomogeneous_poisson.h
         hawkes_kernels/hawkes_kernel.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_kernels/hawkes_kernel.h 
+        ${TICK_SIMULATION_INCLUDE_DIR}/hawkes_kernels/hawkes_kernel.h 
         hawkes_kernels/hawkes_kernel_exp.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_kernels/hawkes_kernel_exp.h 
+        ${TICK_SIMULATION_INCLUDE_DIR}/hawkes_kernels/hawkes_kernel_exp.h 
         hawkes_kernels/hawkes_kernel_sum_exp.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_kernels/hawkes_kernel_sum_exp.h 
+        ${TICK_SIMULATION_INCLUDE_DIR}/hawkes_kernels/hawkes_kernel_sum_exp.h 
         hawkes_kernels/hawkes_kernel_power_law.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_kernels/hawkes_kernel_power_law.h 
-        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_kernels/hawkes_kernel_0.h
+        ${TICK_SIMULATION_INCLUDE_DIR}/hawkes_kernels/hawkes_kernel_power_law.h 
+        ${TICK_SIMULATION_INCLUDE_DIR}/hawkes_kernels/hawkes_kernel_0.h
         hawkes_kernels/hawkes_kernel_time_func.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_kernels/hawkes_kernel_time_func.h
-        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_baselines/baseline.h
+        ${TICK_SIMULATION_INCLUDE_DIR}/hawkes_kernels/hawkes_kernel_time_func.h
+        ${TICK_SIMULATION_INCLUDE_DIR}/hawkes_baselines/baseline.h
         hawkes_baselines/constant_baseline.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_baselines/constant_baseline.h
+        ${TICK_SIMULATION_INCLUDE_DIR}/hawkes_baselines/constant_baseline.h
         hawkes_baselines/timefunction_baseline.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_baselines/timefunction_baseline.h)
+        ${TICK_SIMULATION_INCLUDE_DIR}/hawkes_baselines/timefunction_baseline.h)
 
 target_link_libraries(tick_simulation
         ${TICK_LIB_ARRAY}

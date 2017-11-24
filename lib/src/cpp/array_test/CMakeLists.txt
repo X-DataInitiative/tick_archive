@@ -1,12 +1,14 @@
+set(TICK_ARRAY_TEST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/array_test)
+
 add_library(tick_array_test EXCLUDE_FROM_ALL
         array_test.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/array_test/array_test.h
+        ${TICK_ARRAY_TEST_INCLUDE_DIR}/array_test.h
         varraycontainer.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/array_test/varraycontainer.h
-        ${PROJECT_SOURCE_DIR}/include/tick/array_test/sbasearray_container.h 
+        ${TICK_ARRAY_TEST_INCLUDE_DIR}/varraycontainer.h
+        ${TICK_ARRAY_TEST_INCLUDE_DIR}/sbasearray_container.h
         sbasearray_container.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/array_test/performance_test.h 
+        ${TICK_ARRAY_TEST_INCLUDE_DIR}/performance_test.h
         performance_test.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/array_test/timer.h
-        ${PROJECT_SOURCE_DIR}/include/tick/array_test/typemap_test.h 
+        ${TICK_ARRAY_TEST_INCLUDE_DIR}/timer.h
+        ${TICK_ARRAY_TEST_INCLUDE_DIR}/typemap_test.h
         typemap_test.cpp)

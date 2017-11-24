@@ -1,69 +1,71 @@
+set(TICK_MODEL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/optim/model)
+
 add_library(tick_model EXCLUDE_FROM_ALL
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/model.h
+        ${TICK_MODEL_INCLUDE_DIR}/model.h
         model_labels_features.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/model_labels_features.h
+        ${TICK_MODEL_INCLUDE_DIR}/model_labels_features.h
         model_generalized_linear.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/model_generalized_linear.h
+        ${TICK_MODEL_INCLUDE_DIR}/model_generalized_linear.h
         model_generalized_linear_with_intercepts.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/model_generalized_linear_with_intercepts.h
+        ${TICK_MODEL_INCLUDE_DIR}/model_generalized_linear_with_intercepts.h
         linreg.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/linreg.h
+        ${TICK_MODEL_INCLUDE_DIR}/linreg.h
         linreg_with_intercepts.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/linreg_with_intercepts.h
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/logreg.h 
+        ${TICK_MODEL_INCLUDE_DIR}/linreg_with_intercepts.h
+        ${TICK_MODEL_INCLUDE_DIR}/logreg.h 
         logreg.cpp
         poisreg.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/poisreg.h
+        ${TICK_MODEL_INCLUDE_DIR}/poisreg.h
 		model_absolute_regression.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/model_absolute_regression.h
+        ${TICK_MODEL_INCLUDE_DIR}/model_absolute_regression.h
 		model_epsilon_insensitive.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/model_epsilon_insensitive.h
+        ${TICK_MODEL_INCLUDE_DIR}/model_epsilon_insensitive.h
 		model_hinge.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/model_hinge.h
+        ${TICK_MODEL_INCLUDE_DIR}/model_hinge.h
 		model_quadratic_hinge.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/model_quadratic_hinge.h
+        ${TICK_MODEL_INCLUDE_DIR}/model_quadratic_hinge.h
 		model_smoothed_hinge.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/model_smoothed_hinge.h
+        ${TICK_MODEL_INCLUDE_DIR}/model_smoothed_hinge.h
 		model_huber.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/model_huber.h
+        ${TICK_MODEL_INCLUDE_DIR}/model_huber.h
 		model_modified_huber.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/model_modified_huber.h
+        ${TICK_MODEL_INCLUDE_DIR}/model_modified_huber.h
 		base/hawkes_model.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/base/hawkes_model.h
+        ${TICK_MODEL_INCLUDE_DIR}/base/hawkes_model.h
 		base/hawkes_fixed_kern_loglik.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/base/hawkes_fixed_kern_loglik.h
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/hawkes_fixed_expkern_loglik.h 
+        ${TICK_MODEL_INCLUDE_DIR}/base/hawkes_fixed_kern_loglik.h
+        ${TICK_MODEL_INCLUDE_DIR}/hawkes_fixed_expkern_loglik.h 
         hawkes_fixed_expkern_loglik.cpp
-		${PROJECT_SOURCE_DIR}/include/tick/optim/model/hawkes_fixed_sumexpkern_loglik.h 
+		${TICK_MODEL_INCLUDE_DIR}/hawkes_fixed_sumexpkern_loglik.h 
         hawkes_fixed_sumexpkern_loglik.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/hawkes_fixed_expkern_leastsq.h 
+        ${TICK_MODEL_INCLUDE_DIR}/hawkes_fixed_expkern_leastsq.h 
         hawkes_fixed_expkern_leastsq.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/hawkes_fixed_sumexpkern_leastsq.h 
+        ${TICK_MODEL_INCLUDE_DIR}/hawkes_fixed_sumexpkern_leastsq.h 
         hawkes_fixed_sumexpkern_leastsq.cpp
         coxreg_partial_lik.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/coxreg_partial_lik.h
+        ${TICK_MODEL_INCLUDE_DIR}/coxreg_partial_lik.h
         model_lipschitz.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/model_lipschitz.h
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/hawkes_utils.h 
+        ${TICK_MODEL_INCLUDE_DIR}/model_lipschitz.h
+        ${TICK_MODEL_INCLUDE_DIR}/hawkes_utils.h 
         hawkes_utils.cpp
-		${PROJECT_SOURCE_DIR}/include/tick/optim/model/base/hawkes_list.h 
+		${TICK_MODEL_INCLUDE_DIR}/base/hawkes_list.h 
         base/hawkes_list.cpp
-		${PROJECT_SOURCE_DIR}/include/tick/optim/model/variants/hawkes_leastsq_list.h 
+		${TICK_MODEL_INCLUDE_DIR}/variants/hawkes_leastsq_list.h 
         variants/hawkes_leastsq_list.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/variants/hawkes_fixed_expkern_leastsq_list.h 
+        ${TICK_MODEL_INCLUDE_DIR}/variants/hawkes_fixed_expkern_leastsq_list.h 
         variants/hawkes_fixed_expkern_leastsq_list.cpp
-		${PROJECT_SOURCE_DIR}/include/tick/optim/model/variants/hawkes_fixed_expkern_loglik_list.h 
+		${TICK_MODEL_INCLUDE_DIR}/variants/hawkes_fixed_expkern_loglik_list.h 
         variants/hawkes_fixed_expkern_loglik_list.cpp
-		${PROJECT_SOURCE_DIR}/include/tick/optim/model/variants/hawkes_fixed_kern_loglik_list.h 
+		${TICK_MODEL_INCLUDE_DIR}/variants/hawkes_fixed_kern_loglik_list.h 
         variants/hawkes_fixed_kern_loglik_list.cpp
 		base/hawkes_single.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/base/hawkes_single.h
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/variants/hawkes_fixed_sumexpkern_leastsq_list.h 
+        ${TICK_MODEL_INCLUDE_DIR}/base/hawkes_single.h
+        ${TICK_MODEL_INCLUDE_DIR}/variants/hawkes_fixed_sumexpkern_leastsq_list.h 
         variants/hawkes_fixed_sumexpkern_leastsq_list.cpp
-		${PROJECT_SOURCE_DIR}/include/tick/optim/model/variants/hawkes_fixed_sumexpkern_loglik_list.h 
+		${TICK_MODEL_INCLUDE_DIR}/variants/hawkes_fixed_sumexpkern_loglik_list.h 
         variants/hawkes_fixed_sumexpkern_loglik_list.cpp
         sccs.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/model/sccs.h)
+        ${TICK_MODEL_INCLUDE_DIR}/sccs.h)
 
 target_link_libraries(tick_model
 		${TICK_LIB_BASE}

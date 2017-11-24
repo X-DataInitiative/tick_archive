@@ -1,28 +1,30 @@
+set(TICK_BASE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/base)
+
 add_library(tick_base EXCLUDE_FROM_ALL
-        ${PROJECT_SOURCE_DIR}/include/tick/base/time_func.h
+        ${TICK_BASE_INCLUDE_DIR}/time_func.h
         time_func.cpp
 
-        ${PROJECT_SOURCE_DIR}/include/tick/base/interruption.h
+        ${TICK_BASE_INCLUDE_DIR}/interruption.h
         interruption.cpp
 
-        ${PROJECT_SOURCE_DIR}/include/tick/base/parallel/parallel.h
-        ${PROJECT_SOURCE_DIR}/include/tick/base/parallel/parallel_utils.h
+        ${TICK_BASE_INCLUDE_DIR}/parallel/parallel.h
+        ${TICK_BASE_INCLUDE_DIR}/parallel/parallel_utils.h
 
-        ${PROJECT_SOURCE_DIR}/include/tick/base/exceptions_test.h
+        ${TICK_BASE_INCLUDE_DIR}/exceptions_test.h
         exceptions_test.cpp
 
-        ${PROJECT_SOURCE_DIR}/include/tick/base/base.h
-        ${PROJECT_SOURCE_DIR}/include/tick/base/base_test.h
+        ${TICK_BASE_INCLUDE_DIR}/base.h
+        ${TICK_BASE_INCLUDE_DIR}/base_test.h
 
-        ${PROJECT_SOURCE_DIR}/include/tick/base/debug.h
-        ${PROJECT_SOURCE_DIR}/include/tick/base/defs.h
+        ${TICK_BASE_INCLUDE_DIR}/debug.h
+        ${TICK_BASE_INCLUDE_DIR}/defs.h
 
-        ${PROJECT_SOURCE_DIR}/include/tick/base/tick_python.h
-        ${PROJECT_SOURCE_DIR}/include/tick/base/serialization.h
+        ${TICK_BASE_INCLUDE_DIR}/tick_python.h
+        ${TICK_BASE_INCLUDE_DIR}/serialization.h
 
-        ${PROJECT_SOURCE_DIR}/include/tick/base/math/normal_distribution.h
+        ${TICK_BASE_INCLUDE_DIR}/math/normal_distribution.h
         math/normal_distribution.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/base/math/t2exp.h
-        ${PROJECT_SOURCE_DIR}/include/tick/base/math/t2exp.inl
+        ${TICK_BASE_INCLUDE_DIR}/math/t2exp.h
+        ${TICK_BASE_INCLUDE_DIR}/math/t2exp.inl
         math/t2exp.cpp
         )

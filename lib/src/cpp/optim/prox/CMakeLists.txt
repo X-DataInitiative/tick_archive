@@ -1,37 +1,39 @@
+set(TICK_PROX_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/optim/prox)
+
 add_library(tick_prox EXCLUDE_FROM_ALL
         prox.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox.h
+        ${TICK_PROX_INCLUDE_DIR}/prox.h
         prox_separable.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_separable.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_separable.h
         prox_l2sq.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_l2sq.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_l2sq.h
         prox_l2.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_l2.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_l2.h
         prox_l1.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_l1.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_l1.h
         prox_l1w.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_l1w.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_l1w.h
         prox_positive.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_positive.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_positive.h
         prox_zero.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_zero.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_zero.h
         prox_sorted_l1.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_sorted_l1.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_sorted_l1.h
         prox_slope.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_slope.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_slope.h
         prox_tv.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_tv.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_tv.h
         prox_l1w.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_l1w.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_l1w.h
         prox_elasticnet.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_elasticnet.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_elasticnet.h
         prox_multi.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_multi.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_multi.h
         prox_equality.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_equality.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_equality.h
         prox_with_groups.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_with_groups.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_with_groups.h
         prox_binarsity.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_binarsity.h
+        ${TICK_PROX_INCLUDE_DIR}/prox_binarsity.h
         prox_group_l1.cpp 
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/prox/prox_group_l1.h)
+        ${TICK_PROX_INCLUDE_DIR}/prox_group_l1.h)

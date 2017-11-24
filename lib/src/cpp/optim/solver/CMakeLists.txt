@@ -1,13 +1,15 @@
+set(TICK_SOLVER_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/include/tick/optim/solver)
+
 add_library(tick_solver EXCLUDE_FROM_ALL
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/solver/sgd.h 
+        ${TICK_SOLVER_INCLUDE_DIR}/sgd.h 
         sgd.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/solver/svrg.h 
+        ${TICK_SOLVER_INCLUDE_DIR}/svrg.h 
         svrg.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/solver/saga.h 
+        ${TICK_SOLVER_INCLUDE_DIR}/saga.h 
         saga.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/solver/sdca.h 
+        ${TICK_SOLVER_INCLUDE_DIR}/sdca.h 
         sdca.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/solver/adagrad.h 
+        ${TICK_SOLVER_INCLUDE_DIR}/adagrad.h 
         adagrad.cpp
-        ${PROJECT_SOURCE_DIR}/include/tick/optim/solver/sto_solver.h 
+        ${TICK_SOLVER_INCLUDE_DIR}/sto_solver.h 
         sto_solver.cpp)
