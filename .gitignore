@@ -1,6 +1,6 @@
 _*.so
 bin/
-build/
+build
 
 # All hidden files except for gitignore
 .*

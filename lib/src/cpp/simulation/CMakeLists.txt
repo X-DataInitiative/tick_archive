@@ -1,0 +1,30 @@
+add_library(tick_simulation EXCLUDE_FROM_ALL
+        pp.cpp 
+        ${PROJECT_SOURCE_DIR}/include/tick/simulation/pp.h
+        poisson.cpp 
+        ${PROJECT_SOURCE_DIR}/include/tick/simulation/poisson.h
+        hawkes.cpp 
+        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes.h
+        inhomogeneous_poisson.cpp 
+        ${PROJECT_SOURCE_DIR}/include/tick/simulation/inhomogeneous_poisson.h
+        hawkes_kernels/hawkes_kernel.cpp
+        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_kernels/hawkes_kernel.h 
+        hawkes_kernels/hawkes_kernel_exp.cpp
+        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_kernels/hawkes_kernel_exp.h 
+        hawkes_kernels/hawkes_kernel_sum_exp.cpp
+        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_kernels/hawkes_kernel_sum_exp.h 
+        hawkes_kernels/hawkes_kernel_power_law.cpp
+        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_kernels/hawkes_kernel_power_law.h 
+        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_kernels/hawkes_kernel_0.h
+        hawkes_kernels/hawkes_kernel_time_func.cpp 
+        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_kernels/hawkes_kernel_time_func.h
+        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_baselines/baseline.h
+        hawkes_baselines/constant_baseline.cpp 
+        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_baselines/constant_baseline.h
+        hawkes_baselines/timefunction_baseline.cpp 
+        ${PROJECT_SOURCE_DIR}/include/tick/simulation/hawkes_baselines/timefunction_baseline.h)
+
+target_link_libraries(tick_simulation
+        ${TICK_LIB_ARRAY}
+        ${TICK_LIB_BASE}
+        ${TICK_LIB_CRANDOM})
