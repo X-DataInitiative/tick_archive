@@ -58,7 +58,7 @@ PROJECT_LOGO           =
 # entered, it will be relative to the location where doxygen was started. If
 # left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = ./doc_cpp
+OUTPUT_DIRECTORY       = ./doc
 
 # If the CREATE_SUBDIRS tag is set to YES then doxygen will create 4096 sub-
 # directories (in 2 levels) under the output directory of each output format and
@@ -758,11 +758,7 @@ WARN_LOGFILE           =
 # spaces.
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  =   ./tick/base/src ./tick/base/utils/src \
-                           ./tick/array/src DOC_C/mainpage.dox \
-                           ./tick/simulation/src ./tick/optim/model/src \
-                           ./tick/random/src \
-                           ./tick/simulation/src/hawkes_kernels
+INPUT                  =   ./doc/mainpage.dox ./include/tick
 
 
 # This tag can be used to specify the character encoding of the source files
@@ -789,7 +785,7 @@ FILE_PATTERNS          =
 # be searched for input files as well.
 # The default value is: NO.
 
-RECURSIVE              = NO
+RECURSIVE              = YES
 
 # The EXCLUDE tag can be used to specify files and/or directories that should be
 # excluded from the INPUT source files. This way you can easily exclude a
