@@ -47,7 +47,7 @@ MKN_C_FLAGS=" $TICK_INDICES "
 cd $ROOT
 
 for P in "${PROFILES[@]}"; do 
-  mkn compile -ta "${MKN_C_FLAGS[@]}" -b "$PY_INCS" -p ${P} 
+  mkn compile -ta "${MKN_C_FLAGS[@]}" -b "$PY_INCS" -p ${P} -C lib
 done
 
 TKLOG=$KLOG
@@ -60,16 +60,17 @@ for P in "${PROFILES[@]}"; do
     KLOG=0 
     OUT=$(mkn link -p $P -l "${LDARGS} $LIBLD" \
           -P lib_name=$LIB_POSTFIX \
-          -RB $B_PATH |  head -1)
+          -RB $B_PATH -C lib |  head -1)
     OUT=$(echo $OUT | sed -e "s/.dll/.pyd/g")
     (( TKLOG > 0 )) && echo $OUT
     cmd /c "${OUT[@]}"
   else
     mkn link -p $P -l "${LIBLDARGS} ${LDARGS} $LIBLD" \
        -P "${MKN_P[@]}" \
-       -B "$B_PATH"
+       -B "$B_PATH" -C lib
   fi
   PUSHD=${LIBRARIES[$EX]}
+  pushd $ROOT/lib  2>&1 > /dev/null
   pushd $(dirname ${PUSHD}) 2>&1 > /dev/null
     if [[ "$unameOut" == "CYGWIN"* ]] || [[ "$unameOut" == "MINGW"* ]]; then
       for f in $(find . -maxdepth 1 -type f -name "*.dll" ); do    
@@ -82,5 +83,6 @@ for P in "${PROFILES[@]}"; do
         [ "$SUB" == "lib" ] && cp "$f" "${f:5}"
       done
     fi      
+  popd 2>&1 > /dev/null
   popd 2>&1 > /dev/null
 done

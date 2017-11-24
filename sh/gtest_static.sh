@@ -36,17 +36,15 @@ do
    FILES+=("${array[$i-1]}")
 done
 
-[ "$arraylength" == "0" ] && FILES=($(find lib/src/cpp-test -name "*gtest.cpp"))
-
 cd $CWD/.. 
 ROOT=$PWD
 source $ROOT/sh/configure_env.sh
 
+cd $ROOT/lib
+[ "$arraylength" == "0" ] && FILES=($(find src/cpp-test -name "*gtest.cpp"))
+
 [ ! -z "$CXXFLAGS" ] && CARGS="$CXXFLAGS $CARGS"
 [ ! -z "$LDFLAGS" ] && LDARGS="${LDARGS} ${LDFLAGS}"
-
-cd $CWD/..
-export PYTHONPATH=$PWD
 
 mkn clean build -p gtest -tKa "-fPIC -O2 -DNDEBUG -DGTEST_CREATE_SHARED_LIBRARY" \
     -d google.test,+ ${MKN_X_FILE[@]}
@@ -73,5 +71,5 @@ for FILE in "${FILES[@]}"; do
             -tl "${LDARGS}" \
             -P "${MKN_P}" \
             -KB $B_PATH ${MKN_X_FILE[@]}
-    mv bin/gtest_nodep/tick gtest/$(basename $FILE)
+    mv bin/gtest_nodep/tick $ROOT/gtest/$(basename $FILE)
 done

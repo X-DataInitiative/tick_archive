@@ -28,7 +28,7 @@ echo "SWIG sub-routine - START"
 for P in "${PROFILES[@]}"; do
 
   LIBS=
-  TREE=($(mkn tree -p $P))
+  TREE=($(mkn tree -p $P -C lib))
   TREE_LEN=${#TREE[@]}
   INCS=(-Ilib/include)
   INCS+=(-I${SWIG_BASE}/base)

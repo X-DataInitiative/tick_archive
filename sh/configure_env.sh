@@ -204,16 +204,16 @@ function hash_index() {
     esac
 }
 LIBRARIES=(
-    "tick/array/build/_array$LIB_POSTFIX"
-    "tick/base/build/_base$LIB_POSTFIX"
-    "tick/random/build/_crandom$LIB_POSTFIX"
-    "tick/optim/model/build/_model$LIB_POSTFIX"
-    "tick/optim/prox/build/_prox$LIB_POSTFIX"
-    "tick/optim/solver/build/_solver$LIB_POSTFIX"
-    "tick/simulation/build/_simulation$LIB_POSTFIX"
-    "tick/inference/build/_inference$LIB_POSTFIX"
-    "tick/preprocessing/build/_preprocessing$LIB_POSTFIX"
-    "tick/array_test/build/array_test${LIB_POSTFIX}"
+    "../tick/array/build/_array$LIB_POSTFIX"
+    "../tick/base/build/_base$LIB_POSTFIX"
+    "../tick/random/build/_crandom$LIB_POSTFIX"
+    "../tick/optim/model/build/_model$LIB_POSTFIX"
+    "../tick/optim/prox/build/_prox$LIB_POSTFIX"
+    "../tick/optim/solver/build/_solver$LIB_POSTFIX"
+    "../tick/simulation/build/_simulation$LIB_POSTFIX"
+    "../tick/inference/build/_inference$LIB_POSTFIX"
+    "../tick/preprocessing/build/_preprocessing$LIB_POSTFIX"
+    "../tick/array_test/build/array_test${LIB_POSTFIX}"
 )
 
 ##
@@ -238,7 +238,7 @@ LIB_LD_PER_LIB=()
 ITER=0
 for PROFILE in "${PROFILES[@]}"; do
   LIBS=
-  TREE=($(mkn tree -p $PROFILE))
+  TREE=($(mkn tree -p $PROFILE -C lib))
   TREE_LEN=${#TREE[@]}
   for idx in $(seq $TREE_LEN -1 0); do
     LINE="${TREE[idx]}"
