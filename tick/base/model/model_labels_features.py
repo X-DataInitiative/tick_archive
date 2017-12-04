@@ -3,7 +3,7 @@
 import numpy as np
 
 from . import Model
-from ....preprocessing.utils import safe_array
+from tick.preprocessing.utils import safe_array
 
 
 class ModelLabelsFeatures(Model):

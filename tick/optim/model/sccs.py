@@ -1,10 +1,11 @@
 # License: BSD 3 clause
 
 import numpy as np
-from .base import ModelFirstOrder, ModelLipschitz
-from .build.model import ModelSCCS as _ModelSCCS
+
+from tick.base.model import ModelFirstOrder, ModelLipschitz
 from tick.preprocessing.utils import check_longitudinal_features_consistency, \
     check_censoring_consistency
+from .build.model import ModelSCCS as _ModelSCCS
 
 
 class ModelSCCS(ModelFirstOrder, ModelLipschitz):

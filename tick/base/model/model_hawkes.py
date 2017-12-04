@@ -3,12 +3,14 @@
 import numpy as np
 from scipy.sparse import sputils, csr_matrix
 
+# from tick.base.model import N_CALLS_LOSS, PASS_OVER_DATA
+
+from .model import N_CALLS_LOSS, PASS_OVER_DATA
+
 from tick.optim.model.build.model import (ModelHawkesFixedSumExpKernLeastSqList,
                                           ModelHawkesFixedExpKernLeastSqList,
-                                          ModelHawkesFixedSumExpKernLogLik,
                                           ModelHawkesFixedSumExpKernLogLikList)
 from .model_first_order import ModelFirstOrder
-from tick.optim.model.base.model import N_CALLS_LOSS, PASS_OVER_DATA
 
 
 class ModelHawkes(ModelFirstOrder):

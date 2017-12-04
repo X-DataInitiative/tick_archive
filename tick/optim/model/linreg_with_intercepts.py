@@ -2,10 +2,10 @@
 
 import numpy as np
 from numpy.linalg import svd
-from .base import ModelGeneralizedLinearWithIntercepts, ModelFirstOrder, \
+
+from tick.base.model import ModelGeneralizedLinearWithIntercepts, ModelFirstOrder, \
     ModelLipschitz
 from .build.model import ModelLinRegWithIntercepts as _ModelLinRegWithIntercepts
-
 
 __author__ = 'Stephane Gaiffas'
 

@@ -2,9 +2,9 @@
 
 import numpy as np
 from numpy.linalg import svd
-from .base import ModelGeneralizedLinear, ModelFirstOrder, ModelLipschitz
-from .build.model import ModelLinReg as _ModelLinReg
 
+from tick.base.model import ModelGeneralizedLinear, ModelFirstOrder, ModelLipschitz
+from .build.model import ModelLinReg as _ModelLinReg
 
 __author__ = 'Stephane Gaiffas'
 

@@ -1,15 +1,14 @@
 # License: BSD 3 clause
 
 
-from .build.model import ModelPoisReg as _ModelPoisReg
-from .build.model import LinkType_identity as identity
-from .build.model import LinkType_exponential as exponential
-
 import numpy as np
 from scipy.special import gammaln
 
-from .base import ModelGeneralizedLinear, ModelFirstOrder, ModelSecondOrder, \
+from tick.base.model import ModelGeneralizedLinear, ModelFirstOrder, ModelSecondOrder, \
     ModelSelfConcordant
+from .build.model import LinkType_exponential as exponential
+from .build.model import LinkType_identity as identity
+from .build.model import ModelPoisReg as _ModelPoisReg
 
 __author__ = 'Stephane Gaiffas'
 

@@ -3,7 +3,7 @@
 from abc import abstractmethod
 import numpy as np
 
-from . import Model
+from .model import Model
 from .model import GRAD, LOSS_AND_GRAD, N_CALLS_GRAD, \
     N_CALLS_LOSS_AND_GRAD, PASS_OVER_DATA, N_CALLS_LOSS
 

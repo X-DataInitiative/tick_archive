@@ -2,7 +2,8 @@
 
 import numpy as np
 
-from tick.optim.model.base import ModelHawkes, LOSS_AND_GRAD
+from tick.base.model.model_hawkes import ModelHawkes
+from tick.base.model import LOSS_AND_GRAD
 from .build.model import ModelHawkesFixedExpKernLeastSqList as \
     _ModelHawkesFixedExpKernLeastSq
 

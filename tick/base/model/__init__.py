@@ -10,7 +10,8 @@ from .model_lipschitz import ModelLipschitz
 from .model_generalized_linear import ModelGeneralizedLinear
 from .model_generalized_linear_with_intercepts import \
     ModelGeneralizedLinearWithIntercepts
-from .model_hawkes import ModelHawkes
+
+# from .model_hawkes import ModelHawkes
 
 from .model import LOSS
 from .model import GRAD

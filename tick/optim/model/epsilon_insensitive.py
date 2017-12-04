@@ -1,7 +1,8 @@
 # License: BSD 3 clause
 
 import numpy as np
-from .base import ModelGeneralizedLinear, ModelFirstOrder
+
+from tick.base.model import ModelGeneralizedLinear, ModelFirstOrder
 from .build.model import ModelEpsilonInsensitive as _ModelEpsilonInsensitive
 
 __author__ = 'Stephane Gaiffas'

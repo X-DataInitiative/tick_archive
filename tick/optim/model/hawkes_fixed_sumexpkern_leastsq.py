@@ -1,10 +1,12 @@
 # License: BSD 3 clause
 
-import numpy as np
 import sys
 from warnings import warn
 
-from tick.optim.model.base import ModelHawkes, LOSS_AND_GRAD
+import numpy as np
+
+from tick.base.model.model_hawkes import ModelHawkes
+from tick.base.model import LOSS_AND_GRAD
 from .build.model import ModelHawkesFixedSumExpKernLeastSqList as \
     _ModelHawkesFixedSumExpKernLeastSqList
 

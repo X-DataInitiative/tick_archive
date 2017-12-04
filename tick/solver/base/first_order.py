@@ -2,9 +2,9 @@
 
 import numpy as np
 
-from . import Solver
-from tick.optim.model.base import Model
+from tick.base.model import Model
 from tick.prox.base import Prox
+from . import Solver
 
 __author__ = 'Stephane Gaiffas'
 

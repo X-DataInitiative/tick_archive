@@ -2,10 +2,10 @@
 
 import numpy as np
 
-from tick.optim.model.base import Model, ModelFirstOrder
-from tick.preprocessing.utils import safe_array
+from tick.base.model import Model, ModelFirstOrder
 from tick.optim.model.build.model import ModelCoxRegPartialLik \
     as _ModelCoxRegPartialLik
+from tick.preprocessing.utils import safe_array
 
 
 class ModelCoxRegPartialLik(ModelFirstOrder):

@@ -2,7 +2,9 @@
 
 import numpy as np
 
-from .base import ModelHawkes, ModelSecondOrder, ModelSelfConcordant, \
+
+from tick.base.model.model_hawkes import ModelHawkes
+from tick.base.model import ModelSecondOrder, ModelSelfConcordant, \
     LOSS_AND_GRAD
 from .build.model import ModelHawkesFixedSumExpKernLogLikList as \
     _ModelHawkesFixedSumExpKernLogLik

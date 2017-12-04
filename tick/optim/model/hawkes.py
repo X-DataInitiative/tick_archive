@@ -1,12 +1,12 @@
 # License: BSD 3 clause
 
 
+import multiprocessing
 
-from .base import ModelSecondOrder, ModelSelfConcordant, LOSS_AND_GRAD
-from .build.model import LogLikelihoodExpNoBeta, ExpFixedBetaContrast
 import numpy as np
 
-import multiprocessing
+from tick.base.model import ModelSecondOrder, ModelSelfConcordant, LOSS_AND_GRAD
+from .build.model import LogLikelihoodExpNoBeta, ExpFixedBetaContrast
 
 
 # TODO: this class can't be used with a stochastic solver... Make loss

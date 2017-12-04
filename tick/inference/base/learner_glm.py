@@ -3,9 +3,9 @@
 from warnings import warn
 
 import numpy as np
-from tick.base import Base
 
-from tick.optim.model.base import ModelLipschitz
+from tick.base import Base
+from tick.base.model import ModelLipschitz
 from . import LearnerOptim
 
 

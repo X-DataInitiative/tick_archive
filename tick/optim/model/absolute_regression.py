@@ -1,7 +1,8 @@
 # License: BSD 3 clause
 
 import numpy as np
-from .base import ModelGeneralizedLinear, ModelFirstOrder
+
+from tick.base.model import ModelGeneralizedLinear, ModelFirstOrder
 from .build.model import ModelAbsoluteRegression as _ModelAbsoluteRegression
 
 __author__ = 'Stephane Gaiffas'

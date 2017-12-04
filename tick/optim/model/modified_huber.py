@@ -2,7 +2,8 @@
 
 import numpy as np
 from numpy.linalg import svd
-from .base import ModelGeneralizedLinear, ModelFirstOrder, ModelLipschitz
+
+from tick.base.model import ModelGeneralizedLinear, ModelFirstOrder, ModelLipschitz
 from .build.model import ModelModifiedHuber as _ModelModifiedHuber
 
 __author__ = 'Stephane Gaiffas'
