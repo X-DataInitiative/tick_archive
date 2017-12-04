@@ -7,7 +7,7 @@
 
 // License: BSD 3 clause
 
-#include "model.h"
+#include "tick/base_model/model.h"
 
 
 class DLL_PUBLIC ModelCoxRegPartialLik : public Model {

@@ -4,7 +4,7 @@
 // License: BSD 3 clause
 
 #include "tick/base/base.h"
-#include "tick/optim/model/model.h"
+#include "tick/base_model/model.h"
 
 /** \class ModelHawkes
  * \brief Base class of Hawkes models

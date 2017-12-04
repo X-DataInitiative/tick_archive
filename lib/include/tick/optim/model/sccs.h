@@ -8,7 +8,7 @@
 // License: BSD 3 clause
 
 #include "tick/base/base.h"
-#include "model_lipschitz.h"
+#include "tick/base_model/model_lipschitz.h"
 
 class DLL_PUBLIC ModelSCCS : public ModelLipschitz  {
  protected:

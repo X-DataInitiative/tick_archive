@@ -180,8 +180,10 @@ fi
 PROFILES=(
     array
     base
+    base/model
     random
     optim/model
+    linear_model
     prox
     solver
     simulation
@@ -193,21 +195,26 @@ function hash_index() {
     case $1 in
         'array')         echo 0;;
         'base')          echo 1;;
-        'random')        echo 2;;
-        'optim/model')   echo 3;;
-        'prox')          echo 4;;
-        'solver')  echo 5;;
-        'simulation')    echo 6;;
-        'inference')     echo 7;;
-        'preprocessing') echo 8;;
-        'array_test')    echo 9;;
+        'base/model')    echo 2;;
+        'random')        echo 3;;
+        'optim/model')   echo 4;;
+        'linear_model')  echo 5;;
+        'prox')          echo 6;;
+        'solver')        echo 7;;
+        'simulation')    echo 8;;
+        'inference')     echo 9;;
+        'preprocessing') echo 10;;
+        'array_test')    echo 11;;
     esac
 }
+
 LIBRARIES=(
     "tick/array/build/_array$LIB_POSTFIX"
     "tick/base/build/_base$LIB_POSTFIX"
+    "tick/base/model/build/_base_model$LIB_POSTFIX"
     "tick/random/build/_crandom$LIB_POSTFIX"
     "tick/optim/model/build/_model$LIB_POSTFIX"
+    "tick/linear_model/build/_linear_model$LIB_POSTFIX"
     "tick/prox/build/_prox$LIB_POSTFIX"
     "tick/solver/build/_solver$LIB_POSTFIX"
     "tick/simulation/build/_simulation$LIB_POSTFIX"

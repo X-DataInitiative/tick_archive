@@ -5,7 +5,7 @@
 //
 
 #include "tick/prox/prox_zero.h"
-#include "tick/optim/model/poisreg.h"
+#include "tick/linear_model/poisreg.h"
 #include "tick/solver/sdca.h"
 
 SDCA::SDCA(double l_l2sq,

@@ -3,8 +3,8 @@
 
 // License: BSD 3 clause
 
-#include "model_generalized_linear.h"
-#include "model_lipschitz.h"
+#include "tick/base/model/model_generalized_linear.h"
+#include "tick/base/model/model_lipschitz.h"
 
 #include <cereal/types/base_class.hpp>
 

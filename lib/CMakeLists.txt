@@ -31,8 +31,10 @@ if (${TICK_REBUILD_LIBS})
     message(STATUS "Rebuilding tick libraries")
 
     set(TICK_LIB_BASE       tick_base)
+    set(TICK_LIB_BASE_MODEL       tick_base_model)
     set(TICK_LIB_ARRAY      tick_array)
     set(TICK_LIB_MODEL      tick_model)
+    set(TICK_LIB_LINEAR_MODEL tick_linear_model)
     set(TICK_LIB_SIMULATION tick_simulation)
     set(TICK_LIB_CRANDOM    tick_crandom)
     set(TICK_LIB_ARRAY_TEST tick_array_test)
@@ -44,11 +46,13 @@ endif()
 
 
 add_subdirectory(src/cpp/base)
+add_subdirectory(src/cpp/base_model)
 add_subdirectory(src/cpp/array)
 add_subdirectory(src/cpp/array_test)
 add_subdirectory(src/cpp/random)
 add_subdirectory(src/cpp/simulation)
 add_subdirectory(src/cpp/optim/model)
+add_subdirectory(src/cpp/linear_model)
 add_subdirectory(src/cpp/prox)
 add_subdirectory(src/cpp/solver)
 add_subdirectory(src/cpp/inference)
@@ -73,7 +77,16 @@ if (${GTEST_FOUND})
         ${TICK_BLAS_LIBRARIES})
 
     if(APPLE)
-        set(TICK_INSTALL_RPATH "${CMAKE_CURRENT_SOURCE_DIR}/../tick/base/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/array/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/optim/model/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/random/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/prox/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/solver/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/simulation/build")
+        set(TICK_INSTALL_RPATH
+                "${CMAKE_CURRENT_SOURCE_DIR}/../tick/base/build;
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../tick/base/model/build;
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../tick/array/build;
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../tick/optim/model/build;
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../tick/linear_model/build;
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../tick/random/build;
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../tick/prox/build;
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../tick/solver/build;
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../tick/simulation/build")
 
         set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
         set(CMAKE_INSTALL_RPATH "${TICK_INSTALL_RPATH}")

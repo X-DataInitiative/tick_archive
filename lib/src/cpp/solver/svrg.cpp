@@ -1,6 +1,6 @@
 // License: BSD 3 clause
 
-#include "tick/optim/model/model_labels_features.h"
+#include "tick/base_model/model_labels_features.h"
 #include "tick/solver/svrg.h"
 
 SVRG::SVRG(ulong epoch_size,

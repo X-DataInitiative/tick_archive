@@ -11,7 +11,7 @@
 %import(module="tick.base") base_module.i
 
 %{
-#include "tick/optim/model/model.h"
+#include "tick/base/model/model.h"
 %}
 
 %include sto_solver.i

@@ -1,36 +1,7 @@
 set(TICK_MODEL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/tick/optim/model)
 
 add_library(tick_model EXCLUDE_FROM_ALL
-        ${TICK_MODEL_INCLUDE_DIR}/model.h
-        model_labels_features.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/model_labels_features.h
-        model_generalized_linear.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/model_generalized_linear.h
-        model_generalized_linear_with_intercepts.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/model_generalized_linear_with_intercepts.h
-        linreg.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/linreg.h
-        linreg_with_intercepts.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/linreg_with_intercepts.h
-        ${TICK_MODEL_INCLUDE_DIR}/logreg.h 
-        logreg.cpp
-        poisreg.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/poisreg.h
-		model_absolute_regression.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/model_absolute_regression.h
-		model_epsilon_insensitive.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/model_epsilon_insensitive.h
-		model_hinge.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/model_hinge.h
-		model_quadratic_hinge.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/model_quadratic_hinge.h
-		model_smoothed_hinge.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/model_smoothed_hinge.h
-		model_huber.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/model_huber.h
-		model_modified_huber.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/model_modified_huber.h
-		base/hawkes_model.cpp 
+		base/hawkes_model.cpp
         ${TICK_MODEL_INCLUDE_DIR}/base/hawkes_model.h
 		base/hawkes_fixed_kern_loglik.cpp 
         ${TICK_MODEL_INCLUDE_DIR}/base/hawkes_fixed_kern_loglik.h
@@ -42,11 +13,9 @@ add_library(tick_model EXCLUDE_FROM_ALL
         hawkes_fixed_expkern_leastsq.cpp
         ${TICK_MODEL_INCLUDE_DIR}/hawkes_fixed_sumexpkern_leastsq.h 
         hawkes_fixed_sumexpkern_leastsq.cpp
-        coxreg_partial_lik.cpp 
+		../../survival/coxreg_partial_lik.cpp
         ${TICK_MODEL_INCLUDE_DIR}/coxreg_partial_lik.h
-        model_lipschitz.cpp 
-        ${TICK_MODEL_INCLUDE_DIR}/model_lipschitz.h
-        ${TICK_MODEL_INCLUDE_DIR}/hawkes_utils.h 
+        ${TICK_MODEL_INCLUDE_DIR}/hawkes_utils.h
         hawkes_utils.cpp
 		${TICK_MODEL_INCLUDE_DIR}/base/hawkes_list.h 
         base/hawkes_list.cpp
@@ -64,7 +33,7 @@ add_library(tick_model EXCLUDE_FROM_ALL
         variants/hawkes_fixed_sumexpkern_leastsq_list.cpp
 		${TICK_MODEL_INCLUDE_DIR}/variants/hawkes_fixed_sumexpkern_loglik_list.h 
         variants/hawkes_fixed_sumexpkern_loglik_list.cpp
-        sccs.cpp 
+		../../survival/sccs.cpp
         ${TICK_MODEL_INCLUDE_DIR}/sccs.h)
 
 target_link_libraries(tick_model

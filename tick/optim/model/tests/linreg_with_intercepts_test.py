@@ -5,8 +5,8 @@ import unittest
 import numpy as np
 from scipy.sparse import csr_matrix
 
+from tick.linear_model.tests.generalized_linear_model import TestGLM
 from tick.optim.model import ModelLinRegWithIntercepts
-from tick.optim.model.tests.generalized_linear_model import TestGLM
 from tick.simulation import SimuLinReg
 from tick.simulation.base.weights import weights_sparse_gauss
 

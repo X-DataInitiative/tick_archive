@@ -1,6 +1,6 @@
 // License: BSD 3 clause
 
-#include "tick/optim/model/model_generalized_linear.h"
+#include "tick/base_model/model_generalized_linear.h"
 #include "tick/prox/prox_separable.h"
 #include "tick/solver/saga.h"
 

@@ -6,8 +6,8 @@
 
 // License: BSD 3 clause
 
-#include "model_generalized_linear.h"
-#include "model_labels_features.h"
+#include "tick/base/model/model_generalized_linear.h"
+#include "tick/base/model/model_labels_features.h"
 
 class DLL_PUBLIC ModelGeneralizedLinearWithIntercepts : public virtual ModelGeneralizedLinear {
  protected:

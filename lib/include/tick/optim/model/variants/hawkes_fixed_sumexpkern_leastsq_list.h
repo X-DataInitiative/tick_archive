@@ -4,7 +4,7 @@
 // License: BSD 3 clause
 
 #include "tick/base/base.h"
-#include "tick/optim/model/model.h"
+#include "tick/base_model/model.h"
 #include "tick/optim/model/hawkes_fixed_sumexpkern_leastsq.h"
 #include "hawkes_leastsq_list.h"
 

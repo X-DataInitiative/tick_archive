@@ -1,4 +1,5 @@
 set(TICK_BASE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/tick/base)
+set(TICK_BASE_SRC_DIR ${PROJECT_SOURCE_DIR}/src/cpp/base)
 
 add_library(tick_base EXCLUDE_FROM_ALL
         ${TICK_BASE_INCLUDE_DIR}/time_func.h
@@ -26,5 +27,4 @@ add_library(tick_base EXCLUDE_FROM_ALL
         math/normal_distribution.cpp
         ${TICK_BASE_INCLUDE_DIR}/math/t2exp.h
         ${TICK_BASE_INCLUDE_DIR}/math/t2exp.inl
-        math/t2exp.cpp
-        )
+        math/t2exp.cpp)

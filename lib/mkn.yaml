@@ -63,6 +63,15 @@ profile:
     install: ${lib_path}/base/build
     out: _base${lib_name}
 
+  - name: base/model
+    parent: arg
+    self: array
+    src:
+      ./src/cpp/base_model
+      ./src/swig/base_model
+    install: ${lib_path}/base/model/build
+    out: _base_model${lib_name}
+
   - name: array
     parent: arg
     inc: 
@@ -91,6 +100,15 @@ profile:
       ./src/swig/inference
     install: ${lib_path}/inference/build
     out: _inference${lib_name}
+
+  - name: linear_model
+    parent: arg
+    self: base
+    src:
+      ./src/cpp/linear_model
+      ./src/swig/linear_model
+    install: ${lib_path}/linear_model/build
+    out: _linear_model${lib_name}
 
   - name: optim/model
     parent: arg
