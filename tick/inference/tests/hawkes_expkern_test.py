@@ -1,18 +1,19 @@
 # License: BSD 3 clause
 
 import unittest
-import numpy as np
 
-from tick.inference.tests.inference import InferenceTest
-from tick.optim.model.hawkes_fixed_expkern_leastsq import \
-    ModelHawkesFixedExpKernLeastSq
+import numpy as np
 from tick.optim.model.hawkes_fixed_expkern_loglik import \
     ModelHawkesFixedExpKernLogLik
+
+from tick.hawkes.hawkes_fixed_expkern_leastsq import \
+    ModelHawkesFixedExpKernLeastSq
+from tick.inference import HawkesExpKern
+from tick.inference.tests.inference import InferenceTest
 from tick.prox import ProxNuclear
 from tick.prox import ProxPositive, ProxL1, ProxL2Sq, ProxElasticNet
-from tick.solver import AGD, GD, BFGS, SGD, SVRG
 from tick.simulation import SimuHawkesExpKernels
-from tick.inference import HawkesExpKern
+from tick.solver import AGD, GD, BFGS, SGD, SVRG
 
 solvers = ['gd', 'agd', 'svrg', 'bfgs', 'sgd']
 penalties = ['none', 'l2', 'l1', 'nuclear', 'elasticnet']

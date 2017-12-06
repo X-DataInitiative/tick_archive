@@ -1,7 +1,8 @@
 # License: BSD 3 clause
 
-from .base import ModelFirstOrder
 import numpy as np
+
+from tick.optim.model.base import ModelFirstOrder
 
 __author__ = 'stephanegaiffas'
 

@@ -1,11 +1,12 @@
 # License: BSD 3 clause
 
 import unittest
+
 import numpy as np
-from tick.inference import HawkesEM
-from tick.optim.model.tests.hawkes_utils import hawkes_intensities, \
+
+from tick.hawkes.tests import hawkes_intensities, \
     hawkes_log_likelihood
-from tick.plot import plot_hawkes_kernels
+from tick.inference import HawkesEM
 
 
 class Test(unittest.TestCase):

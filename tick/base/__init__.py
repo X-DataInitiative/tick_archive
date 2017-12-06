@@ -1,5 +1,6 @@
 # License: BSD 3 clause
 
+
 def _set_mpl_backend():
     """Make sure that we don't get DISPLAY problems when running without X
     on unices

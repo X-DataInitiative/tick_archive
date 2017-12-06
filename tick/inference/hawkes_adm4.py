@@ -6,8 +6,8 @@ from tick.inference.base import LearnerHawkesNoParam
 from tick.optim.model import ModelHawkesFixedExpKernLogLik
 from tick.prox.prox_l1 import ProxL1
 from tick.prox.prox_nuclear import ProxNuclear
-from tick.solver.base.utils import relative_distance
 from tick.simulation import SimuHawkesExpKernels
+from tick.solver.base.utils import relative_distance
 from .build.inference import HawkesADM4 as _HawkesADM4
 
 
