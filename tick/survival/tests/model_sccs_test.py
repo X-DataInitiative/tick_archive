@@ -11,7 +11,7 @@ from tick.preprocessing import LongitudinalFeaturesLagger
 from tick.prox import ProxZero
 from tick.simulation import SimuSCCS
 from tick.solver import SVRG
-from tick.survival.sccs import ModelSCCS
+from tick.survival.model_sccs import ModelSCCS
 
 
 class ModelSCCSTest(unittest.TestCase):

@@ -3,8 +3,8 @@
 import numpy as np
 from numpy.linalg import svd
 
-from tick.optim.model.base import ModelGeneralizedLinearWithIntercepts, ModelFirstOrder, \
-    ModelLipschitz
+from tick.base.model import ModelGeneralizedLinearWithIntercepts, \
+    ModelFirstOrder, ModelLipschitz
 from tick.optim.model.build.model import ModelLinRegWithIntercepts as _ModelLinRegWithIntercepts
 
 __author__ = 'Stephane Gaiffas'

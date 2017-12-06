@@ -6,7 +6,7 @@ import numpy as np
 from scipy.sparse import csr_matrix
 
 from tick.linear_model.tests.generalized_linear_model import TestGLM
-from tick.optim.model import ModelCoxRegPartialLik
+from tick.survival import ModelCoxRegPartialLik
 from tick.simulation import SimuCoxReg
 
 

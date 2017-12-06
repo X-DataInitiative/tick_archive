@@ -3,8 +3,8 @@
 import numpy as np
 
 from tick.base import actual_kwargs
-from tick.inference.base import LearnerOptim
-from tick.optim.model import ModelCoxRegPartialLik
+from tick.base.learner import LearnerOptim
+from .model_coxreg_partial_lik import ModelCoxRegPartialLik
 from tick.preprocessing.utils import safe_array
 from tick.solver import GD, AGD
 

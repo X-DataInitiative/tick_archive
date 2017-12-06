@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from tick.optim.model.base import ModelFirstOrder, ModelLipschitz
+from tick.base.model import ModelFirstOrder, ModelLipschitz
 from tick.preprocessing.utils import check_longitudinal_features_consistency, \
     check_censoring_consistency
 from tick.optim.model.build.model import ModelSCCS as _ModelSCCS

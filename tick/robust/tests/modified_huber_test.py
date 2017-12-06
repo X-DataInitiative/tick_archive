@@ -6,11 +6,12 @@ import numpy as np
 from scipy.sparse import csr_matrix
 
 from tick.linear_model.tests.generalized_linear_model import TestGLM
-from tick.optim.model import ModelModifiedHuber
+from tick.robust import ModelModifiedHuber
 from tick.simulation import SimuLogReg
 
 
 class Test(TestGLM):
+
     def test_ModelModifiedHuber(self):
         """...Numerical consistency check of loss and gradient for
         Modified Huber model

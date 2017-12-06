@@ -1,19 +1,16 @@
 # License: BSD 3 clause
 
 import numpy as np
-from numpy.linalg import svd
 
-from tick.optim.model.base import ModelGeneralizedLinear, ModelFirstOrder, ModelLipschitz
-from tick.optim.model.build.model import ModelHuber as _ModelHuber
+from tick.base.model import ModelGeneralizedLinear, ModelFirstOrder
+from tick.optim.model.build.model import ModelEpsilonInsensitive as _ModelEpsilonInsensitive
 
 __author__ = 'Stephane Gaiffas'
 
 
-class ModelHuber(ModelFirstOrder,
-                 ModelGeneralizedLinear,
-                 ModelLipschitz):
-    """Huber loss for robust regression. This model is particularly relevant
-    to deal with datasets with outliers. The class gives first
+class ModelEpsilonInsensitive(ModelFirstOrder,
+                              ModelGeneralizedLinear):
+    """Epsilon-Insensitive loss for robust regression. This class gives first
     order information (gradient and loss) for this model and can be passed
     to any solver through the solver's ``set_model`` method.
 
@@ -31,11 +28,11 @@ class ModelHuber(ModelFirstOrder,
     .. math::
         \\ell(y, y') =
         \\begin{cases}
-        \\frac 12 (y' - y)^2 &\\text{ if } |y' - y| \\leq \\delta \\\\
-        \\delta (|y' - y| - \\frac 12 \\delta) &\\text{ if } |y' - y| > \\delta
+        |y' - y| - \\epsilon &\\text{ if } |y' - y| > \\epsilon \\\\
+        0 &\\text{ if } |y' - y| \\leq \\epsilon
         \\end{cases}
 
-    for :math:`y, y' \\in \\mathbb R`, where :math:`\\delta > 0` can be tuned
+    for :math:`y, y' \in \mathbb R`, where :math:`\epsilon > 0` can be tuned
     using the ``threshold`` argument. Data is passed to this model through the
     ``fit(X, y)`` method where X is the features matrix (dense or sparse) and
     y is the vector of labels.
@@ -45,8 +42,8 @@ class ModelHuber(ModelFirstOrder,
     fit_intercept : `bool`
         If `True`, the model uses an intercept
 
-    threshold : `float`, default=1.
-        Positive threshold of the loss, see above for details.
+    threshold : `double`, default=1.
+        Positive threshold to be used in the loss function.
 
     Attributes
     ----------
@@ -84,7 +81,6 @@ class ModelHuber(ModelFirstOrder,
                  n_threads: int = 1):
         ModelFirstOrder.__init__(self)
         ModelGeneralizedLinear.__init__(self, fit_intercept)
-        ModelLipschitz.__init__(self)
         self.n_threads = n_threads
         self.threshold = threshold
 
@@ -102,17 +98,16 @@ class ModelHuber(ModelFirstOrder,
 
         Returns
         -------
-        output : `ModelHuber`
+        output : `ModelEpsilonInsensitive`
             The current instance with given data
         """
         ModelFirstOrder.fit(self, features, labels)
         ModelGeneralizedLinear.fit(self, features, labels)
-        ModelLipschitz.fit(self, features, labels)
-        self._set("_model", _ModelHuber(self.features,
-                                        self.labels,
-                                        self.fit_intercept,
-                                        self.threshold,
-                                        self.n_threads))
+        self._set("_model", _ModelEpsilonInsensitive(self.features,
+                                                     self.labels,
+                                                     self.fit_intercept,
+                                                     self.threshold,
+                                                     self.n_threads))
         return self
 
     def _grad(self, coeffs: np.ndarray, out: np.ndarray) -> None:
@@ -120,12 +115,3 @@ class ModelHuber(ModelFirstOrder,
 
     def _loss(self, coeffs: np.ndarray) -> float:
         return self._model.loss(coeffs)
-
-    def _get_lip_best(self):
-        # TODO: Use sklearn.decomposition.TruncatedSVD instead?
-        s = svd(self.features, full_matrices=False,
-                compute_uv=False)[0] ** 2
-        if self.fit_intercept:
-            return (s + 1) / self.n_samples
-        else:
-            return s / self.n_samples
