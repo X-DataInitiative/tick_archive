@@ -3,11 +3,11 @@
 
 import numpy as np
 
-from .base import SimuWithFeatures
+from tick.simulation.base import SimuWithFeatures
 
 
-class SimuLogReg(SimuWithFeatures):
-    """Simulation of a Logistic regression model
+class SimuLinReg(SimuWithFeatures):
+    """Simulation of a Linear regression model
 
     Parameters
     ----------
@@ -18,10 +18,13 @@ class SimuLogReg(SimuWithFeatures):
         The intercept. If None, then no intercept is used
 
     features : `numpy.ndarray`, shape=(n_samples, n_features), default=`None`
-        The features matrix to use. If `None`, it is simulated
+        The features matrix to use. If None, it is simulated
 
     n_samples : `int`, default=200
         Number of samples
+
+    std : `float`, default=1.
+        Standard deviation of the noise (Gaussian)
 
     features_type : `str`, default="cov_toeplitz"
         The type of features matrix to simulate
@@ -82,7 +85,7 @@ class SimuLogReg(SimuWithFeatures):
 
     def __init__(self, weights: np.ndarray, intercept: float = None,
                  features: np.ndarray = None, n_samples: int = 200,
-                 features_type: str = "cov_toeplitz",
+                 std: float = 1., features_type: str = "cov_toeplitz",
                  cov_corr: float = 0.5, features_scaling: str = "none",
                  seed: int = None, verbose: bool = True):
 
@@ -91,6 +94,7 @@ class SimuLogReg(SimuWithFeatures):
                                   n_features, features_type, cov_corr,
                                   features_scaling, seed, verbose)
         self.weights = weights
+        self.std = std
         self._set("labels", None)
 
     def simulate(self):
@@ -99,22 +103,13 @@ class SimuLogReg(SimuWithFeatures):
 
         Returns
         -------
-        features : `numpy.ndarray`, shape=(n_samples, n_features)
+        features: `numpy.ndarray`, shape=(n_samples, n_features)
             The features matrix
 
-        labels : `numpy.ndarray`, shape=(n_samples,)
+        labels: `numpy.ndarray`, shape=(n_samples,)
             The labels vector
         """
         return SimuWithFeatures.simulate(self)
-
-    @staticmethod
-    def sigmoid(t):
-        idx = t > 0
-        out = np.empty(t.size, dtype=np.float)
-        out[idx] = 1. / (1 + np.exp(-t[idx]))
-        exp_t = np.exp(t[~idx])
-        out[~idx] = exp_t / (1. + exp_t)
-        return out
 
     def _simulate(self):
         # The features matrix already exists, and is created by the
@@ -125,10 +120,6 @@ class SimuLogReg(SimuWithFeatures):
         # Add the intercept if necessary
         if self.intercept is not None:
             u += self.intercept
-        p = np.empty(n_samples)
-        p[:] = SimuLogReg.sigmoid(u)
-        labels = np.empty(n_samples)
-        labels[:] = np.random.binomial(1, p, size=n_samples)
-        labels[labels == 0] = -1
+        labels = u + self.std * np.random.randn(n_samples)
         self._set("labels", labels)
         return features, labels

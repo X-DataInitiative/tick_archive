@@ -11,6 +11,7 @@ from tick.simulation import SimuCoxReg
 
 
 class Test(TestGLM):
+
     def test_ModelCoxRegPartialLik(self):
         """...Numerical consistency check of loss and gradient for Cox Regression
         """

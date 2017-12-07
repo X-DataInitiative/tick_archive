@@ -1,23 +1,17 @@
 # License: BSD 3 clause
 
-import tick.base
-
+from tick.linear_model.simu_logreg import SimuLogReg
 from .base import features_normal_cov_uniform, \
     features_normal_cov_toeplitz, \
     weights_sparse_exp, weights_sparse_gauss
-
-from .linreg import SimuLinReg
-from .logreg import SimuLogReg
-from .poisreg import SimuPoisReg
 from .coxreg import SimuCoxReg
-
-from .poisson_process import SimuPoissonProcess
-from .inhomogeneous_poisson import SimuInhomogeneousPoisson
-from .hawkes_kernels import *
 from .hawkes import SimuHawkes
 from .hawkes_exp_kernels import SimuHawkesExpKernels
-from .hawkes_sumexp_kernels import SimuHawkesSumExpKernels
+from .hawkes_kernels import *
 from .hawkes_multi import SimuHawkesMulti
+from .hawkes_sumexp_kernels import SimuHawkesSumExpKernels
+from .inhomogeneous_poisson import SimuInhomogeneousPoisson
+from .poisson_process import SimuPoissonProcess
 from .sccs import SimuSCCS
 
 __all__ = ["SimuLinReg",

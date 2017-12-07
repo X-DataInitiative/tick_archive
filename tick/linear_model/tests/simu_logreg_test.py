@@ -3,12 +3,13 @@
 import unittest
 import numpy as np
 
-from tick.simulation import SimuPoisReg
+from tick.linear_model import SimuLogReg
 
 
 class Test(unittest.TestCase):
-    def test_SimuPoisReg(self):
-        """...Test simulation of a Poisson Regression
+
+    def test_SimuLogReg(self):
+        """...Test simulation of a Logistic Regression
         """
         n_samples = 10
         n_features = 3
@@ -17,8 +18,8 @@ class Test(unittest.TestCase):
         weights = np.exp(-idx / 10.)
         weights[::2] *= -1
         seed = 123
-        simu = SimuPoisReg(weights, None, n_samples=n_samples, seed=seed,
-                           verbose=False)
+        simu = SimuLogReg(weights, None, n_samples=n_samples, seed=seed,
+                          verbose=False)
         X, y = simu.simulate()
 
         X_truth = np.array([[1.4912667, 0.80881799, 0.26977298],
@@ -32,7 +33,8 @@ class Test(unittest.TestCase):
                             [0.79464218, 0.65055633, 1.57572506],
                             [0.71524202, 1.66759831, 0.88679047]])
 
-        y_truth = np.array([0., 0., 0., 0., 5., 0., 0., 1., 0., 2.])
+        y_truth = np.array([-1., -1., -1., -1., 1., -1., 1., -1.,
+                            -1., 1.])
 
         np.testing.assert_array_almost_equal(X_truth, X)
         np.testing.assert_array_almost_equal(y_truth, y)
