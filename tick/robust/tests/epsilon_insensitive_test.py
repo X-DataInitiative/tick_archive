@@ -11,7 +11,6 @@ from tick.robust import ModelEpsilonInsensitive
 
 
 class Test(TestGLM):
-
     def test_ModelEpsilonInsensitive(self):
         """...Numerical consistency check of loss and gradient for
         Epsilon-Insensitive model
