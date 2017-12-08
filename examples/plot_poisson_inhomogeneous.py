@@ -8,10 +8,10 @@ intensity is modeled through `tick.base.TimeFunction`
 """
 
 import numpy as np
-from tick.base import TimeFunction
 
+from tick.base import TimeFunction
+from tick.hawkes.simu_inhomogeneous_poisson import SimuInhomogeneousPoisson
 from tick.plot import plot_point_process
-from tick.simulation.inhomogeneous_poisson import SimuInhomogeneousPoisson
 
 run_time = 30
 

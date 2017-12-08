@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 from scipy.sparse import csr_matrix
 
-from tick.linear_model.tests.generalized_linear_model import TestGLM
+from tick.base.tests.generalized_linear_model import TestGLM
 from tick.linear_model import ModelLinReg
 from tick.simulation import SimuLinReg
 

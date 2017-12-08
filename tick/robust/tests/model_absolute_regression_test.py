@@ -5,12 +5,13 @@ import unittest
 import numpy as np
 from scipy.sparse import csr_matrix
 
-from tick.linear_model.tests.generalized_linear_model import TestGLM
+from tick.base.tests.generalized_linear_model import TestGLM
 from tick.robust import ModelAbsoluteRegression
-from tick.simulation import SimuLinReg
+from tick.linear_model import SimuLinReg
 
 
 class Test(TestGLM):
+
     def test_ModelAbsoluteRegression(self):
         """...Numerical consistency check of loss and gradient for Hinge model
         """

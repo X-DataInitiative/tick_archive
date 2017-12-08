@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from tick.simulation.base import SimuWithFeatures
+from tick.base.simulation import SimuWithFeatures
 
 
 class SimuLinReg(SimuWithFeatures):

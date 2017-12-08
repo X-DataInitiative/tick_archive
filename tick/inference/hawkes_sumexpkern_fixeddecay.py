@@ -3,10 +3,10 @@
 import numpy as np
 
 from tick.base import actual_kwargs
+from tick.hawkes.simu_hawkes_sumexp_kernels import SimuHawkesSumExpKernels
 from tick.inference.base import LearnerHawkesParametric
 from tick.optim.model import ModelHawkesFixedSumExpKernLeastSq
 from tick.prox import ProxElasticNet, ProxL1, ProxL2Sq, ProxPositive
-from tick.simulation.hawkes_sumexp_kernels import SimuHawkesSumExpKernels
 
 
 class HawkesSumExpKern(LearnerHawkesParametric):

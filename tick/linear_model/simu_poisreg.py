@@ -6,7 +6,7 @@ from numpy.random.mtrand import poisson
 from os import linesep
 from warnings import warn
 
-from tick.simulation.base import SimuWithFeatures
+from tick.base.simulation import SimuWithFeatures
 
 
 # TODO: raise a warning when the maximum label value is too large

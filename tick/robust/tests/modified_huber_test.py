@@ -5,9 +5,9 @@ import unittest
 import numpy as np
 from scipy.sparse import csr_matrix
 
-from tick.linear_model.tests.generalized_linear_model import TestGLM
+from tick.base.tests.generalized_linear_model import TestGLM
 from tick.robust import ModelModifiedHuber
-from tick.simulation import SimuLogReg
+from tick.linear_model import SimuLogReg
 
 
 class Test(TestGLM):

@@ -9,9 +9,8 @@ from scipy.sparse import csr_matrix
 
 from tick.preprocessing import LongitudinalFeaturesLagger
 from tick.prox import ProxZero
-from tick.simulation import SimuSCCS
+from tick.survival import ModelSCCS, SimuSCCS
 from tick.solver import SVRG
-from tick.survival.model_sccs import ModelSCCS
 
 
 class ModelSCCSTest(unittest.TestCase):
