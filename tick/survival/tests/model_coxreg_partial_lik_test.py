@@ -6,12 +6,11 @@ import numpy as np
 from scipy.sparse import csr_matrix
 
 from tick.base.tests.generalized_linear_model import TestGLM
-from tick.simulation import SimuCoxReg
+from tick.survival import SimuCoxReg
 from tick.survival import ModelCoxRegPartialLik
 
 
 class Test(TestGLM):
-
     def test_ModelCoxRegPartialLik(self):
         """...Numerical consistency check of loss and gradient for Cox Regression
         """

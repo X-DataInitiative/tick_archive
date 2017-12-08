@@ -2,7 +2,7 @@
 
 
 import numpy as np
-from tick.simulation.base import SimuWithFeatures
+from tick.base.simulation import SimuWithFeatures
 
 
 # TODO: something better to tune the censoring level than this censoring factor

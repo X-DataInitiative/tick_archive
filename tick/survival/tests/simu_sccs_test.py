@@ -7,7 +7,6 @@ from tick.survival import SimuSCCS
 
 
 class Test(unittest.TestCase):
-
     def test_censoring(self):
         array_list = [np.ones((2, 3)) for i in range(3)]
         expected = [np.zeros((2, 3)) for i in range(3)]
@@ -32,7 +31,7 @@ class Test(unittest.TestCase):
         expect_lab = [labels[i] for i in expected_idx]
         expect_cens = censoring[expected_idx]
 
-        out_feat, out_lab, out_cens, out_idx = SimuSCCS\
+        out_feat, out_lab, out_cens, out_idx = SimuSCCS \
             ._filter_non_positive_samples(features, labels, censoring)
 
         np.testing.assert_array_equal(expect_cens, out_cens)

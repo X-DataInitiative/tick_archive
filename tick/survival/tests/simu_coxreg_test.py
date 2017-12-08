@@ -7,7 +7,6 @@ from tick.survival import SimuCoxReg
 
 
 class Test(unittest.TestCase):
-
     def test_SimuCoxReg(self):
         """...Test simulation of a Cox Regression
         """
