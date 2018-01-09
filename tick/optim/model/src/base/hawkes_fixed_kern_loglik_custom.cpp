@@ -140,14 +140,12 @@ double ModelHawkesFixedKernCustom::loss_dim_i(const ulong i,
     const double mu_i = coeffs[i];
 
     const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
-    const ArrayDouble f_i = view(coeffs, get_f_i_first_index(i), get_f_i_last_index(i));
-    /*
-     * specially for debug
-     */
-//    ArrayDouble f_i = ArrayDouble(MaxN_of_f);
-//    for (ulong k = 0; k != MaxN_of_f; ++k)
-//        f_i[k] = 1;
+    //const ArrayDouble f_i = view(coeffs, get_f_i_first_index(i), get_f_i_last_index(i));
 
+    ArrayDouble f_i(MaxN_of_f);
+    f_i[0] = 1;
+    for(ulong k = 1; k != MaxN_of_f; ++k)
+        f_i[k] = coeffs[n_nodes + n_nodes * n_nodes + i * (MaxN_of_f - 1)+ k - 1];
 
     //cozy at hand
     const ArrayDouble2d g_i = view(g[i]);
@@ -245,8 +243,14 @@ void ModelHawkesFixedKernCustom::grad_dim_i(const ulong i,
     const ArrayDouble alpha_i = view(coeffs, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
     ArrayDouble grad_alpha_i = view(out, get_alpha_i_first_index(i), get_alpha_i_last_index(i));
 
-    const ArrayDouble f_i = view(coeffs, get_f_i_first_index(i), get_f_i_last_index(i));
-    ArrayDouble grad_f_i = view(out, get_f_i_first_index(i), get_f_i_last_index(i));
+    //const ArrayDouble f_i = view(coeffs, get_f_i_first_index(i), get_f_i_last_index(i));
+    ArrayDouble f_i(MaxN_of_f);
+    f_i[0] = 1;
+    for(ulong k = 1; k != MaxN_of_f; ++k)
+        f_i[k] = coeffs[n_nodes + n_nodes * n_nodes + i * (MaxN_of_f - 1)+ k - 1];
+
+//    ArrayDouble grad_f_i = view(out, get_f_i_first_index(i), get_f_i_last_index(i));
+    ArrayDouble grad_f_i(MaxN_of_f);
 
     //necessary information required
     const ArrayDouble2d g_i = view(g[i]);
@@ -317,11 +321,8 @@ void ModelHawkesFixedKernCustom::grad_dim_i(const ulong i,
         grad_f_i[n] = H1_i[n] / f_i[n] + mu_i * H2_i[n] + result_dot;
     }
 
-    /*
-    * specially for debug
-    */
-//    for (ulong k = 0; k != MaxN_of_f; ++k)
-//        grad_f_i[k] = 0;
+    for(ulong k = 1; k != MaxN_of_f; ++k)
+        out[n_nodes + n_nodes * n_nodes + i * (MaxN_of_f - 1) + k - 1] = grad_f_i[k];
 }
 
 void ModelHawkesFixedKernCustom::grad_i_k(const ulong i, const ulong k,

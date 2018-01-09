@@ -181,7 +181,7 @@ class AGD(SolverFirstOrder):
                 break
 
             if n_iter % 100 == 0:
-                print(x)
+                print('agd:',x)
             # print(n_iter, self.model.loss_and_grad
 
         self._set("solution", x)

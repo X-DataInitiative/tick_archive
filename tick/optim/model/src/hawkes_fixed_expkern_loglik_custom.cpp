@@ -111,7 +111,8 @@ void ModelHawkesCustom::compute_weights_dim_i(const ulong i) {
 }
 
 ulong ModelHawkesCustom::get_n_coeffs() const {
-    //!seems not ever used in this stage
+//! new version
+    return n_nodes + n_nodes * n_nodes + n_nodes * (MaxN_of_f - 1);
     return n_nodes + n_nodes * n_nodes + n_nodes * MaxN_of_f;
 }
 

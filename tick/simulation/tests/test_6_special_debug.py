@@ -56,17 +56,16 @@ solver.set_model(model).set_prox(prox)
 
 x_real = np.array(
     [0.5, 0.5, 0.7, 0.6, 0.2, 0.3,   1., 0.8, 1., 0.6])
+x_real = np.array(
+    [0.5, 0.5, 0.7, 0.6, 0.2, 0.3,   0.8, 0.6])
 x0 = np.array(
     [0.3, 0.3, 0.5, 0.5, 0.5, 0.5,   1., 0.6, 1., 0.8])
+x0 = np.array(
+    [0.3, 0.3, 0.5, 0.5, 0.5, 0.5,   0.6, 0.8])
 solver.solve(x0)
 
 # normalisation
 solution_adj = solver.solution
-for i in range(dim):
-    solution_adj[i] *= solver.solution[dim + dim * dim + MaxN_of_f * i]
-    solution_adj[(dim + dim * i): (dim + dim * (i + 1))] *= solver.solution[dim + dim * dim + MaxN_of_f * i]
-    solution_adj[(dim + dim * dim + MaxN_of_f * i): (dim + dim * dim + MaxN_of_f * (i + 1))] /= solver.solution[
-        dim + dim * dim + MaxN_of_f * i]
 print(solution_adj)
 
 print(model.loss(x_real))
