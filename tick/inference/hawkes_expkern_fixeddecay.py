@@ -216,7 +216,7 @@ class HawkesExpKern(LearnerHawkesParametric):
             If None, events given while fitting model will be used
 
         end_times : `np.ndarray` or `float`, default = None
-            List of end time of all hawkes processes used to measure score.
+            List of end time of all hawkes_obj processes used to measure score.
             If None, it will be set to each realization's latest time.
             If only one realization is provided, then a float can be given.
 

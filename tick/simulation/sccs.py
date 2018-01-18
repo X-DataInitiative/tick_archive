@@ -29,7 +29,7 @@ class SimuSCCS(Simu):
     ]
 
     _attrinfos = {key: {'writable': False} for key in _const_attr}
-    _attrinfos['hawkes'] = {'writable': True}
+    _attrinfos['hawkes_obj'] = {'writable': True}
 
     def __init__(self, n_cases, n_intervals, n_features, n_lags,
                  time_drift=None, exposure_type="single_exposure",
@@ -45,7 +45,7 @@ class SimuSCCS(Simu):
         self.n_lags = n_lags
         self.sparse = sparse
 
-        self.hawkes = None
+        self.hawkes_obj = None
 
         # attributes with restricted value range
         self._exposure_type = None
@@ -108,7 +108,7 @@ class SimuSCCS(Simu):
     def _simulate(self):
         """ Loop to generate batches of samples until n_cases is reached.
         """
-        n_lagged_features = (self.n_lags + 1) * self.n_features
+        n_lagged_features = int(self.n_lags.sum() + self.n_features)
         n_cases = self.n_cases
         if self.coeffs is None:
             self.coeffs = np.random.normal(1e-3, 1.1, n_lagged_features)
@@ -221,7 +221,7 @@ class SimuSCCS(Simu):
         self.hawkes_exp_kernels.track_intensity(dt)
         hawkes.simulate()
 
-        self.hawkes = hawkes
+        self.hawkes_obj = hawkes
         # TODO later: using -1 here is hack. Do something better.
         features = [[np.min(np.floor(f)) if len(f) > 0 else -1
                      for f in patient_events]
@@ -427,7 +427,7 @@ class SimuSCCS(Simu):
     @coeffs.setter
     def coeffs(self, value):
         if value is not None and \
-                        value.shape != (self.n_features * (self.n_lags + 1),):
+                 value.shape != (int(self.n_lags.sum() + self.n_features),):
             raise ValueError("Coeffs should be of shape\
              (n_features * (n_lags + 1),)")
         self._set("_coeffs", value)

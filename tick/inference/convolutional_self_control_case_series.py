@@ -13,10 +13,11 @@ from tick.simulation import SimuSCCS
 from tick.preprocessing import LongitudinalSamplesFilter, \
     LongitudinalFeaturesProduct, \
     LongitudinalFeaturesLagger
-from tick.preprocessing.base import LongitudinalPreprocessor
-import scipy.sparse as sps
 from scipy.stats import uniform
 
+
+#TODO: check doc + doctests
+# Case classes
 Bootstrap_CI = namedtuple('Bootstrap_CI', ['refit_coeffs', 'median',
                                            'lower_bound', 'upper_bound',
                                            'confidence'])
@@ -24,23 +25,20 @@ Bootstrap_CI = namedtuple('Bootstrap_CI', ['refit_coeffs', 'median',
 DumbGenerator = namedtuple('DumbGenerator', ['rvs'])
 null_generator = DumbGenerator(rvs=lambda x: [None])
 
-Strengths = namedtuple('Strengths', ['strength_tv', 'strength_group_l1',
-                                     'strength_time_drift'])
+Strengths = namedtuple('Strengths', ['strength_tv', 'strength_group_l1'])
 
 
-class LearnerSCCS(ABC, Base):
-    _const_attr = [  # constructed attributes
+class ConvSCCS(ABC, Base):
+    _const_attr = [
+        # constructed attributes
         '_preprocessor_obj',
         '_model_obj',
-        '_prox_obj',
         '_solver_obj',
-        '_allowed_penalties',
         # user defined parameters
-        'n_lags',
-        '_penalty',
+        '_n_lags',
+        'penalized_features',
         '_strength_tv',
         '_strength_group_l1',
-        '_strength_time_drift',
         'feature_products',
         'feature_type',
         '_random_state',
@@ -48,28 +46,20 @@ class LearnerSCCS(ABC, Base):
         'n_cases',
         'n_intervals',
         'n_features',
-        '_n_original_features',
-        '_n_drift_features',
-        '_n_total_features',
         'n_coeffs',
         'coeffs',
-        'bootstrap_coeffs',  # refit coeffs, median, and CI data
+        '_features_offset',
         '_fitted',
         '_step_size',
+        # refit coeffs, median, and CI data
+        'bootstrap_coeffs',
     ]
 
     _attrinfos = {key: {'writable': False} for key in _const_attr}
 
-    _penalties = {
-        'None': ProxZero,
-        'TV': ProxTV,
-        'TV-GroupL1': [ProxTV, ProxGroupL1]
-    }
-
-    # TODO later: _prefit, _fit, _postfit for generic CV
-    def __init__(self, n_lags: int = 0, penalty: str = 'None',
+    def __init__(self, n_lags: np.array,
+                 penalized_features: np.array,
                  strength_tv=None, strength_group_l1=None,
-                 strength_time_drift_tv=None, time_drift=False,
                  feature_products: bool = False, feature_type: str = 'infinite',
                  step: float = None, tol: float = 1e-5, max_iter: int = 100,
                  verbose: bool = False, print_every: int = 10,
@@ -80,16 +70,11 @@ class LearnerSCCS(ABC, Base):
         if feature_type not in ["infinite", "short"]:
             raise ValueError("``feature_type`` should be either ``infinite`` or\
                                  ``short``.")
-        self._allowed_penalties = list(self._penalties.keys())
-        self._allowed_penalties.sort()
 
         # Init objects to be computed later
         self.n_cases = None
         self.n_intervals = None
         self.n_features = None
-        self._n_original_features = None
-        self._n_drift_features = 0
-        self._n_total_features = None
         self.n_coeffs = None
         self.coeffs = None
         self.bootstrap_coeffs = Bootstrap_CI(list(), list(), list(), list(),
@@ -98,19 +83,17 @@ class LearnerSCCS(ABC, Base):
         self._step_size = None
 
         # Init user defined parameters
-        self.n_lags = n_lags  #TODO: add a check
-        self._penalty = None
-        self.penalty = penalty
+        self.feature_products = feature_products
+        self.feature_type = feature_type
+        self._features_offset = None
+        self._n_lags = None
+        self.n_lags = n_lags
+        self.penalized_features = penalized_features # TODO: add a check here
         self._strength_tv = None
         self._strength_group_l1 = None
-        self._strength_time_drift = None
         # TODO later: doc for strength or refactoring
         self.strength_tv = strength_tv
         self.strength_group_l1 = strength_group_l1
-        self.strength_time_drift = strength_time_drift_tv
-        self.time_drift = time_drift  # TODO later: property?
-        self.feature_products = feature_products
-        self.feature_type = feature_type
 
         self._step_size = step
         self.tol = tol
@@ -126,12 +109,11 @@ class LearnerSCCS(ABC, Base):
         # Construct objects
         self._preprocessor_obj = self._construct_preprocessor_obj()
         self._model_obj = None
-        self._prox_obj = None
         self._solver_obj = self._construct_solver_obj(step, max_iter, tol,
                                                       print_every, record_every,
                                                       verbose, random_state)
 
-    # Methods #
+    # UI
     def fit(self, features: np.ndarray, labels: np.array,
             censoring: np.array, bootstrap: bool = False,
             bootstrap_rep: int = 200,
@@ -172,21 +154,13 @@ class LearnerSCCS(ABC, Base):
         output : `LearnerSCCS`
             The current instance with given data
         """
-        features, labels, censoring = self._init_model(features,
-                                                       labels,
-                                                       censoring)
-        self._set('coeffs', np.zeros(self.n_coeffs))
-        prox_obj = self._construct_prox_obj(self.penalty, self.coeffs)
-        self._set("_prox_obj", prox_obj)
-        coeffs = self._solve(prox_obj)
+        p_features, p_labels, p_censoring = self._prefit(features, labels,
+                                                         censoring)
+        coeffs = self._fit(project=False)
+        self._postfit(p_features, p_labels, p_censoring, False,
+                      bootstrap, bootstrap_rep, bootstrap_confidence)
 
-        # TODO later: there should be a refit in fit ? (postfit)
-        if bootstrap:
-            bootstrap_ci = self._bootstrap(features, labels, censoring,
-                                           bootstrap_rep, bootstrap_confidence)
-            self._set('bootstrap_coeffs', bootstrap_ci._asdict())
-
-        return coeffs, self.bootstrap_coeffs
+        return self.coeffs, self.bootstrap_coeffs
 
     def score(self, features=None, labels=None, censoring=None):
         """Returns the negative log-likelihood of the model, using the current
@@ -224,20 +198,18 @@ class LearnerSCCS(ABC, Base):
 
     def fit_kfold_cv(self, features, labels, censoring,
                      strength_tv_range: tuple=(),
-                     strength_group_l1_range: tuple=(),
-                     strength_time_drift_range: tuple=(), logspace=True,
+                     strength_group_l1_range: tuple=(), logspace=True,
                      soft_cv: bool = True, n_cv_iter: int= 100,
                      n_splits: int = 3, shuffle: bool = True,
                      bootstrap: bool = False, bootstrap_rep: int = 200,
                      bootstrap_confidence: float = .95):
         # TODO later: doc
         # setup the model and preprocess the data
-        features, labels, censoring = self._init_model(features,
-                                                       labels,
-                                                       censoring)
+        p_features, p_labels, p_censoring = self._prefit(features, labels,
+                                                         censoring)
         # split the data with stratified KFold
         kf = StratifiedKFold(n_splits, shuffle, self.random_state)
-        labels_interval = np.nonzero(labels)[
+        labels_interval = np.nonzero(p_labels)[
             1]  # TODO: investigate warning here
 
         # Training loop
@@ -248,33 +220,29 @@ class LearnerSCCS(ABC, Base):
             "feature_products": self.feature_products,
             "feature_type": self.feature_type,
             "soft_cv": soft_cv,
-            "time_drift": self.time_drift
         }
         cv_tracker = CrossValidationTracker(model_global_parameters)
-        # TODO later: parallelize CV
         generators = self._construct_generator_obj(strength_tv_range,
                                                    strength_group_l1_range,
-                                                   strength_time_drift_range,
                                                    logspace)
-
+        # TODO later: parallelize CV
         i = 0
         while i < n_cv_iter:
             self._set('coeffs', np.zeros(self.n_coeffs))
             self.__strengths = [g.rvs(1)[0] for g in generators]
-            prox_obj = self._construct_prox_obj(self.penalty, self.coeffs)
 
             train_scores = []
             test_scores = []
-            for train_index, test_index in kf.split(features, labels_interval):
+            for train_index, test_index in kf.split(p_features, labels_interval):
                 train = itemgetter(*train_index.tolist())
                 test = itemgetter(*test_index.tolist())
-                X_train, X_test = list(train(features)), list(test(features))
-                y_train, y_test = list(train(labels)), list(test(labels))
-                censoring_train, censoring_test = censoring[train_index], \
-                                                  censoring[test_index]
+                X_train, X_test = list(train(p_features)), list(test(p_features))
+                y_train, y_test = list(train(p_labels)), list(test(p_labels))
+                censoring_train, censoring_test = p_censoring[train_index], \
+                                                  p_censoring[test_index]
 
                 self._model_obj.fit(X_train, y_train, censoring_train)
-                self._solve(prox_obj)
+                coeffs = self._fit(project=False)
 
                 train_scores.append(self._score())
                 test_scores.append(self._score(X_test, y_test, censoring_test))
@@ -290,60 +258,38 @@ class LearnerSCCS(ABC, Base):
         # refit best model on all the data
         self._set('coeffs', np.zeros(self.n_coeffs))
         self.__strengths = best_strength
-        self._set('_prox_obj', self._construct_prox_obj(self.penalty))
 
-        self._model_obj.fit(features, labels, censoring)
-        coeffs = self._solve(self._prox_obj)
-        self._set("coeffs", coeffs)
-        self._set("_fitted", True)
-
-        if bootstrap:
-            bootstrap_ci = self._bootstrap(features, labels, censoring,
-                                           bootstrap_rep,
-                                           bootstrap_confidence)
-            self._set('bootstrap_coeffs', bootstrap_ci)
+        self._model_obj.fit(p_features, p_labels, p_censoring)
+        coeffs, bootstrap_ci = self._postfit(p_features, p_labels, p_censoring,
+                                             True, bootstrap, bootstrap_rep,
+                                             bootstrap_confidence)
 
         cv_tracker.log_best_model(self.__strengths, self.coeffs.tolist(),
                                   self.score(),
                                   self.bootstrap_coeffs._asdict())
 
-        return coeffs, cv_tracker#.todict()
+        return coeffs, cv_tracker
 
-    # Utilities #
-    def _preprocess_data(self, features, labels, censoring):
-        for preprocessor in self._preprocessor_obj:
-            features, labels, censoring = preprocessor.fit_transform(features,
-                                                                     labels,
-                                                                     censoring)
-        return features, labels, censoring
-
-    def _init_model(self, features, labels, censoring):
+    # Internals
+    def _prefit(self, features, labels, censoring):
         n_intervals, n_features = features[0].shape
-        # TODO: Check features consistency here
+        # TODO: check features consistency here
         self._set('n_features', n_features)
         self._set('n_intervals', n_intervals)
 
-        features, labels, censoring = self._preprocess_data(features, labels,
+        features, labels, censoring = self._preprocess_data(features,
+                                                            labels,
                                                             censoring)
 
+        # TODO: WARNING !!! BEHAVIOR OF FEATURES_PRODUCT when different number of lags!!!
+        # Should update _n_lags accordingly + edit the setter?
         if self.feature_products:
             n_features = comb(self.n_features, 2) + self.n_features
-            self._set('n_features', n_features)
+            self._set('n_features', int(n_features))
 
-        self._set('_n_original_features', n_features)
-
-        if self.time_drift:
-            n_drift_features = int(np.ceil(
-                self.n_intervals / (self.n_lags + 1)))
-            self._set('_n_drift_features', n_drift_features)
-
-        self._set('_n_total_features',
-                  self._n_original_features + self._n_drift_features)
-
-        # TODO: the if here is a bit useless
-        n_coeffs = self._n_total_features * (self.n_lags + 1) if self.n_lags > 0 \
-            else self._n_total_features
+        n_coeffs = int(np.sum(self._n_lags) + self.n_features)
         self._set('n_coeffs', n_coeffs)
+        self._set('coeffs', np.zeros(n_coeffs))
         self._set('n_cases', len(features))
 
         # Step computation
@@ -354,7 +300,10 @@ class LearnerSCCS(ABC, Base):
 
         return features, labels, censoring
 
-    def _solve(self, prox_obj):
+    # TODO: fit should not have side effects
+    def _fit(self, project):
+        # self._set()  # TODO: set strengths
+        prox_obj = self._construct_prox_obj(self.coeffs, project)
         solver_obj = self._solver_obj
         model_obj = self._model_obj
 
@@ -373,26 +322,45 @@ class LearnerSCCS(ABC, Base):
         # Launch the solver
         coeffs = solver_obj.solve(coeffs_start, step=self.step)
 
-        # We must do this here to be able to call self.score() if fit_kfold_cv
         self._set("coeffs", coeffs)
         self._set("_fitted", True)
 
         return coeffs
 
-    def _refit(self, p_features, p_labels, p_censoring, prox_obj=None):
+    def _postfit(self, p_features, p_labels, p_censoring,
+                 refit, bootstrap, bootstrap_rep, bootstrap_confidence):
         # WARNING: _refit uses already preprocessed p_features, p_labels
         # and p_censoring
         if not self._fitted:
             raise RuntimeError('You must fit the model first')
 
-        if prox_obj is None:
-            prox_obj = self._construct_prox_obj('Equality', self.coeffs)
+        if refit:
+            # refit coeffs on all the data (after Cross Validation for example)
+            self._model_obj.fit(p_features, p_labels, p_censoring)
+            coeffs = self._fit(project=False)
+            self._set('coeffs', coeffs)
 
-        self._model_obj.fit(p_features, p_labels, p_censoring)
-        refit_coeffs = self._solve(prox_obj)
-        return refit_coeffs
+        if bootstrap:
+            self._model_obj.fit(p_features, p_labels, p_censoring)
+            refit_coeffs = self._fit(project=True)
+            bootstrap_ci = self._bootstrap(p_features, p_labels, p_censoring,
+                                           refit_coeffs, bootstrap_rep,
+                                           bootstrap_confidence)
+            self._set('bootstrap_coeffs', bootstrap_ci)
 
-    def _bootstrap(self, p_features, p_labels, p_censoring, rep, confidence):
+        return self.coeffs, self.bootstrap_coeffs
+
+    # Utilities #
+    def _preprocess_data(self, features, labels, censoring):
+        for preprocessor in self._preprocessor_obj:
+            features, labels, censoring = preprocessor.fit_transform(
+                features,
+                labels,
+                censoring)
+        return features, labels, censoring
+
+    def _bootstrap(self, p_features, p_labels, p_censoring, coeffs,
+                   rep, confidence):
         # TODO later: refactor this method
         # WARNING: _bootstrap inputs are already preprocessed p_features,
         # p_labels and p_censoring
@@ -402,17 +370,14 @@ class LearnerSCCS(ABC, Base):
         if not self._fitted:
             raise RuntimeError('You must fit the model first')
 
-        prox = self._construct_prox_obj('Equality', self.coeffs)
-        refit_coeffs = self._refit(p_features, p_labels, p_censoring, prox)
-
         bootstrap_coeffs = []
         sim = SimuSCCS(self.n_cases, self.n_intervals, self.n_features,
                        self.n_lags)
-        # TODO: parallelize bootstrap (SimuSCCS and _refit should be pickable...)
+        # TODO: parallelize bootstrap (everything should be pickable...)
         for k in range(rep):
-            y = sim._simulate_multinomial_outcomes(p_features, refit_coeffs)
-            bootstrap_coeffs.append(
-                self._refit(p_features, y, p_censoring, prox))
+            y = sim._simulate_multinomial_outcomes(p_features, coeffs)
+            self._model_obj.fit(p_features, y, p_censoring)
+            bootstrap_coeffs.append(self._fit(False))
 
         bootstrap_coeffs = np.exp(np.array(bootstrap_coeffs))
         bootstrap_coeffs.sort(axis=0)
@@ -422,12 +387,11 @@ class LearnerSCCS(ABC, Base):
                                  int(np.floor(rep * (1 - confidence / 2)))])
         median_coeffs = np.log(bootstrap_coeffs[
                                    int(np.floor(rep * .5))])
-        return Bootstrap_CI(refit_coeffs, median_coeffs, lower_bound,
+        return Bootstrap_CI(coeffs, median_coeffs, lower_bound,
                             upper_bound, confidence)
 
     def _score(self, features=None, labels=None, censoring=None,
                preprocess=False):
-        # This method aims avoid calling _preprocess_data in fit_kfold_cv
         if not self._fitted:
             raise RuntimeError('You must fit the model first')
 
@@ -442,6 +406,7 @@ class LearnerSCCS(ABC, Base):
             elif censoring is None:
                 raise ValueError('Passed ``censoring`` is None')
             else:
+                # Avoid calling preprocessing during CV
                 if preprocess:
                     features, labels, censoring = self._preprocess_data(
                         features,
@@ -458,28 +423,24 @@ class LearnerSCCS(ABC, Base):
         preprocessors = list()
         preprocessors.append(LongitudinalSamplesFilter(n_jobs=1))
         if self.feature_products:
-            preprocessors.append(LongitudinalFeaturesProduct(self.feature_type,
-                                                             n_jobs=1))
-        if self.n_lags > 0:
+            preprocessors.append(
+                LongitudinalFeaturesProduct(self.feature_type,
+                                            n_jobs=1))
+        if len(self.n_lags) > 0:
             preprocessors.append(LongitudinalFeaturesLagger(self.n_lags,
                                                             n_jobs=1))
-        if self.time_drift:
-            preprocessors.append(LongitudinalTimeDrift(n_jobs=1,
-                                                       n_lags=self.n_lags))
-            # TODO later: find a better way to do that (directly in the model)
         return preprocessors
 
     def _construct_model_obj(self):
         return ModelSCCS(self.n_intervals, self.n_lags)
 
-    def _construct_prox_obj(self, penalty, coeffs=None):
-        # Default prox
-        proxs = [ProxZero()]
+    def _construct_prox_obj(self, coeffs=None, project=False):
+        # TODO: test this !!!
+        n_penalized_features = len(self.penalized_features) \
+            if self.penalized_features is not None else 0
 
-        # Prox Equality is not meant to be used by the user in this class
-        # (not in self.allowed_penalties)
-        # TODO later: test this
-        if penalty == "Equality":
+        if project:
+            # project future coeffs on the support of given coeffs
             if coeffs is not None:
                 prox_ranges = self._detect_support(coeffs)
                 proxs = [ProxEquality(0, range=r) for r in prox_ranges]
@@ -487,25 +448,29 @@ class LearnerSCCS(ABC, Base):
                 raise ValueError("Coeffs are None. " +
                                  "Equality penalty cannot infer the "
                                  "coefficients support.")
-        else:
-            block_size = int(self.n_lags + 1)
-            blocks_size = [block_size] * int(self._n_original_features)
-            blocks_start = block_size * np.arange(self._n_original_features,
-                                                  dtype='int64')
-            if self._strength_tv is not None:
-                proxs = [
-                    ProxTV(self._strength_tv, range=(int(r), int(r + block_size)))
-                    for r in blocks_start]
+        elif n_penalized_features > 0 and self._strength_tv is not None or \
+                self._strength_group_l1 is not None:
+            # TV and GroupLasso penalties
+            blocks_start = np.zeros(n_penalized_features)
+            blocks_end = np.zeros(n_penalized_features)
+            proxs = []
 
-            if penalty == "TV-GroupL1" and self._strength_group_l1 is not None:
+            for i in self.penalized_features:
+                start = int(self._features_offset[i])
+                blocks_start[i] = start
+                end = int(blocks_start[i] + self._n_lags[i] + 1)
+                blocks_end[i] = end
+                if self._strength_tv is not None:
+                    proxs.append(ProxTV(self._strength_tv, range=(start, end)))
+
+            if self._strength_group_l1 is not None:
+                blocks_size = blocks_end - blocks_start
                 proxs.insert(0, ProxGroupL1(self._strength_group_l1,
-                                            blocks_start.tolist(), blocks_size))
-
-            if self.time_drift and self._strength_time_drift is not None:
-                start = int(self._n_original_features * block_size)
-                end = int(self._n_total_features * block_size)
-                proxs.append(ProxTV(self._strength_time_drift,
-                                    range=(start, end)))
+                                            blocks_start.tolist(),
+                                            blocks_size.tolist()))
+        else:
+            # Default prox: does nothing
+            proxs = [ProxZero()]
 
         prox_obj = ProxMulti(tuple(proxs))
 
@@ -523,21 +488,13 @@ class LearnerSCCS(ABC, Base):
          self._detect_support(coeffs)
          >>> [(1, 3), (3, 5)]
          """
-        n_cols = self.n_lags + 1
-        if not self.time_drift:
-            coeffs_list = np.array(coeffs).reshape((self.n_features, n_cols))
-            n_features = self.n_features
-        else:
-            block_size = int(self.n_lags + 1)
-            coeffs_list = [coeffs[i*block_size:(i+1)*block_size] for i in range(self._n_original_features)]
-            coeffs_list.append(coeffs[int(self._n_original_features * block_size):])
-            n_features = len(coeffs_list)
         kernel = np.array([1, -1])
         groups = []
-        for l in range(n_features):
-            idx = l * n_cols
+        for i in self.penalized_features:
+            idx = self._features_offset[i]
+            n_lags = self._n_lags[i]
             acc = 1
-            for change in np.convolve(coeffs_list[l], kernel, 'valid'):
+            for change in np.convolve(coeffs[idx:idx+n_lags+1], kernel, 'valid'):
                 if change:
                     if acc > 1:
                         groups.append((idx, idx + acc))
@@ -555,14 +512,14 @@ class LearnerSCCS(ABC, Base):
                               record_every, verbose, seed):
         # seed cannot be None in SVRG
         solver_obj = SVRG(step=step, max_iter=max_iter, tol=tol,
-                          print_every=print_every, record_every=record_every,
+                          print_every=print_every,
+                          record_every=record_every,
                           verbose=verbose, seed=seed)
 
         return solver_obj
 
     def _construct_generator_obj(self, strength_tv_range,
                                  strength_group_l1_range,
-                                 strength_intercept_range,
                                  logspace=True):
         generators = []
         if len(strength_tv_range) == 2:
@@ -582,15 +539,6 @@ class LearnerSCCS(ABC, Base):
         else:
             generators.append(null_generator)
 
-        if len(strength_intercept_range) == 2:
-            if logspace:
-                generators.append(
-                    Log10UniformGenerator(*strength_intercept_range))
-            else:
-                generators.append(uniform(strength_intercept_range))
-        else:
-            generators.append(null_generator)
-
         return generators
 
     # Properties #
@@ -604,30 +552,17 @@ class LearnerSCCS(ABC, Base):
         self._solver_obj.step = value
 
     @property
-    def penalty(self):
-        return self._penalty
-
-    @penalty.setter
-    def penalty(self, value):
-        if value not in self._allowed_penalties:
-            raise ValueError("``_penalty`` must be one of %s, got %s" %
-                             (', '.join(self._allowed_penalties), value))
-        self._set('_penalty', value)
-
-    @property
     def __strengths(self):
         return Strengths(self._strength_tv,
-                         self._strength_group_l1,
-                         self._strength_time_drift)
+                         self._strength_group_l1)
 
     @__strengths.setter
     def __strengths(self, value):
-        if len(value) == 3:
+        if len(value) == 2:
             self._set('_strength_tv', value[0])
             self._set('_strength_group_l1', value[1])
-            self._set('_strength_time_drift', value[2])
         else:
-            raise ValueError('strength should be a tuple of length 3.')
+            raise ValueError('strength should be a tuple of length 2.')
 
     @property
     def strength_tv(self):
@@ -638,8 +573,8 @@ class LearnerSCCS(ABC, Base):
         if value is None or isinstance(value, float) and value > 0:
             self._set('_strength_tv', value)
         else:
-            raise ValueError('strength_tv should be a float greater than zero.')
-        
+            raise ValueError(
+                'strength_tv should be a float greater than zero.')
 
     @property
     def strength_group_l1(self):
@@ -654,19 +589,6 @@ class LearnerSCCS(ABC, Base):
                              'than zero.')
 
     @property
-    def strength_time_drift(self):
-        return self._strength_time_drift
-
-    @strength_time_drift.setter
-    def strength_time_drift(self, value):
-        if value is None or isinstance(value, float) and value > 0:
-            self._set('_strength_time_drift', value)
-        else:
-            raise ValueError('strength_time_drift should be a float greater'
-                             ' than zero.')
-        
-
-    @property
     def random_state(self):
         return self._random_state
 
@@ -675,6 +597,18 @@ class LearnerSCCS(ABC, Base):
         np.random.seed(value)
         self._set('_random_state', value)
 
+    @property
+    def n_lags(self):
+        return self._n_lags
+
+    @n_lags.setter
+    def n_lags(self, value):
+        offsets = [0]
+        for l in value:
+            offsets.append(offsets[-1] + l + 1)
+        self._set('_n_lags', value)
+        self._set('_features_offset', offsets)
+        self._construct_preprocessor_obj()
 
 # TODO: put this somewhere else?
 class CrossValidationTracker:
@@ -751,50 +685,6 @@ class CrossValidationTracker:
                 'cv_sd_test_scores': list(self.cv_sd_test_scores),
                 'best_model': self.best_model
                 }
-
-
-class LongitudinalTimeDrift(LongitudinalPreprocessor):
-    _const_attr = [
-        'n_row',
-        'n_col',
-        'new_shape',
-        'time_drift']
-
-    _attrinfos = {key: {'writable': False} for key in _const_attr}
-
-    def __init__(self, n_jobs, n_lags):
-        LongitudinalPreprocessor.__init__(self, n_jobs)
-        self.n_row = None
-        self.n_col = None
-        self.new_shape = None
-        self.time_drift = None
-        self.n_lags = n_lags
-
-    def fit(self, features, labels, censoring):
-        n_row, n_col = features[0].shape
-        self._set('n_row', n_row)
-        self._set('n_col', n_col)
-        self._set('new_shape', (n_row, n_col + n_row))
-        time_drift = sps.eye(n_row)
-        # TODO: clean this
-        n_col_time_drift = np.ceil(n_row / (self.n_lags + 1))
-        n_col_time_drift *= (self.n_lags + 1)
-        time_drift._shape = (n_row, n_col_time_drift)
-        self._set('time_drift', time_drift)
-        return self
-
-    def transform(self, features, labels, censoring):
-        features = [self._add_intercept(f) for f in features]
-        return features, labels, censoring
-
-    def _add_intercept(self, arr):
-        arr = arr.tocoo()
-        arr = sps.hstack([arr, self.time_drift])
-        return arr.tocsr()
-
-    def _set(self, param, n_row):
-        pass
-
 
 class Log10UniformGenerator:
     """Generate uniformly distributed points in the log10 space."""

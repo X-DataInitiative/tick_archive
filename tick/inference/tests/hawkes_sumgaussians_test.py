@@ -109,7 +109,7 @@ class Test(unittest.TestCase):
             learner._set_data(events)
 
     def test_hawkes_sumgaussians_parameters(self):
-        """...Test that hawkes sumgaussians parameters are correctly linked
+        """...Test that hawkes_obj sumgaussians parameters are correctly linked
         """
         learner = HawkesSumGaussians(1, n_gaussians=self.int_1)
         self.assertEqual(learner.n_gaussians, self.int_1)
@@ -133,7 +133,7 @@ class Test(unittest.TestCase):
         self.assertEqual(learner._learner.get_step_size(), self.float_2)
 
     def test_hawkes_sumgaussians_lasso_grouplasso_ratio_parameter(self):
-        """...Test that hawkes sumgaussians lasso_grouplasso_ratio parameter is 
+        """...Test that hawkes_obj sumgaussians lasso_grouplasso_ratio parameter is 
         correctly linked
         """
         # First learner initialization
@@ -162,7 +162,7 @@ class Test(unittest.TestCase):
         self.assertEqual(learner.C, C)
 
     def test_hawkes_sumgaussians_C_parameter(self):
-        """...Test that hawkes sumgaussians C parameter is correctly linked
+        """...Test that hawkes_obj sumgaussians C parameter is correctly linked
         """
         # First leaner initialization
         lasso_grouplasso_ratio = 0.3

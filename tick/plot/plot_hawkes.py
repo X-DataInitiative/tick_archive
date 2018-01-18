@@ -261,7 +261,7 @@ def plot_hawkes_baseline_and_kernels(hawkes_object, kernel_support=None,
     share_x(ax_kernels)
     share_y(ax_kernels)
 
-    # plot hawkes baselines
+    # plot hawkes_obj baselines
     ax_baselines = ax_list_list[:, 0]
     t_values = np.linspace(0, hawkes_object.period_length, n_points)
     for i in range(n_nodes):

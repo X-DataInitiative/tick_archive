@@ -96,7 +96,7 @@ class Test(unittest.TestCase):
             np.testing.assert_array_equal(t1[1], t3[1])
 
     def test_simu_hawkes_no_seed(self):
-        """...Test hawkes multi can be simulated even if no seed is given
+        """...Test hawkes_obj multi can be simulated even if no seed is given
         """
         T1 = np.array([0, 2, 2.5], dtype=float)
         Y1 = np.array([0, .6, 0], dtype=float)
@@ -116,7 +116,7 @@ class Test(unittest.TestCase):
                             multi_hawkes_2.timestamps[0][0][0])
 
     def test_simu_hawkes_multi_time_func(self):
-        """...Test that hawkes multi works correctly with HawkesKernelTimeFunc
+        """...Test that hawkes_obj multi works correctly with HawkesKernelTimeFunc
         """
         run_time = 100
 

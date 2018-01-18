@@ -50,7 +50,7 @@ class HawkesSumExpKern(LearnerHawkesParametric):
         The decays used in the exponential kernels.
             
     n_baselines : `int`, default=1
-        In this hawkes learner baseline is supposed to be either constant or 
+        In this hawkes_obj learner baseline is supposed to be either constant or 
         piecewise constant. If `n_baseline > 1` then piecewise constant 
         setting is  enabled. In this case :math:`\\mu_i(t)` is piecewise 
         constant on  intervals of size `period_length / n_baselines` and 
@@ -215,7 +215,7 @@ class HawkesSumExpKern(LearnerHawkesParametric):
             If None, events given while fitting model will be used
 
         end_times : `np.ndarray` or `float`, default = None
-            List of end time of all hawkes processes used to measure score.
+            List of end time of all hawkes_obj processes used to measure score.
             If None, it will be set to each realization's latest time.
             If only one realization is provided, then a float can be given.
 

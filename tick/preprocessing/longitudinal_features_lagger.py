@@ -76,11 +76,9 @@ class LongitudinalFeaturesLagger(LongitudinalPreprocessor):
         "_fitted": {"writable": False}
     }
 
-    def __init__(self, n_lags=0, n_jobs=-1):
+    def __init__(self, n_lags, n_jobs=-1):
         LongitudinalPreprocessor.__init__(self, n_jobs=n_jobs)
-        if n_lags < 0:
-            raise ValueError("`n_lags` should be non-negative.")
-        self.n_lags = n_lags
+        self.n_lags = n_lags  # TODO: should check consistency with features dimension + type + positivity
         self._cpp_preprocessor = None
         self._reset()
 
@@ -89,7 +87,6 @@ class LongitudinalFeaturesLagger(LongitudinalPreprocessor):
         self._set("_n_init_features", None)
         self._set("_n_output_features", None)
         self._set("_n_intervals", None)
-        self._set("_mapper", {})
         self._set("_cpp_preprocessor", None)
         self._set("_fitted", False)
 
@@ -137,11 +134,7 @@ class LongitudinalFeaturesLagger(LongitudinalPreprocessor):
         n_intervals, n_init_features = base_shape
         self._set("_n_init_features", n_init_features)
         self._set("_n_intervals", n_intervals)
-        mapper = {i: tuple(i + j for j in range(self.n_lags + 1))
-                  for i in range(self._n_init_features)}
-        self._set("_mapper", mapper)
-        self._set("_n_output_features", int(n_init_features *
-                                            (self.n_lags + 1)))
+        self._set("_n_output_features", int((self.n_lags + 1).sum()))
         self._set("_cpp_preprocessor",
                   _LongitudinalFeaturesLagger(features, self.n_lags))
         self._set("_fitted", True)
@@ -183,7 +176,7 @@ class LongitudinalFeaturesLagger(LongitudinalPreprocessor):
         if sps.issparse(features[0]):
             X_with_lags = [self._sparse_lagger(x, int(censoring[i]))
                            for i, x in enumerate(features)]
-            # Don't get why int() is required here as censoring_i is uint64
+            # TODO: Don't get why int() is required here as censoring_i is uint64
         else:
             X_with_lags = [self._dense_lagger(x, int(censoring[i]))
                            for i, x in enumerate(features)]
@@ -201,7 +194,7 @@ class LongitudinalFeaturesLagger(LongitudinalPreprocessor):
 
     def _sparse_lagger(self, feature_matrix, censoring_i):
         coo = feature_matrix.tocoo()
-        estimated_nnz = coo.nnz * (self.n_lags + 1)
+        estimated_nnz = coo.nnz * int((self.n_lags + 1).sum())
         out_row = np.zeros((estimated_nnz,), dtype="uint64")
         out_col = np.zeros((estimated_nnz,), dtype="uint64")
         out_data = np.zeros((estimated_nnz,), dtype="float64")

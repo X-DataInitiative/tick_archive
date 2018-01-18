@@ -16,7 +16,7 @@ from .hawkes_basis_kernels import HawkesBasisKernels
 from .hawkes_sumgaussians import HawkesSumGaussians
 from .survival import kaplan_meier, nelson_aalen
 from .robust import std_iqr, std_mad
-from .self_control_case_series import LearnerSCCS
+from .convolutional_self_control_case_series import ConvSCCS
 
 __all__ = [
     "LinearRegression",
@@ -30,8 +30,8 @@ __all__ = [
     "HawkesEM",
     "HawkesADM4",
     "HawkesBasisKernels",
-    "HawkesSumGaussians,"
+    "HawkesSumGaussians",
     "kaplan_meier",
     "nelson_aalen",
-    "LearnerSCCS"
+    "ConvSCCS"
 ]

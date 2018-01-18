@@ -252,7 +252,7 @@ class SimuHawkes(SimuPointProcess):
         """Launch simulation of the Hawkes process by thinning
         """
         if self.baseline.dtype == float and np.linalg.norm(self.baseline) == 0:
-            warnings.warn("Baselines have not been set, hence this hawkes "
+            warnings.warn("Baselines have not been set, hence this hawkes_obj "
                           "process won't jump")
 
         if not self.force_simulation and self.spectral_radius() >= 1 \
@@ -271,7 +271,7 @@ class SimuHawkes(SimuPointProcess):
 
         Notes
         -----
-        If the spectral radius is greater that 1, the hawkes process is not
+        If the spectral radius is greater that 1, the hawkes_obj process is not
         stable
         """
 

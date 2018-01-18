@@ -154,7 +154,7 @@ class Test(unittest.TestCase):
             learner._set_data(events)
 
     def test_hawkes_adm4_parameters(self):
-        """...Test that hawkes adm4 parameters are correctly linked
+        """...Test that hawkes_obj adm4 parameters are correctly linked
         """
         learner = HawkesADM4(self.float_1)
         self.assertEqual(learner.decay, self.float_1)

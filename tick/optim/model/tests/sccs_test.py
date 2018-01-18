@@ -24,11 +24,13 @@ class ModelSCCSTest(unittest.TestCase):
                   np.array([0, 1], dtype="int32")
                  ]
 
+        self.n_lags = np.array([1, 1], dtype="uint64")
+
     def test_loss(self):
         """Test longitudinal multinomial model loss."""
-        X, _, _ = LongitudinalFeaturesLagger(n_lags=1)\
+        X, _, _ = LongitudinalFeaturesLagger(n_lags=self.n_lags)\
             .fit_transform(self.X)
-        model = ModelSCCS(n_intervals=2, n_lags=1)\
+        model = ModelSCCS(n_intervals=2, n_lags=self.n_lags)\
             .fit(X, self.y)
         loss = model.loss(coeffs=np.array([0.0, 0.0, 1.0, 0.0]))
         expected_loss = - np.log((np.e / (2*np.e) * 1 / (1 + np.e))) / 2
@@ -41,9 +43,9 @@ class ModelSCCSTest(unittest.TestCase):
              np.array([[1, 0.],
                        [0, 1]])
              ]
-        X, _, _ = LongitudinalFeaturesLagger(n_lags=1) \
+        X, _, _ = LongitudinalFeaturesLagger(n_lags=self.n_lags) \
             .fit_transform(X)
-        model = ModelSCCS(n_intervals=2, n_lags=1) \
+        model = ModelSCCS(n_intervals=2, n_lags=self.n_lags) \
             .fit(X, self.y)
         grad = model.grad(coeffs=np.array([0.0, 0.0, 1.0, 0.0]))
         expected_grad = - np.array([-1/2 - 1 / (1 + np.e),
@@ -54,21 +56,23 @@ class ModelSCCSTest(unittest.TestCase):
 
     def test_grad_loss_consistency(self):
         """Test longitudinal multinomial model gradient properties."""
-        sim = SimuSCCS(500, 36, 3, 9, None, "single_exposure", seed=42,
+        n_lags = np.repeat(9, 3).astype(dtype="uint64")
+        sim = SimuSCCS(500, 36, 3, n_lags, None, "single_exposure", seed=42,
                        verbose=False)
         _, X, y, censoring, coeffs = sim.simulate()
-        X, _, _ = LongitudinalFeaturesLagger(n_lags=9) \
+        X, _, _ = LongitudinalFeaturesLagger(n_lags=n_lags) \
             .fit_transform(X, censoring)
-        model = ModelSCCS(n_intervals=36, n_lags=9)\
+        model = ModelSCCS(n_intervals=36, n_lags=n_lags)\
             .fit(X, y, censoring)
         self._test_grad(model, coeffs)
         X_sparse = [csr_matrix(x) for x in X]
-        model = ModelSCCS(n_intervals=36, n_lags=9)\
+        model = ModelSCCS(n_intervals=36, n_lags=n_lags)\
             .fit(X_sparse, y, censoring)
         self._test_grad(model, coeffs)
 
     def test_lipschitz_constant(self):
         """Test longitudinal multinomial model Lipschitz constant."""
+        #TODO: update this!
         X = [np.array([[0, 0, 1],
                        [0, 1, 1],
                        [1, 1, 1]], dtype="float64"),
@@ -79,9 +83,10 @@ class ModelSCCSTest(unittest.TestCase):
         y = [np.array([0, 1, 0], dtype="int32"),
              np.array([0, 1, 0], dtype="int32")
              ]
-        X, _, _ = LongitudinalFeaturesLagger(n_lags=1) \
+        n_lags = np.repeat(1, 3).astype(dtype="uint64")
+        X, _, _ = LongitudinalFeaturesLagger(n_lags=n_lags) \
             .fit_transform(X)
-        model = ModelSCCS(n_intervals=3, n_lags=1).fit(
+        model = ModelSCCS(n_intervals=3, n_lags=n_lags).fit(
             X, y)
         lip_constant = model.get_lip_max()
         expected_lip_constant = .5
@@ -90,9 +95,9 @@ class ModelSCCSTest(unittest.TestCase):
     def test_convergence_with_lags(self):
         """Test longitudinal multinomial model convergence."""
         n_intervals = 10
-        n_lags = 2
         n_samples = 800
         n_features = 2
+        n_lags = np.repeat(2, n_features).astype(dtype="uint64")
         sim = SimuSCCS(n_samples, n_intervals, n_features, n_lags, None,
                        "multiple_exposures", seed=42)
         _, X, y, censoring, coeffs = sim.simulate()
@@ -108,9 +113,9 @@ class ModelSCCSTest(unittest.TestCase):
     def test_convergence_without_lags(self):
         """Test longitudinal multinomial model convergence."""
         n_intervals = 10
-        n_lags = 0
         n_samples = 600
         n_features = 2
+        n_lags = np.repeat(0, n_features).astype(dtype="uint64")
         sim = SimuSCCS(n_samples, n_intervals, n_features, n_lags, None,
                        "multiple_exposures", seed=42, verbose=False)
         _, X, y, censoring, coeffs = sim.simulate()

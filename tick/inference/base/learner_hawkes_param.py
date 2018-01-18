@@ -302,7 +302,7 @@ class LearnerHawkesParametric(LearnerOptim):
             If None, events given while fitting model will be used
 
         end_times : `np.ndarray` or `float`, default = None
-            List of end time of all hawkes processes used to measure score.
+            List of end time of all hawkes_obj processes used to measure score.
             If None, it will be set to each realization's latest time.
             If only one realization is provided, then a float can be given.
 
@@ -345,7 +345,7 @@ class LearnerHawkesParametric(LearnerOptim):
             How often the intensity should be computed
 
         end_time : `float`, default = None
-            End time of hawkes process.
+            End time of hawkes_obj process.
             If None, it will be set to realization's latest time.
 
         Returns

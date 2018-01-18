@@ -175,7 +175,7 @@ class HawkesBasisKernels(LearnerHawkesNoParam):
             If only one realization is given, it will be wrapped into a list
 
         end_times : `np.ndarray` or `float`, default = None
-            List of end time of all hawkes processes that will be given to the
+            List of end time of all hawkes_obj processes that will be given to the
             model. If None, it will be set to each realization's latest time.
             If only one realization is provided, then a float can be given.
 
