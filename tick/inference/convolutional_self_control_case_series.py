@@ -156,7 +156,7 @@ class ConvSCCS(ABC, Base):
         """
         p_features, p_labels, p_censoring = self._prefit(features, labels,
                                                          censoring)
-        coeffs = self._fit(project=False)
+        self._fit(project=False)
         self._postfit(p_features, p_labels, p_censoring, False,
                       bootstrap, bootstrap_rep, bootstrap_confidence)
 
@@ -229,7 +229,7 @@ class ConvSCCS(ABC, Base):
         i = 0
         while i < n_cv_iter:
             self._set('coeffs', np.zeros(self.n_coeffs))
-            self.__strengths = [g.rvs(1)[0] for g in generators]
+            self._strengths = [g.rvs(1)[0] for g in generators]
 
             train_scores = []
             test_scores = []
@@ -239,15 +239,15 @@ class ConvSCCS(ABC, Base):
                 X_train, X_test = list(train(p_features)), list(test(p_features))
                 y_train, y_test = list(train(p_labels)), list(test(p_labels))
                 censoring_train, censoring_test = p_censoring[train_index], \
-                                                  p_censoring[test_index]
+                    p_censoring[test_index]
 
                 self._model_obj.fit(X_train, y_train, censoring_train)
-                coeffs = self._fit(project=False)
+                self._fit(project=False)
 
                 train_scores.append(self._score())
                 test_scores.append(self._score(X_test, y_test, censoring_test))
 
-            cv_tracker.log_cv_iteration({'strength': self.__strengths},
+            cv_tracker.log_cv_iteration({'strength': self._strengths},
                                         np.array(train_scores),
                                         np.array(test_scores))
             i += 1
@@ -257,14 +257,14 @@ class ConvSCCS(ABC, Base):
 
         # refit best model on all the data
         self._set('coeffs', np.zeros(self.n_coeffs))
-        self.__strengths = best_strength
+        self._strengths = best_strength
 
         self._model_obj.fit(p_features, p_labels, p_censoring)
         coeffs, bootstrap_ci = self._postfit(p_features, p_labels, p_censoring,
                                              True, bootstrap, bootstrap_rep,
                                              bootstrap_confidence)
 
-        cv_tracker.log_best_model(self.__strengths, self.coeffs.tolist(),
+        cv_tracker.log_best_model(self._strengths, self.coeffs.tolist(),
                                   self.score(),
                                   self.bootstrap_coeffs._asdict())
 
@@ -300,7 +300,6 @@ class ConvSCCS(ABC, Base):
 
         return features, labels, censoring
 
-    # TODO: fit should not have side effects
     def _fit(self, project):
         # self._set()  # TODO: set strengths
         prox_obj = self._construct_prox_obj(self.coeffs, project)
@@ -465,9 +464,9 @@ class ConvSCCS(ABC, Base):
 
             if self._strength_group_l1 is not None:
                 blocks_size = blocks_end - blocks_start
-                proxs.insert(0, ProxGroupL1(self._strength_group_l1,
-                                            blocks_start.tolist(),
-                                            blocks_size.tolist()))
+                proxs.append(ProxGroupL1(self._strength_group_l1,
+                                         blocks_start.tolist(),
+                                         blocks_size.tolist()))
         else:
             # Default prox: does nothing
             proxs = [ProxZero()]
@@ -491,8 +490,8 @@ class ConvSCCS(ABC, Base):
         kernel = np.array([1, -1])
         groups = []
         for i in self.penalized_features:
-            idx = self._features_offset[i]
-            n_lags = self._n_lags[i]
+            idx = int(self._features_offset[i])
+            n_lags = int(self._n_lags[i])
             acc = 1
             for change in np.convolve(coeffs[idx:idx+n_lags+1], kernel, 'valid'):
                 if change:
@@ -552,15 +551,15 @@ class ConvSCCS(ABC, Base):
         self._solver_obj.step = value
 
     @property
-    def __strengths(self):
+    def _strengths(self):
         return Strengths(self._strength_tv,
                          self._strength_group_l1)
 
-    @__strengths.setter
-    def __strengths(self, value):
+    @_strengths.setter
+    def _strengths(self, value):
         if len(value) == 2:
-            self._set('_strength_tv', value[0])
-            self._set('_strength_group_l1', value[1])
+            self.strength_tv = value[0]
+            self.strength_group_l1 = value[1]
         else:
             raise ValueError('strength should be a tuple of length 2.')
 
@@ -609,6 +608,7 @@ class ConvSCCS(ABC, Base):
         self._set('_n_lags', value)
         self._set('_features_offset', offsets)
         self._construct_preprocessor_obj()
+
 
 # TODO: put this somewhere else?
 class CrossValidationTracker:
@@ -686,6 +686,7 @@ class CrossValidationTracker:
                 'best_model': self.best_model
                 }
 
+
 class Log10UniformGenerator:
     """Generate uniformly distributed points in the log10 space."""
     def __init__(self, min_val, max_val):
@@ -696,3 +697,4 @@ class Log10UniformGenerator:
     def rvs(self, n):
         return 10 ** (
         self.min_val + (self.max_val - self.min_val) * self.gen.rvs(n))
+

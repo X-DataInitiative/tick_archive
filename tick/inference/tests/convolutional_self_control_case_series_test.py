@@ -3,6 +3,7 @@ from tick.inference.tests.inference import InferenceTest
 from tick.simulation import SimuSCCS
 from tick.inference import ConvSCCS
 
+
 class Test(InferenceTest):
     def setUp(self):
         self.n_lags = np.repeat(1, 2).astype('uint64')
