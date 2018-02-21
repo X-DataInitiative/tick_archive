@@ -33,5 +33,7 @@ python -m pip install -r requirements.txt
 python -m pip install sphinx pillow
 python -m pip install cpplint
 [[ "${PYVER}" != "3.7.0" ]] && python -m pip install tensorflow # does not yet exist on python 3.7
+brew install geos
+python -m pip install  https://github.com/matplotlib/basemap/archive/v1.1.0.tar.gz
 pyenv rehash
 

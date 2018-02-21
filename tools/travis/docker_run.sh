@@ -6,11 +6,15 @@ set -e -x
 cp -R /io src
 cd src
 
+apt-get update;
+apt-get install -y libgeos*;
+
 eval "$(pyenv init -)"
 
 pyenv global ${PYVER}
 pyenv local ${PYVER}
 
+python -m pip install  https://github.com/matplotlib/basemap/archive/v1.1.0.tar.gz
 python -m pip install yapf --upgrade
 python -m yapf --style tools/code_style/yapf.conf -i tick examples --recursive
 
