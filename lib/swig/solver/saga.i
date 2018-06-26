@@ -13,7 +13,7 @@ enum class SAGA_VarianceReductionMethod : uint16_t {
 };
 
 template <class T>
-class TSAGA : public TStoSolver<T> {
+class TSAGA : public TStoSolver<T, T> {
  public:
     TSAGA();
     TSAGA(unsigned long epoch_size,
@@ -28,7 +28,7 @@ class TSAGA : public TStoSolver<T> {
     SAGA_VarianceReductionMethod get_variance_reduction();
     void set_variance_reduction(SAGA_VarianceReductionMethod variance_reduction);
 
-    void set_model(std::shared_ptr<TModel<T> > model) override;
+    void set_model(std::shared_ptr<TModel<T, T> > model) override;
 
     bool compare(const TSAGA<T> &that);
 };
@@ -40,3 +40,31 @@ TICK_MAKE_TEMPLATED_PICKLABLE(TSAGA, SAGADouble, double);
 %template(SAGAFloat) TSAGA<float>;
 typedef TSAGA<float> SAGAFloat;
 TICK_MAKE_TEMPLATED_PICKLABLE(TSAGA, SAGAFloat , float);
+
+
+template <class T>
+class AtomicSAGA : public TStoSolver<T, std::atomic<T>> {
+ public:
+    AtomicSAGA();
+
+    AtomicSAGA(unsigned long epoch_size,
+               unsigned long iterations,
+               T tol, RandType rand_type,
+               T step, int seed, int n_threads = 2,
+               SAGA_VarianceReductionMethod variance_reduction
+                 = SAGA_VarianceReductionMethod::Last
+               );
+
+    void solve();
+    void set_step(T step);
+    SAGA_VarianceReductionMethod get_variance_reduction();
+    void set_variance_reduction(SAGA_VarianceReductionMethod variance_reduction);
+
+    void set_model(std::shared_ptr<TModel<T, std::atomic<T>> > model) override;
+};
+
+%template(AtomicSAGADouble) AtomicSAGA<double>;
+typedef AtomicSAGA<double> AtomicSAGADouble;
+
+%template(AtomicSAGAFloat) AtomicSAGA<float>;
+typedef AtomicSAGA<float> AtomicSAGAFloat;

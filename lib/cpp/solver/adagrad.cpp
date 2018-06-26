@@ -4,11 +4,8 @@
 #include "tick/prox/prox_separable.h"
 
 template <class T>
-TAdaGrad<T>::TAdaGrad(ulong epoch_size, T tol, RandType rand_type, T step,
-                      int seed)
-    : TStoSolver<T>(epoch_size, tol, rand_type, seed),
-      hist_grad(iterate.size()),
-      step(step) {}
+TAdaGrad<T>::TAdaGrad(ulong epoch_size, T tol, RandType rand_type, T step, int seed)
+    : TStoSolver<T>(epoch_size, tol, rand_type, seed), hist_grad(iterate.size()), step(step) {}
 
 template <class T>
 void TAdaGrad<T>::solve() {
@@ -16,8 +13,7 @@ void TAdaGrad<T>::solve() {
   if (prox->is_separable()) {
     casted_prox = std::static_pointer_cast<TProxSeparable<T>>(prox);
   } else {
-    TICK_ERROR("Prox in Adagrad must be separable but got "
-               << prox->get_class_name());
+    TICK_ERROR("Prox in Adagrad must be separable but got " << prox->get_class_name());
   }
 
   Array<T> grad_i(iterate.size());

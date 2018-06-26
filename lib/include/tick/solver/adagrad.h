@@ -43,8 +43,7 @@ class DLL_PUBLIC TAdaGrad : public TStoSolver<T> {
   BoolStrReport compare(const TAdaGrad<T> &that) {
     std::stringstream ss;
     ss << get_class_name() << std::endl;
-    bool are_equal = TStoSolver<T>::compare(that, ss) &&
-                     TICK_CMP_REPORT(ss, hist_grad) &&
+    bool are_equal = TStoSolver<T>::compare(that, ss) && TICK_CMP_REPORT(ss, hist_grad) &&
                      TICK_CMP_REPORT(ss, step);
     return BoolStrReport(are_equal, ss.str());
   }
