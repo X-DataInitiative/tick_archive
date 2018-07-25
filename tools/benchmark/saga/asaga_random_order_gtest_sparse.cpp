@@ -16,20 +16,22 @@
 #define NOW std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()
 
 const constexpr size_t SEED       = 1933;
-const constexpr size_t N_ITER     = 200;
+const constexpr size_t N_ITER     = 20;
 
 constexpr ulong n_samples = 196000;
 // constexpr ulong n_samples = 20000;
 
-constexpr auto ALPHA = 1. / n_samples;
+constexpr auto ALPHA = 100. / n_samples;
 constexpr auto BETA  = 1e-10;
 constexpr auto STRENGTH = ALPHA + BETA;
 constexpr auto RATIO = BETA / STRENGTH;
 
 int main(int argc, char *argv[]) {
+  std::string file_path = __FILE__;
+  std::string dir_path = file_path.substr(0, file_path.rfind("/"));
 
-  std::string features_s("../url.features.cereal");
-  std::string labels_s("../url.labels.cereal");
+  std::string features_s(dir_path + "/../data/url.3.features.cereal");
+  std::string labels_s(dir_path + "/../data/url.3.labels.cereal");
 #ifdef _MKN_WITH_MKN_KUL_
   kul::File features_f(features_s);
   kul::File labels_f(labels_s);
@@ -40,8 +42,9 @@ int main(int argc, char *argv[]) {
 #endif
 
   std::vector<int> range;//{ 12}; //, 4, 6, 8, 10, 12, 14, 16 };
-  if(argc == 1) return 0;
-  range.push_back(std::stol(argv[1]));
+  if(argc == 1) range.push_back(2);
+  else range.push_back(std::stoi(argv[1]));
+
 
   for(auto n_threads : range){
 

@@ -16,12 +16,12 @@
 #define NOW std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()
 
 const constexpr size_t SEED       = 1933;
-const constexpr size_t N_ITER     = 200;
+const constexpr size_t N_ITER     = 20;
 
 // constexpr ulong n_samples = 196000;
 constexpr ulong n_samples = 20000;
 
-constexpr auto ALPHA = 1. / n_samples;
+constexpr auto ALPHA = 100. / n_samples;
 constexpr auto BETA  = 1e-10;
 constexpr auto STRENGTH = ALPHA + BETA;
 constexpr auto RATIO = BETA / STRENGTH;
@@ -29,19 +29,28 @@ constexpr auto RATIO = BETA / STRENGTH;
 int main(int argc, char *argv[]) {
 
   {
-    std::string features_s("../url.features.cereal");
-    std::string labels_s("../url.labels.cereal");
+    std::string file_path = __FILE__;
+    std::string dir_path = file_path.substr(0, file_path.rfind("/"));
+
+    std::string features_s(dir_path + "/../data/url.3.features.cereal");
+    std::string labels_s(dir_path + "/../data/url.3.labels.cereal");
+
+    std::cout << "features_s=" << features_s << std::endl;
 #ifdef _MKN_WITH_MKN_KUL_
     kul::File features_f(features_s);
     kul::File labels_f(labels_s);
     if(!features_f){
-      features_s = "url.features.cereal";
-      labels_s = "url.labels.cereal";
+      features_s = "url.3.features.cereal";
+      labels_s = "url.3.labels.cereal";
     }
 #endif
+    std::cout << "read features from " << features_s << std::endl;
     auto features(tick_double_sparse2d_from_file(features_s));
-    std::cout << "features.n_rows() "  << features->n_rows() << std::endl;
+    std::cout << "features ("  << features->n_rows() << ", " << features->n_cols() << ")" << std::endl;
+
+    std::cout << "read labels from " << labels_s << std::endl;
     auto labels(tick_double_array_from_file(labels_s));
+    std::cout << "labels ("  << labels->size() << ", )" << std::endl;
     using milli = std::chrono::microseconds;
     {
       auto model = std::make_shared<ModelLogReg>(features, labels, false);
@@ -63,7 +72,7 @@ int main(int argc, char *argv[]) {
       }
       auto finish = NOW;
       std::cout << argv[0] << " with n_threads " << std::to_string(1) << " "
-                << (finish - start) / 1e6 
+                << total / 1e3
                 << std::endl;
     }
     // {

@@ -81,7 +81,7 @@ add_subdirectory(cpp/solver)
 add_subdirectory(cpp/robust)
 add_subdirectory(cpp/survival)
 add_subdirectory(cpp/preprocessing)
-
+add_subdirectory(../tools/benchmark/saga ../tools/benchmark/saga/bin)
 
 if(APPLE)
     set(TICK_INSTALL_RPATH "${CMAKE_CURRENT_SOURCE_DIR}/../tick/array/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/base/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/base_model/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/linear_model/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/random/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/prox/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/solver/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/hawkes/inference/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/hawkes/model/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/hawkes/simulation/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/robust/build;${CMAKE_CURRENT_SOURCE_DIR}/../tick/survival/build;${TICK_EXTRA_RPATH}")

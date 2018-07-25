@@ -12,4 +12,6 @@ add_library(tick_solver EXCLUDE_FROM_ALL
         ${TICK_SOLVER_INCLUDE_DIR}/adagrad.h
         adagrad.cpp
         ${TICK_SOLVER_INCLUDE_DIR}/sto_solver.h
-        sto_solver.cpp)
+        sto_solver.cpp
+        asaga.cpp
+        )
