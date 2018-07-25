@@ -5,18 +5,15 @@
 #include "tick/prox/prox_separable.h"
 
 template <class T, class K>
-TBaseSAGA<T, K>::TBaseSAGA(ulong epoch_size, T tol, RandType rand_type, T step, int seed,
-                           SAGA_VarianceReductionMethod variance_reduction)
+TBaseSAGA<T, K>::TBaseSAGA(ulong epoch_size, T tol, RandType rand_type, T step, int seed)
     : TStoSolver<T, K>(epoch_size, tol, rand_type, seed),
       solver_ready(false),
       ready_step_corrections(false),
-      step(step),
-      variance_reduction(variance_reduction) {}
+      step(step) {}
 
 template <class T>
-TSAGA<T>::TSAGA(ulong epoch_size, T tol, RandType rand_type, T step, int seed,
-                SAGA_VarianceReductionMethod variance_reduction)
-    : TBaseSAGA<T, T>(epoch_size, tol, rand_type, step, seed, variance_reduction) {}
+TSAGA<T>::TSAGA(ulong epoch_size, T tol, RandType rand_type, T step, int seed)
+    : TBaseSAGA<T, T>(epoch_size, tol, rand_type, step, seed) {}
 
 template <class T, class K>
 void TBaseSAGA<T, K>::set_model(std::shared_ptr<TModel<T, K> > model) {
@@ -42,23 +39,13 @@ void TBaseSAGA<T, K>::initialize_solver() {
 
 template <class T, class K>
 void TBaseSAGA<T, K>::prepare_solve() {
-  // The point where we compute the full gradient for variance reduction is the
-  // new iterate obtained at the previous epoch
   if (!solver_ready) {
     initialize_solver();
   }
-  next_iterate = iterate;
   if ((model->is_sparse()) && (prox->is_separable())) {
     if (!ready_step_corrections) {
       compute_step_corrections();
     }
-  }
-  rand_index = 0;
-  if (variance_reduction == SAGA_VarianceReductionMethod::Average) {
-    next_iterate.init_to_zero();
-  }
-  if (variance_reduction == SAGA_VarianceReductionMethod::Random) {
-    rand_index = rand_unif(epoch_size);
   }
 }
 
@@ -120,16 +107,6 @@ void TSAGA<T>::solve_dense(bool use_intercept, ulong n_features) {
     }
     // Call the prox on the iterate
     prox->call(iterate, step, iterate);
-    if (variance_reduction == SAGA_VarianceReductionMethod::Random &&
-        t == rand_index) {
-      next_iterate = iterate;
-    }
-    if (variance_reduction == SAGA_VarianceReductionMethod::Average) {
-      next_iterate.mult_incr(iterate, 1.0 / epoch_size);
-    }
-  }
-  if (variance_reduction == SAGA_VarianceReductionMethod::Last) {
-    next_iterate = iterate;
   }
   TStoSolver<T, T>::t += epoch_size;
 }
@@ -176,18 +153,6 @@ void TSAGA<T>::solve_sparse_proba_updates(bool use_intercept, ulong n_features) 
       gradients_average[n_features] += grad_factor_diff / n_samples;
       casted_prox->call_single(n_features, iterate, step, iterate);
     }
-    // Note that the average option for variance reduction with sparse data is a
-    // very bad idea, but this is caught in the python class
-    if (variance_reduction == SAGA_VarianceReductionMethod::Random &&
-        t == rand_index) {
-      next_iterate = iterate;
-    }
-    if (variance_reduction == SAGA_VarianceReductionMethod::Average) {
-      next_iterate.mult_incr(iterate, 1.0 / epoch_size);
-    }
-  }
-  if (variance_reduction == SAGA_VarianceReductionMethod::Last) {
-    next_iterate = iterate;
   }
   TStoSolver<T, T>::t += epoch_size;
 }
@@ -195,7 +160,6 @@ void TSAGA<T>::solve_sparse_proba_updates(bool use_intercept, ulong n_features) 
 template <class T, class K>
 void TBaseSAGA<T, K>::set_starting_iterate(Array<K> &new_iterate) {
   TStoSolver<T, K>::set_starting_iterate(new_iterate);
-  next_iterate = iterate;
 }
 
 template class DLL_PUBLIC TBaseSAGA<double, double>;

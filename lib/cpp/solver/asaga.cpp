@@ -4,10 +4,8 @@
 
 template <class T>
 AtomicSAGA<T>::AtomicSAGA(ulong epoch_size, ulong _iterations, T tol,
-                          RandType rand_type, T step, int seed, int n_threads,
-                          SAGA_VarianceReductionMethod variance_reduction)
-    : TBaseSAGA<T, std::atomic<T>>(epoch_size, tol, rand_type, step, seed,
-                                   variance_reduction),
+                          RandType rand_type, T step, int seed, int n_threads)
+    : TBaseSAGA<T, std::atomic<T>>(epoch_size, tol, rand_type, step, seed),
       n_threads(n_threads),
       iterations(_iterations),
       objective(_iterations),
@@ -64,13 +62,6 @@ void AtomicSAGA<T>::solve_dense(bool use_intercept, ulong n_features) {
       }
       // Call the prox on the iterate
       prox->call(iterate, step, iterate);
-      if (variance_reduction == SAGA_VarianceReductionMethod::Random &&
-          t == rand_index) {
-        next_iterate = iterate;
-      }
-      if (variance_reduction == SAGA_VarianceReductionMethod::Average) {
-        next_iterate.mult_incr(iterate, 1.0 / epoch_size);
-      }
     }
   };
 
@@ -80,9 +71,6 @@ void AtomicSAGA<T>::solve_dense(bool use_intercept, ulong n_features) {
   }
   for (size_t i = 0; i < un_threads; i++) {
     threads[i].join();
-  }
-  if (variance_reduction == SAGA_VarianceReductionMethod::Last) {
-    next_iterate = iterate;
   }
   TStoSolver<T, std::atomic<T>>::t += epoch_size;
 }
@@ -174,15 +162,6 @@ void AtomicSAGA<T>::solve_sparse_proba_updates(bool use_intercept,
         casted_prox->call_single(n_features, iterate, step, iterate);
       }
 
-      // Note that the average option for variance reduction with sparse data
-      // is a very bad idea, but this is caught in the python class
-      if (variance_reduction == SAGA_VarianceReductionMethod::Random &&
-          t == rand_index) {
-        next_iterate = iterate;
-      }
-      if (variance_reduction == SAGA_VarianceReductionMethod::Average) {
-        next_iterate.mult_incr(iterate, 1.0 / epoch_size);
-      }
       if (n_thread == 0 && t % epoch_size == 0) {
 #if !defined(_WIN32)  // temporarily disabled TODO DOESN'T WORK ON WINDOWS
         int64_t c = t / epoch_size;
@@ -207,9 +186,6 @@ void AtomicSAGA<T>::solve_sparse_proba_updates(bool use_intercept,
     threads[i].join();
   }
 
-  if (variance_reduction == SAGA_VarianceReductionMethod::Last) {
-    next_iterate = iterate;
-  }
   TStoSolver<T, std::atomic<T>>::t += epoch_size;
 }
 

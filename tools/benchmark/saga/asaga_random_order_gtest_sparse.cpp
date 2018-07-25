@@ -41,9 +41,6 @@ int main(int argc, char *argv[]) {
 
   auto features(tick_double_sparse2d_from_file(features_s));
 
-  std::cout << "features.indices() "  << features->indices() << std::endl;
-  std::cout << "features.indices()[-1] "  << features->indices()[features->size_sparse() - 1] << std::endl;
-
   std::cout << "features.n_rows() "  << features->n_rows() << std::endl;
   std::cout << "features.size_sparse() "  << features->size_sparse() << std::endl;
   auto labels(tick_double_array_from_file(labels_s));
@@ -67,8 +64,7 @@ int main(int argc, char *argv[]) {
         RandType::unif,
         0.00257480411965, //1e-3,
         SEED,
-        n_threads,
-        SAGA_VarianceReductionMethod::Last
+        n_threads
       );
       saga.set_rand_max(n_samples);
       saga.set_model(model);
