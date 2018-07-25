@@ -1,7 +1,7 @@
 # License: BSD 3 clause
+
 """Helper to download and cache datasets from the tick_datasets github
 repository
-
 Inspired from
 https://github.com/scikit-learn/scikit-learn/blob/14031f6/sklearn/datasets/twenty_newsgroups.py
 """
@@ -22,28 +22,7 @@ BASE_URL = ("https://raw.githubusercontent.com/X-DataInitiative/tick-datasets"
             "/master/%s")
 
 
-def download_tick_dataset(dataset_path, data_home=None, verbose=True):
-    """Downloads dataset from tick_datasets github repository and store it
-    locally
-
-    Parameters
-    ----------
-    dataset_path : `str`
-        Dataset path on tick_datasets github repository. For example
-        "binary/adult/adult.trn.bz2" for adult train dataset
-
-    data_home : `str`, optional, default=None
-        Specify a download and cache folder for the datasets. If None,
-        all tick datasets are stored in '~/tick_datasets' subfolders.
-
-    verbose : `bool`, default=True
-        If True, download progress bar will be printed
-
-    Returns
-    -------
-    cache_path : `str`
-        File path of the downloaded data
-    """
+def download_dataset(dataset_url, dataset_path, data_home=None, verbose=True):
     data_home = get_data_home(data_home)
     cache_path = os.path.join(data_home, dataset_path)
     cache_dir = os.path.dirname(cache_path)
@@ -51,20 +30,22 @@ def download_tick_dataset(dataset_path, data_home=None, verbose=True):
     if not os.path.exists(cache_dir):
         os.makedirs(cache_dir)
 
-    file_url = BASE_URL % dataset_path
     if verbose:
-        logger.warning("Downloading dataset from %s", file_url)
-    opener = urlopen(file_url)
+        logger.warning("Downloading dataset from %s", dataset_url)
+    opener = urlopen(dataset_url)
     chunk_size = 4096
     with open(cache_path, 'wb') as f:
         n_chunks = 0
         file_size = opener.length
+        last_percent = -1
         while True:
             data = opener.read(chunk_size)
             if data:
                 percent = chunk_size * n_chunks / file_size
                 if verbose:
-                    progress_bar(percent, length=file_size)
+                    progress_bar(percent, length=file_size,
+                                 last_progress=last_percent)
+                    last_percent = percent
                 f.write(data)
                 n_chunks += 1
             else:
@@ -75,24 +56,52 @@ def download_tick_dataset(dataset_path, data_home=None, verbose=True):
     return cache_path
 
 
-def fetch_tick_dataset(dataset_path, data_home=None, verbose=True):
-    """Fetch dataset from tick_datasets github repository.
-     
-    Uses cache if this dataset has already been downloaded.
-
+def download_tick_dataset(dataset_path, data_home=None, verbose=True):
+    """Downloads dataset from tick_datasets github repository and store it
+    locally
     Parameters
     ----------
     dataset_path : `str`
         Dataset path on tick_datasets github repository. For example
         "binary/adult/adult.trn.bz2" for adult train dataset
-
     data_home : `str`, optional, default=None
-        Specify a download and cache folder for the datasets. If None,
+        Specify a download and cache folder for the datasets. If None
+        and not configured with TICK_DATASETS environement variable
         all tick datasets are stored in '~/tick_datasets' subfolders.
-
     verbose : `bool`, default=True
         If True, download progress bar will be printed
+    Returns
+    -------
+    cache_path : `str`
+        File path of the downloaded data
+    """
+    dataset_url = BASE_URL % dataset_path
+    download_dataset(dataset_url, dataset_path, data_home=data_home,
+                     verbose=verbose)
 
+
+def fetch_tick_dataset(dataset_path, data_home=None, n_features=None,
+                       verbose=True):
+    """Fetch dataset from tick_datasets github repository.
+
+    Uses cache if this dataset has already been downloaded.
+    Parameters
+    ----------
+    dataset_path : `str`
+        Dataset path on tick_datasets github repository. For example
+        "binary/adult/adult.trn.bz2" for adult train dataset
+    data_home : `str`, optional, default=None
+        Specify a download and cache folder for the datasets. If None
+        and not configured with TICK_DATASETS environement variable
+        all tick datasets are stored in '~/tick_datasets' subfolders.
+    n_features : `int`, optional, default=None
+        The number of features to use. If None, it will be inferred. This
+        argument is useful to load several files that are subsets of a
+        bigger sliced dataset: each subset might not have examples of
+        every feature, hence the inferred shape might vary from one
+        slice to another.
+    verbose : `bool`, default=True
+        If True, download progress bar will be printed
     Returns
     -------
     output : `np.ndarray` or `dict` or `tuple`
@@ -104,7 +113,8 @@ def fetch_tick_dataset(dataset_path, data_home=None, verbose=True):
     dataset = None
     if os.path.exists(cache_path):
         try:
-            dataset = load_dataset(dataset_path, data_home=data_home)
+            dataset = load_dataset(dataset_path, data_home=data_home,
+                                   n_features=n_features)
         except Exception as e:
             print(80 * '_')
             print('Cache loading failed')
@@ -114,23 +124,28 @@ def fetch_tick_dataset(dataset_path, data_home=None, verbose=True):
     if dataset is None:
         download_tick_dataset(dataset_path, data_home=data_home,
                               verbose=verbose)
-        dataset = load_dataset(dataset_path, data_home=data_home)
+        dataset = load_dataset(dataset_path, data_home=data_home,
+                               n_features=n_features)
 
     return dataset
 
 
-def load_dataset(dataset_path, data_home=None):
+def load_dataset(dataset_path, data_home=None, n_features=None):
     """Load dataset from given path
-
     Parameters
     ----------
     dataset_path : `str`
         Dataset relative path
-
     data_home : `str`, optional, default=None
-        Specify a download and cache folder for the datasets. If None,
+        Specify a download and cache folder for the datasets. If None
+        and not configured with TICK_DATASETS environement variable
         all tick datasets are stored in '~/tick_datasets' subfolders.
-
+    n_features : `int`, optional, default=None
+        The number of features to use. If None, it will be inferred. This
+        argument is useful to load several files that are subsets of a
+        bigger sliced dataset: each subset might not have examples of
+        every feature, hence the inferred shape might vary from one
+        slice to another.
     Returns
     -------
     output : `np.ndarray` or `dict` or `tuple`
@@ -149,14 +164,13 @@ def load_dataset(dataset_path, data_home=None):
         else:
             dataset = dataset.items()
     else:
-        dataset = load_svmlight_file(cache_path)
+        dataset = load_svmlight_file(cache_path, n_features=n_features)
 
     return dataset
 
 
 def get_data_home(data_home=None):
     """Return the path of the tick data dir.
-
     This folder is used by some large dataset loaders to avoid
     downloading the data several times.
     By default the data dir is set to a folder named 'tick_datasets'
@@ -194,7 +208,6 @@ def clear_data_home(data_home=None):
 
 def convert_size(size_bytes):
     """Convert raw bytes into human readable size
-
     References
     ----------
     http://stackoverflow.com/questions/5194057/better-way-to-convert-file-sizes-in-python
@@ -208,17 +221,14 @@ def convert_size(size_bytes):
     return '%s %s' % (s, size_name[i])
 
 
-def progress_bar(progress, width=40, length=None):
+def progress_bar(progress, width=40, length=None, last_progress=None):
     """Print progress bar to sys.stdout
-
     Parameters
     ----------
     progress : `float`
         Reached progress between 0 (just started) and 1 (finished)
-
     width : `int`
         Total width of the progress bar
-
     length : `int`
         Size in bytes of the downloaded file
     """
@@ -228,6 +238,9 @@ def progress_bar(progress, width=40, length=None):
         size = ''
 
     n_bars = int(progress * width)
+    if last_progress is not None and n_bars == int(last_progress * width):
+        return
+
     bar = "[%s%s]" % ("=" * n_bars, " " * (width - n_bars))
     print("\r%s %s %2d%%" % (size, bar, progress * 100), flush=True, end="")
     if progress == 1:

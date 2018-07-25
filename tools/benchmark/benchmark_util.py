@@ -5,6 +5,9 @@ import datetime
 import os
 from subprocess import PIPE, run
 
+from tick.array.serialize import serialize_array
+from tick.dataset.fetch_url_dataset import fetch_url_dataset
+
 BUILD_SOURCE_DIR = os.path.join(
     os.path.dirname(__file__), '../../', 'build/bench')
 
@@ -80,3 +83,19 @@ def run_benchmark(executable, ex_args, output_dir):
     print(executable, "Done")
 
     return result_dir
+
+
+def save_url_dataset_for_saga_benchmarks(n_days):
+    save_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             '../../tools/benchmark/data')
+
+    label_path = os.path.join(save_path, 'url.{}.labels.cereal'.format(n_days))
+    features_path = os.path.join(save_path,
+                                 'url.{}.features.cereal'.format(n_days))
+
+    X, y = fetch_url_dataset(n_days=n_days)
+    serialize_array(y, label_path)
+    serialize_array(X, features_path)
+
+
+save_url_dataset_for_saga_benchmarks(3)
