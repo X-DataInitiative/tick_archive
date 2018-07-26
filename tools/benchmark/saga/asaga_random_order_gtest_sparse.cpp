@@ -104,6 +104,7 @@ int main(int argc, char *argv[]) {
         std::cout << n_threads << " " << i * record_every << " " << history[i] << " "
                   << "1e" << log_dist <<  std::endl;
       }
+      std::cout << "min_objective : " << min_objective << "\n" << std::endl;
 
       samples.push_back(history.last());
     }

@@ -212,6 +212,7 @@ class AtomicSAGA : public TBaseSAGA<T, std::atomic<T>> {
   ulong iterations;
 
   ArrayDouble objective, history;
+  ArrayDouble2d iterates_history;
 
  public:
   AtomicSAGA() : AtomicSAGA(0, 0, 0, RandType::unif, 0) {}

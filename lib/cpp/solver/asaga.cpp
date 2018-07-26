@@ -90,8 +90,10 @@ void AtomicSAGA<T>::solve_sparse_proba_updates(bool use_intercept,
 
   Array<std::atomic<T>> minimizer(model->get_n_coeffs());
 
-  objective = ArrayDouble(std::ceil(static_cast<double>(iterations) / record_every));
-  history = ArrayDouble(std::ceil(static_cast<double>(iterations)/ record_every));
+
+  ulong n_records = std::ceil(static_cast<double>(iterations)/ record_every);
+  history = ArrayDouble(n_records);
+  iterates_history = ArrayDouble2d(n_records, model->get_n_coeffs());
 
   auto lambda = [&](uint16_t n_thread) {
     T grad_factor_diff = 0;
@@ -174,11 +176,10 @@ void AtomicSAGA<T>::solve_sparse_proba_updates(bool use_intercept,
         elapsed = (finish.tv_sec - start.tv_sec);
         elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
         history[index] = static_cast<double>(elapsed);
-        get_atomic_minimizer(minimizer);
-        objective[index] =
-            model->loss(minimizer) +
-            prox->value(minimizer, prox->get_start(), prox->get_end());
 #endif
+        for (ulong j = 0; j < iterate.size(); ++j) {
+          iterates_history(index, j) = iterate[j].load();
+        }
       }
     }
   };
@@ -189,6 +190,16 @@ void AtomicSAGA<T>::solve_sparse_proba_updates(bool use_intercept,
   }
   for (size_t i = 0; i < un_threads; i++) {
     threads[i].join();
+  }
+
+  objective = ArrayDouble(n_records);
+  Array<std::atomic<T>> atomicIterate(iterate.size());
+  for (ulong index = 0; index < n_records; ++index) {
+    for (ulong j = 0; j < iterate.size(); ++j) {
+      atomicIterate[j].store(view_row(iterates_history, index)[j]);
+    }
+    objective[index] = model->loss(atomicIterate) +
+            prox->value(atomicIterate, prox->get_start(), prox->get_end());
   }
 
   TStoSolver<T, std::atomic<T>>::t += epoch_size;
