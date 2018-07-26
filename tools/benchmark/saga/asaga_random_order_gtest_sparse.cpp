@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
 
       const auto min_objective = saga.get_objective().min();
 
-      for(ulong i = 0; i < objective.size(); i++) {
+      for(ulong i = 1; i < objective.size(); i++) {
         auto log_dist = objective[i] == min_objective? 0: log10(objective[i] - min_objective);
         std::cout << n_threads << " " << i * record_every << " " << history[i] << " "
                   << "1e" << log_dist <<  std::endl;

@@ -132,23 +132,16 @@ void AtomicSAGA<T>::solve_sparse_proba_updates(bool use_intercept,
         // Step-size correction for coordinate j
         step_correction = steps_correction[j];
 
-        iterate_j = iterate[j].load();
-
         while (!gradients_average[j].compare_exchange_weak(
             grad_avg_j,
             grad_avg_j + (grad_factor_diff * x_ij * n_samples_inverse)));
 
         // Prox is separable, apply regularization on the current coordinate
         iterate[j] = casted_prox->call_single(
-            iterate_j - (step * (grad_factor_diff * x_ij +
+            iterate[j] - (step * (grad_factor_diff * x_ij +
                 step_correction * grad_avg_j)),
             step * step_correction);
 
-//        while (!iterate[j].compare_exchange_weak(
-//            iterate_j,
-//            casted_prox->call_single(
-//                iterate_j - (step * (grad_factor_diff * x_ij + step_correction * grad_avg_j)),
-//                step * step_correction)));
       }
       // And let's not forget to update the intercept as well. It's updated at
       // each step, so no step-correction. Note that we call the prox, in order
