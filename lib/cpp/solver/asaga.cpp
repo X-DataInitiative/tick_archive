@@ -90,6 +90,9 @@ void AtomicSAGA<T>::solve_sparse_proba_updates(bool use_intercept,
 
   Array<std::atomic<T>> minimizer(model->get_n_coeffs());
 
+  objective = ArrayDouble(std::ceil(static_cast<double>(iterations) / record_every));
+  history = ArrayDouble(std::ceil(static_cast<double>(iterations)/ record_every));
+
   auto lambda = [&](uint16_t n_thread) {
     T grad_factor_diff = 0;
     T x_ij = 0;
@@ -164,7 +167,7 @@ void AtomicSAGA<T>::solve_sparse_proba_updates(bool use_intercept,
         casted_prox->call_single(n_features, iterate, step, iterate);
       }
 
-      if (n_thread == 0 && t % thread_epoch_size * record_every == 0) {
+      if (n_thread == 0 && t % (thread_epoch_size * record_every) == 0) {
 #if !defined(_WIN32)  // temporarily disabled TODO DOESN'T WORK ON WINDOWS
         int64_t index = t / (thread_epoch_size * record_every);
         clock_gettime(CLOCK_MONOTONIC, &finish);

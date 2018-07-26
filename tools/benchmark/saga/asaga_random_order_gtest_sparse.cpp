@@ -49,9 +49,12 @@ int main(int argc, char *argv[]) {
   else range.push_back(std::stoi(argv[1]));
 
   ulong n_iter;
-  if (argc <= 2) n_iter = 24;
+  if (argc <= 2) n_iter = 25;
   else n_iter = std::stoul(argv[2]);
 
+  int record_every;
+  if (argc <= 2) record_every = 4;
+  else n_iter = std::stoul(argv[3]);
 
   auto features(tick_double_sparse2d_from_file(features_s));
 
@@ -80,22 +83,19 @@ int main(int argc, char *argv[]) {
         n_samples, n_iter,
         0,
         RandType::unif,
-        0.00257480411965, //1e-3,
+        1. / model->get_lip_max(),
         SEED,
         n_threads
       );
       saga.set_rand_max(n_samples);
       saga.set_model(model);
 
-      int record_every = 4;
       saga.set_record_every(record_every);
       auto prox = std::make_shared<TProxElasticNet<double, std::atomic<double> >>(STRENGTH, RATIO, 0, model->get_n_coeffs(), 0);
       saga.set_prox(prox);
       saga.solve(); // single solve call as iterations happen within threads
       const auto &history = saga.get_history();
       const auto &objective = saga.get_objective();
-
-      std::cout << "objetive size : " << objective.size() << std::endl;
 
       const auto min_objective = saga.get_objective().min();
 
