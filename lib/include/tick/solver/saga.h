@@ -266,4 +266,94 @@ using AtomicSAGAFloat = AtomicSAGA<float>;
 //                                    cereal::specialization::member_serialize)
 // CEREAL_REGISTER_TYPE(AtomicSAGAFloat)
 
+
+template <class T>
+class HalfAtomicSAGA : public TBaseSAGA<T, T> {
+  // Grants cereal access to default constructor/serialize functions
+  friend class cereal::access;
+
+ protected:
+  using TBaseSAGA<T, T>::get_next_i;
+  using TBaseSAGA<T, T>::iterate;
+  using TBaseSAGA<T, T>::steps_correction;
+  using TBaseSAGA<T, T>::solve_dense;
+  using TBaseSAGA<T, T>::solve_sparse_proba_updates;
+  using TBaseSAGA<T, T>::model;
+  using TBaseSAGA<T, T>::casted_model;
+  using TBaseSAGA<T, T>::prox;
+  using TBaseSAGA<T, T>::casted_prox;
+  using TBaseSAGA<T, T>::epoch_size;
+  using TBaseSAGA<T, T>::step;
+  using TBaseSAGA<T, T>::t;
+  using TBaseSAGA<T, T>::record_every;
+
+ public:
+  using TBaseSAGA<T, T>::set_starting_iterate;
+  using TBaseSAGA<T, T>::get_minimizer;
+  using TBaseSAGA<T, T>::set_model;
+  using TBaseSAGA<T, T>::get_class_name;
+
+ private:
+  int n_threads = 0;      // SWIG doesn't support uints
+  size_t un_threads = 0;  //   uint == int = Werror
+  ulong iterations;
+
+  ArrayDouble objective, history;
+  Array2d<T> iterates_history;
+
+  Array<std::atomic<T>> gradients_memory;
+  Array<std::atomic<T>> gradients_average;
+
+ public:
+  HalfAtomicSAGA() : HalfAtomicSAGA(0, 0, 0, RandType::unif, 0) {}
+
+  HalfAtomicSAGA(ulong epoch_size, ulong iterations, T tol, RandType rand_type, T step, int seed = -1,
+             int n_threads = 2);
+
+  void solve_dense(bool use_intercept, ulong n_features) override;
+
+  void solve_sparse_proba_updates(bool use_intercept, ulong n_features) override;
+  void solve_sparse_thread(bool use_intercept, ulong n_features,
+                           TProxSeparable<T, std::atomic<T>> *, uint16_t thread_id);
+
+  void get_atomic_minimizer(Array<std::atomic<T>> &out);
+
+  const ArrayDouble &get_objective() { return objective; }
+  const ArrayDouble &get_history() { return history; }
+
+  // disabled for the moment
+  template <class Archive>
+  void serialize(Archive &ar) {
+    ar(cereal::make_nvp("BaseSAGA", cereal::base_class<TBaseSAGA<T, std::atomic<T>>>(this)));
+    ar(n_threads);
+    ar(un_threads);
+    ar(iterations);
+    ar(objective);
+    ar(history);
+  }
+
+  BoolStrReport compare(const HalfAtomicSAGA<T> &that) {
+    std::stringstream ss;
+    ss << get_class_name() << std::endl;
+    auto is_equal = TBaseSAGA<T, T>::compare(that, ss);
+    return BoolStrReport(is_equal, ss.str());
+  }
+
+  BoolStrReport operator==(const HalfAtomicSAGA<T> &that) { return compare(that); }
+
+  static std::shared_ptr<HalfAtomicSAGA<T>> AS_NULL() {
+    return std::move(std::shared_ptr<HalfAtomicSAGA<T>>(new HalfAtomicSAGA<T>));
+  }
+};
+
+using HalfAtomicSAGADouble = HalfAtomicSAGA<double>;
+// CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(HalfAtomicSAGADouble,
+//                                    cereal::specialization::member_serialize)
+// CEREAL_REGISTER_TYPE(HalfAtomicSAGADouble)
+
+using HalfAtomicSAGAFloat = HalfAtomicSAGA<float>;
+// CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(HalfAtomicSAGAFloat,
+//                                    cereal::specialization::member_serialize)
+// CEREAL_REGISTER_TYPE(HalfAtomicSAGAFloat)
+
 #endif  // LIB_INCLUDE_TICK_SOLVER_SAGA_H_
