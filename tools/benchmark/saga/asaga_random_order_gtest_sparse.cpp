@@ -22,7 +22,6 @@
 #define NOW std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()
 
 const constexpr int SEED          = 42;
-const constexpr size_t N_ITER     = 25;
 
 
 
@@ -46,8 +45,12 @@ int main(int argc, char *argv[]) {
 #endif
 
   std::vector<int> range;//{ 12}; //, 4, 6, 8, 10, 12, 14, 16 };
-  if(argc == 1) range.push_back(2);
+  if(argc <= 1) range.push_back(2);
   else range.push_back(std::stoi(argv[1]));
+
+  ulong n_iter;
+  if (argc <= 2) n_iter = 24;
+  else n_iter = std::stoul(argv[2]);
 
 
   auto features(tick_double_sparse2d_from_file(features_s));
@@ -74,7 +77,7 @@ int main(int argc, char *argv[]) {
       auto model = std::make_shared<TModelLogReg<double, std::atomic<double> > >(features, labels, false);
       Array<std::atomic<double>> minimizer(model->get_n_coeffs());
       AtomicSAGA<double> saga(
-        n_samples, N_ITER / n_threads,
+        n_samples, n_iter,
         0,
         RandType::unif,
         0.00257480411965, //1e-3,
@@ -83,17 +86,22 @@ int main(int argc, char *argv[]) {
       );
       saga.set_rand_max(n_samples);
       saga.set_model(model);
+
+      int record_every = 4;
+      saga.set_record_every(record_every);
       auto prox = std::make_shared<TProxElasticNet<double, std::atomic<double> >>(STRENGTH, RATIO, 0, model->get_n_coeffs(), 0);
       saga.set_prox(prox);
       saga.solve(); // single solve call as iterations happen within threads
       const auto &history = saga.get_history();
       const auto &objective = saga.get_objective();
 
+      std::cout << "objetive size : " << objective.size() << std::endl;
+
       const auto min_objective = saga.get_objective().min();
 
-      for(size_t i = 0; i < N_ITER / n_threads; i++) {
+      for(ulong i = 0; i < objective.size(); i++) {
         auto log_dist = objective[i] == min_objective? 0: log10(objective[i] - min_objective);
-        std::cout << n_threads << " " << (i * n_threads) << " " << history[i] << " "
+        std::cout << n_threads << " " << i * record_every << " " << history[i] << " "
                   << "1e" << log_dist <<  std::endl;
       }
 

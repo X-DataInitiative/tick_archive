@@ -39,6 +39,8 @@ class DLL_PUBLIC TBaseSAGA : public TStoSolver<T, K> {
   Array<K> gradients_memory;
   Array<K> gradients_average;
 
+  int record_every = 1;
+
   std::shared_ptr<TModelGeneralizedLinear<T, K>> casted_model;
 
   std::shared_ptr<TProxSeparable<T, K>> casted_prox;
@@ -72,6 +74,9 @@ class DLL_PUBLIC TBaseSAGA : public TStoSolver<T, K> {
   T get_step() const { return step; }
 
   void set_step(T step) { this->step = step; }
+
+  int get_record_every() const { return record_every; }
+  void set_record_every(const int record_every) {this->record_every = record_every; }
 
  public:
   template <class Archive>
@@ -193,6 +198,7 @@ class AtomicSAGA : public TBaseSAGA<T, std::atomic<T>> {
   using TBaseSAGA<T, std::atomic<T>>::epoch_size;
   using TBaseSAGA<T, std::atomic<T>>::step;
   using TBaseSAGA<T, std::atomic<T>>::t;
+  using TBaseSAGA<T, std::atomic<T>>::record_every;
 
  public:
   using TBaseSAGA<T, std::atomic<T>>::set_starting_iterate;

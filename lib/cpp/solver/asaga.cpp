@@ -105,7 +105,10 @@ void AtomicSAGA<T>::solve_sparse_proba_updates(bool use_intercept,
     clock_gettime(CLOCK_MONOTONIC, &start);
 #endif
     ulong idx_nnz = 0;
-    for (ulong t = 0; t < epoch_size * iterations; ++t) {
+
+    int thread_epoch_size = epoch_size / n_threads;
+
+    for (ulong t = 0; t < thread_epoch_size * iterations; ++t) {
       // Get next sample index
       ulong i = get_next_i();
       // Sparse features vector
@@ -161,15 +164,15 @@ void AtomicSAGA<T>::solve_sparse_proba_updates(bool use_intercept,
         casted_prox->call_single(n_features, iterate, step, iterate);
       }
 
-      if (n_thread == 0 && t % epoch_size == 0) {
+      if (n_thread == 0 && t % thread_epoch_size * record_every == 0) {
 #if !defined(_WIN32)  // temporarily disabled TODO DOESN'T WORK ON WINDOWS
-        int64_t c = t / epoch_size;
+        int64_t index = t / (thread_epoch_size * record_every);
         clock_gettime(CLOCK_MONOTONIC, &finish);
         elapsed = (finish.tv_sec - start.tv_sec);
         elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
-        history[c] = static_cast<double>(elapsed);
+        history[index] = static_cast<double>(elapsed);
         get_atomic_minimizer(minimizer);
-        objective[c] =
+        objective[index] =
             model->loss(minimizer) +
             prox->value(minimizer, prox->get_start(), prox->get_end());
 #endif
