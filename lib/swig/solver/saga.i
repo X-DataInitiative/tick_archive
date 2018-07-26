@@ -6,11 +6,6 @@
 #include "tick/solver/saga.h"
 %}
 
-enum class SAGA_VarianceReductionMethod : uint16_t {
-  Last = 1,
-  Average = 2,
-  Random = 3,
-};
 
 template <class T>
 class TSAGA : public TStoSolver<T, T> {
@@ -20,13 +15,9 @@ class TSAGA : public TStoSolver<T, T> {
          T tol,
          RandType rand_type,
          T step,
-         int seed,
-         SAGA_VarianceReductionMethod variance_reduction
-         = SAGA_VarianceReductionMethod::Last);
+         int seed);
     void solve();
     void set_step(T step);
-    SAGA_VarianceReductionMethod get_variance_reduction();
-    void set_variance_reduction(SAGA_VarianceReductionMethod variance_reduction);
 
     void set_model(std::shared_ptr<TModel<T, T> > model) override;
 
@@ -50,15 +41,10 @@ class AtomicSAGA : public TStoSolver<T, std::atomic<T>> {
     AtomicSAGA(unsigned long epoch_size,
                unsigned long iterations,
                T tol, RandType rand_type,
-               T step, int seed, int n_threads = 2,
-               SAGA_VarianceReductionMethod variance_reduction
-                 = SAGA_VarianceReductionMethod::Last
-               );
+               T step, int seed, int n_threads = 2);
 
     void solve();
     void set_step(T step);
-    SAGA_VarianceReductionMethod get_variance_reduction();
-    void set_variance_reduction(SAGA_VarianceReductionMethod variance_reduction);
 
     void set_model(std::shared_ptr<TModel<T, std::atomic<T>> > model) override;
 };
