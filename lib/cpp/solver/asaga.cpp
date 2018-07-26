@@ -137,10 +137,10 @@ void AtomicSAGA<T>::solve_sparse_proba_updates(bool use_intercept,
             grad_avg_j + (grad_factor_diff * x_ij * n_samples_inverse)));
 
         // Prox is separable, apply regularization on the current coordinate
-        iterate[j] = casted_prox->call_single(
-            iterate[j] - (step * (grad_factor_diff * x_ij +
+        iterate[j].store(casted_prox->call_single(
+            iterate[j].load(std::memory_order_relaxed) - (step * (grad_factor_diff * x_ij +
                 step_correction * grad_avg_j)),
-            step * step_correction);
+            step * step_correction), std::memory_order_relaxed);
 
       }
       // And let's not forget to update the intercept as well. It's updated at
