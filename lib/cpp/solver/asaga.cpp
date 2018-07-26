@@ -113,35 +113,34 @@ void AtomicSAGA<T>::solve_sparse_proba_updates(bool use_intercept,
       grad_i_factor = model->grad_i_factor(i, iterate);
       grad_i_factor_old = gradients_memory[i].load();
 
-      while (!gradients_memory[i].compare_exchange_weak(grad_i_factor_old,
-                                                        grad_i_factor)) {
-      }
+      while (!gradients_memory[i].compare_exchange_weak(grad_i_factor_old, grad_i_factor));
 
       grad_factor_diff = grad_i_factor - grad_i_factor_old;
       for (idx_nnz = 0; idx_nnz < x_i.size_sparse(); ++idx_nnz) {
         // Get the index of the idx-th sparse feature of x_i
         ulong j = x_i.indices()[idx_nnz];
         x_ij = x_i.data()[idx_nnz];
-        grad_avg_j = gradients_average[j];
+        grad_avg_j = gradients_average[j].load();
         // Step-size correction for coordinate j
         step_correction = steps_correction[j];
 
         iterate_j = iterate[j].load();
-        // while (!iterate[j].compare_exchange_weak(
-        //   iterate_j,
-        //   iterate_j_t
-        // ));
 
         while (!gradients_average[j].compare_exchange_weak(
             grad_avg_j,
-            grad_avg_j + (grad_factor_diff * x_ij * n_samples_inverse))) {
-        }
+            grad_avg_j + (grad_factor_diff * x_ij * n_samples_inverse)));
 
         // Prox is separable, apply regularization on the current coordinate
         iterate[j] = casted_prox->call_single(
             iterate_j - (step * (grad_factor_diff * x_ij +
-                                 step_correction * grad_avg_j)),
+                step_correction * grad_avg_j)),
             step * step_correction);
+
+//        while (!iterate[j].compare_exchange_weak(
+//            iterate_j,
+//            casted_prox->call_single(
+//                iterate_j - (step * (grad_factor_diff * x_ij + step_correction * grad_avg_j)),
+//                step * step_correction)));
       }
       // And let's not forget to update the intercept as well. It's updated at
       // each step, so no step-correction. Note that we call the prox, in order
