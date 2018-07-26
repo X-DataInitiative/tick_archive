@@ -9,11 +9,19 @@
 #include "tick/prox/prox_zero.h"
 #include "tick/prox/prox_elasticnet.h"
 
+
+#include <math.h>
+#include <vector>
+
 #ifdef _MKN_WITH_MKN_KUL_
 #include "kul/os.hpp"
 #endif
 
 #define NOW std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()
+
+
+double StandardDeviation(std::vector<double>);
+double Variance(std::vector<double>);
 
 const constexpr size_t SEED       = 1933;
 const constexpr size_t N_ITER     = 20;
@@ -32,8 +40,8 @@ int main(int argc, char *argv[]) {
     std::string file_path = __FILE__;
     std::string dir_path = file_path.substr(0, file_path.rfind("/"));
 
-    std::string features_s(dir_path + "/../data/url.3.features.cereal");
-    std::string labels_s(dir_path + "/../data/url.3.labels.cereal");
+    std::string features_s(dir_path + "/../data/adult.features.cereal");
+    std::string labels_s(dir_path + "/../data/adult.labels.cereal");
 
     std::cout << "features_s=" << features_s << std::endl;
 #ifdef _MKN_WITH_MKN_KUL_
@@ -52,6 +60,8 @@ int main(int argc, char *argv[]) {
     auto labels(tick_double_array_from_file(labels_s));
     std::cout << "labels ("  << labels->size() << ", )" << std::endl;
     using milli = std::chrono::microseconds;
+    std::vector<double> samples;
+    for (int tries = 0; tries < 5; ++tries)
     {
       auto model = std::make_shared<ModelLogReg>(features, labels, false);
       Array<double> minimizer(model->get_n_coeffs());
@@ -62,6 +72,7 @@ int main(int argc, char *argv[]) {
       saga.set_prox(prox);
       size_t total = 0;
       auto start = NOW;
+
       for (int j = 0; j < N_ITER; ++j) {
         auto start_iter = NOW;
         saga.solve();
@@ -74,21 +85,41 @@ int main(int argc, char *argv[]) {
       std::cout << argv[0] << " with n_threads " << std::to_string(1) << " "
                 << total / 1e3
                 << std::endl;
+      samples.push_back(total / 1e3);
     }
-    // {
-    //   auto model = std::make_shared<ModelLinReg>(features, labels, false);
-    //   TSAGA<double> saga(n_samples, 0, RandType::unif, 1e-3);
-    //   saga.set_rand_max(n_samples);
-    //   saga.set_model(model);
-    //   saga.set_prox(std::make_shared<ProxZero>(0, 0, 1));
-    //   auto start = std::chrono::high_resolution_clock::now();
-    //   for (int j = 0; j < N_ITER; ++j) saga.solve();
-    //   auto finish = std::chrono::high_resolution_clock::now();
-    //   std::cout << argv[0] << " "
-    //             << std::chrono::duration_cast<milli>(finish - start).count() / 1e6 
-    //             << std::endl;
-    // }
+
+    double min = *std::min_element(samples.begin(), samples.end());
+    double mean = std::accumulate(samples.begin(), samples.end(), 0.0) / samples.size();
+    double ci_half_width = 1.96 * StandardDeviation(samples) / std::sqrt(samples.size());
+
+    std::cout << "\n"
+              << "Min: " << min
+              << "\n Mean: " << mean << " +/- " << ci_half_width
+              << std::endl;
   }
 
   return 0;
+}
+
+
+
+double StandardDeviation(std::vector<double> samples)
+{
+  return std::sqrt(Variance(samples));
+}
+
+double Variance(std::vector<double> samples)
+{
+  int size = samples.size();
+
+  double variance = 0;
+  double t = samples[0];
+  for (int i = 1; i < size; i++)
+  {
+    t += samples[i];
+    double diff = ((i + 1) * samples[i]) - t;
+    variance += (diff * diff) / ((i + 1.0) *i);
+  }
+
+  return variance / (size - 1);
 }
