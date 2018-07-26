@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 
   int record_every;
   if (argc <= 3) record_every = 4;
-  else n_iter = std::stoul(argv[3]);
+  else record_every = std::stoul(argv[3]);
 
   auto features(tick_double_sparse2d_from_file(features_s));
 
