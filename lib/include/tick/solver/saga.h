@@ -321,6 +321,8 @@ class HalfAtomicSAGA : public TBaseSAGA<T, T> {
   const ArrayDouble &get_objective() { return objective; }
   const ArrayDouble &get_history() { return history; }
 
+  const T gradient_average_error() const;
+
   // disabled for the moment
   template <class Archive>
   void serialize(Archive &ar) {

@@ -1,6 +1,34 @@
 // License: BSD 3 clause
 
 #include "tick/solver/saga.h"
+#include <atomic>
+
+
+/*
+ * Perform an atomic addition to the float via spin-locking
+ * on compare_exchange_weak. Memory ordering is release on write
+ * consume on read
+ */
+template <class T>
+T atomic_add(std::atomic<T> &f, T d){
+  T old = f.load(std::memory_order_consume);
+  while (!f.compare_exchange_weak(old, old + d,
+                                  std::memory_order_release, std::memory_order_consume));
+  return old;
+}
+
+/*
+ * Perform an atomic addition to the float via spin-locking
+ * on compare_exchange_weak. Memory ordering is release on write
+ * consume on read
+ */
+template <class T>
+T atomic_replace(std::atomic<T> &f, T desired){
+  T old = f.load(std::memory_order_consume);
+  while (!f.compare_exchange_weak(old, desired,
+                                  std::memory_order_release, std::memory_order_consume));
+  return old;
+}
 
 template <class T>
 HalfAtomicSAGA<T>::HalfAtomicSAGA(ulong epoch_size, ulong _iterations, T tol,
@@ -65,22 +93,26 @@ void HalfAtomicSAGA<T>::solve_sparse_proba_updates(bool use_intercept,
       // Sparse features vector
       BaseArray<T> x_i = model->get_features(i);
       grad_i_factor = model->grad_i_factor(i, iterate);
-      grad_i_factor_old = gradients_memory[i].load();
 
-      while (!gradients_memory[i].compare_exchange_weak(grad_i_factor_old, grad_i_factor));
+      grad_i_factor_old = atomic_replace(gradients_memory[i], grad_i_factor);
+//      grad_i_factor_old = gradients_memory[i].load();
+//      while (!gradients_memory[i].compare_exchange_weak(grad_i_factor_old, grad_i_factor));
 
       grad_factor_diff = grad_i_factor - grad_i_factor_old;
       for (idx_nnz = 0; idx_nnz < x_i.size_sparse(); ++idx_nnz) {
         // Get the index of the idx-th sparse feature of x_i
         ulong j = x_i.indices()[idx_nnz];
         x_ij = x_i.data()[idx_nnz];
-        grad_avg_j = gradients_average[j].load();
         // Step-size correction for coordinate j
         step_correction = steps_correction[j];
 
-        while (!gradients_average[j].compare_exchange_weak(
-            grad_avg_j,
-            grad_avg_j + (grad_factor_diff * x_ij * n_samples_inverse)));
+//        grad_avg_j = gradients_average[j].load();
+//        while (!gradients_average[j].compare_exchange_weak(
+//            grad_avg_j,
+//            grad_avg_j + grad_factor_diff * x_ij * n_samples_inverse));
+        grad_avg_j = atomic_add(gradients_average[j], grad_factor_diff * x_ij * n_samples_inverse);
+
+//        std::cout << (gradients_average[j] - (grad_avg_j + add)) << std::endl;
 
         // Prox is separable, apply regularization on the current coordinate
         iterate[j] = casted_prox->call_single(
@@ -142,6 +174,26 @@ void HalfAtomicSAGA<T>::get_atomic_minimizer(Array<std::atomic<T>>& out) {
   for (ulong i = 0; i < iterate.size(); ++i) {
     out[i].store(iterate[i]);
   }
+}
+
+template <class T>
+const T HalfAtomicSAGA<T>::gradient_average_error() const {
+  T n_samples = model->get_n_samples();
+  T n_samples_inverse = 1 / n_samples;
+
+  Array<T> gradient_average_recomputed(gradients_average.size());
+  gradient_average_recomputed.init_to_zero();
+  for (ulong i = 0; i < model->get_n_samples(); ++i) {
+    gradient_average_recomputed.mult_incr(model->get_features(i), gradients_memory[i].load() * n_samples_inverse);
+    if (model->use_intercept())
+      gradient_average_recomputed[model->get_n_features()] += gradients_memory[i] * n_samples_inverse;
+  }
+
+  T error = 0;
+  for (int j = 0; j < gradients_average.size(); ++j) {
+    error += std::pow(gradient_average_recomputed[j] - gradients_average[j], 2);
+  }
+  return error / gradients_average.size();
 }
 
 template class DLL_PUBLIC HalfAtomicSAGA<double>;

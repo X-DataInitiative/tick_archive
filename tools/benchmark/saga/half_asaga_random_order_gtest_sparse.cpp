@@ -104,6 +104,7 @@ int main(int argc, char *argv[]) {
                   << "1e" << log_dist <<  std::endl;
       }
       std::cout << "min_objective : " << min_objective << "\n" << std::endl;
+      std::cout << "GA error : " << saga.gradient_average_error() << "\n" << std::endl;
 
       samples.push_back(history.last());
     }
