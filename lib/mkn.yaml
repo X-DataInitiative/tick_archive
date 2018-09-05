@@ -148,6 +148,15 @@ profile:
     install: ${lib_path}/preprocessing/build
     out: _preprocessing${lib_name}
 
+  - name: online
+    parent: arg
+    self: base
+    src:
+      ./cpp/online
+      ./swig/online
+    install: ${lib_path}/online/build
+    out: _online${lib_name}
+
   - name: random
     parent: arg
     self: base

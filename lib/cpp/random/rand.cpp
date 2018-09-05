@@ -87,6 +87,13 @@ ulong Rand::discrete(ArrayDouble probabilities) {
   return discrete_dist(generator, p);
 }
 
+uint32_t Rand::discrete(ArrayFloat probabilities) {
+  float *start = probabilities.data();
+  float *end = probabilities.data() + probabilities.size();
+  std::discrete_distribution<ulong>::param_type p(start, end);
+  return discrete_dist(generator, p);
+}
+
 int Rand::get_seed() const { return seed; }
 
 void Rand::reseed(const int seed) {

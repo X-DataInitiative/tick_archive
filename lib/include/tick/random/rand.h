@@ -130,6 +130,8 @@ class DLL_PUBLIC Rand {
    */
   ulong discrete(ArrayDouble probabilities);
 
+  uint32_t discrete(ArrayFloat probabilities);
+
   /**
    * @brief Getter for seed variable
    * @return Seed used to construct the random generator
